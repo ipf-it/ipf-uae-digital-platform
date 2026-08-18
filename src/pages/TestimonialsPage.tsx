@@ -22,7 +22,7 @@ export default function TestimonialsPage() {
             <div className="mt-8">
               <ImageCarousel
                 slides={group.items.map((item) => ({ src: item.image, alt: item.title, caption: item.title }))}
-                heightClass="h-[240px] sm:h-[380px]"
+                heightClass="aspect-[4/3] h-auto max-h-[70vh] w-full"
               />
             </div>
           </Container>

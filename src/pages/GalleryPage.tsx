@@ -35,11 +35,21 @@ export default function GalleryPage() {
               Explore UAE
             </Link>
           </div>
-          <ImageCarousel slides={slides} heightClass="h-[300px] sm:h-[440px] lg:h-[520px]" />
+          <ImageCarousel
+            slides={slides}
+            framed
+            fit="contain"
+            heightClass="h-[260px] sm:h-[400px] lg:h-[480px]"
+          />
           <div className="mb-10 mt-10 grid gap-5 lg:grid-cols-3">
             {glimpseStories.map((story) => (
-              <Link key={story.title} to={story.to} className="bg-[var(--ipf-ivory)] hover:opacity-95">
-                <FramedPhoto src={story.image} alt="" imgClassName="h-48" />
+              <Link key={story.title} to={story.to} className="min-w-0 bg-[var(--ipf-ivory)] hover:opacity-95">
+                <FramedPhoto
+                  src={story.image}
+                  alt={story.title}
+                  fit="contain"
+                  imgClassName="h-52 w-full bg-[var(--ipf-navy)]"
+                />
                 <div className="p-4">
                   <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--ipf-green)]">{story.date}</p>
                   <h2 className="mt-2 text-lg font-bold text-[var(--ipf-navy)]">{story.title}</h2>
@@ -50,8 +60,14 @@ export default function GalleryPage() {
           </div>
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {content.galleryImages.map((item) => (
-              <figure key={item.src}>
-                <FramedPhoto src={item.src} alt={item.alt} imgClassName="h-56" loading="lazy" />
+              <figure key={item.src} className="min-w-0">
+                <FramedPhoto
+                  src={item.src}
+                  alt={item.alt}
+                  fit="contain"
+                  loading="lazy"
+                  imgClassName="h-56 w-full bg-[var(--ipf-navy)]"
+                />
                 <figcaption className="px-3 py-3 text-xs text-[var(--ipf-muted)]">{item.alt}</figcaption>
               </figure>
             ))}

@@ -18,7 +18,17 @@ type ImageCarouselProps = {
   interval?: number;
   framed?: boolean;
   fit?: "cover" | "contain";
+  positionClass?: string;
 };
+
+function uniqueSlides(slides: CarouselSlide[]) {
+  const seen = new Set<string>();
+  return slides.filter((slide) => {
+    if (!slide.src || seen.has(slide.src)) return false;
+    seen.add(slide.src);
+    return true;
+  });
+}
 
 function useCarousel(length: number, interval: number, autoPlay: boolean) {
   const [index, setIndex] = useState(0);
@@ -33,6 +43,10 @@ function useCarousel(length: number, interval: number, autoPlay: boolean) {
     },
     [length],
   );
+
+  useEffect(() => {
+    setIndex(0);
+  }, [length]);
 
   useEffect(() => {
     if (!autoPlay || reduceMotion || length < 2) return;
@@ -53,6 +67,7 @@ function Controls({
   onSelect,
   light = false,
   caption,
+  compact = false,
 }: {
   count: number;
   index: number;
@@ -61,8 +76,11 @@ function Controls({
   onSelect: (next: number) => void;
   light?: boolean;
   caption?: string;
+  compact?: boolean;
 }) {
   if (count < 2 && !caption) return null;
+  const showDots = count > 1 && count <= 6;
+
   return (
     <>
       {count > 1 ? (
@@ -71,30 +89,29 @@ function Controls({
             type="button"
             aria-label="Previous"
             className={cn(
-              "absolute left-3 top-1/2 z-10 flex h-10 w-10 -translate-y-1/2 items-center justify-center text-white",
+              "absolute left-2 top-1/2 z-10 flex h-9 w-9 -translate-y-1/2 items-center justify-center text-white sm:left-3 sm:h-10 sm:w-10",
               light ? "bg-black/45" : "bg-[var(--ipf-navy)]/80",
             )}
             onClick={onPrev}
           >
-            <ChevronLeft size={20} />
+            <ChevronLeft size={18} />
           </button>
           <button
             type="button"
             aria-label="Next"
             className={cn(
-              "absolute right-3 top-1/2 z-10 flex h-10 w-10 -translate-y-1/2 items-center justify-center text-white",
+              "absolute right-2 top-1/2 z-10 flex h-9 w-9 -translate-y-1/2 items-center justify-center text-white sm:right-3 sm:h-10 sm:w-10",
               light ? "bg-black/45" : "bg-[var(--ipf-navy)]/80",
             )}
             onClick={onNext}
           >
-            <ChevronRight size={20} />
+            <ChevronRight size={18} />
           </button>
         </>
       ) : null}
-      <div className="absolute bottom-3 left-12 right-12 z-10 flex flex-col items-center gap-2 text-center">
-        {caption ? <p className="max-w-xl text-sm font-semibold text-white drop-shadow">{caption}</p> : null}
-        {count > 1 ? (
-          <div className="flex justify-center gap-1.5">
+      {compact ? (
+        count > 1 ? (
+          <div className="absolute bottom-5 left-0 right-0 z-10 flex justify-center gap-1.5">
             {Array.from({ length: count }).map((_, itemIndex) => (
               <button
                 key={itemIndex}
@@ -106,8 +123,36 @@ function Controls({
               />
             ))}
           </div>
-        ) : null}
-      </div>
+        ) : null
+      ) : (
+        <div className="absolute inset-x-0 bottom-0 z-10 bg-gradient-to-t from-[rgba(11,31,58,0.82)] via-[rgba(11,31,58,0.35)] to-transparent px-10 pb-4 pt-14 text-center">
+          {caption ? (
+            <p className="mx-auto max-w-2xl text-sm font-semibold leading-6 text-white sm:text-base">{caption}</p>
+          ) : null}
+          {count > 1 ? (
+            <div className={cn("flex items-center justify-center", caption ? "mt-3" : "")}>
+              {showDots ? (
+                <div className="flex gap-2">
+                  {Array.from({ length: count }).map((_, itemIndex) => (
+                    <button
+                      key={itemIndex}
+                      type="button"
+                      aria-label={`Slide ${itemIndex + 1}`}
+                      aria-current={itemIndex === index}
+                      className={cn("h-2 w-2 rounded-full", itemIndex === index ? "bg-white" : "bg-white/45")}
+                      onClick={() => onSelect(itemIndex)}
+                    />
+                  ))}
+                </div>
+              ) : (
+                <p className="text-[11px] font-semibold tracking-wide text-white/85">
+                  {index + 1} / {count}
+                </p>
+              )}
+            </div>
+          ) : null}
+        </div>
+      )}
     </>
   );
 }
@@ -115,21 +160,23 @@ function Controls({
 export function ImageCarousel({
   slides,
   className = "",
-  heightClass = "h-[280px] sm:h-[400px] lg:h-[480px]",
+  heightClass = "aspect-video h-auto max-h-[70vh] w-full",
   autoPlay = true,
   interval = 5500,
   framed = true,
-  fit = "contain",
+  fit = "cover",
+  positionClass = "object-top",
 }: ImageCarouselProps) {
+  const items = uniqueSlides(slides);
   const startX = useRef(0);
-  const { index, setIndex, go, hover } = useCarousel(slides.length, interval, autoPlay);
-  const slide = slides[index];
+  const { index, setIndex, go, hover } = useCarousel(items.length, interval, autoPlay);
+  const slide = items[index];
 
-  if (slides.length === 0 || !slide) return null;
+  if (!slide) return null;
 
   const viewport = (
     <div
-      className="relative overflow-hidden bg-[var(--ipf-navy)]"
+      className={cn("relative overflow-hidden bg-[var(--ipf-navy)]", heightClass)}
       onMouseEnter={() => {
         hover.current = true;
       }}
@@ -149,13 +196,12 @@ export function ImageCarousel({
         src={slide.src}
         alt={slide.alt}
         className={cn(
-          "w-full bg-[var(--ipf-navy)]",
-          heightClass,
-          fit === "contain" ? "object-contain object-center" : "object-cover object-top",
+          "absolute inset-0 h-full w-full max-w-none",
+          fit === "contain" ? "object-contain object-center" : cn("object-cover", positionClass),
         )}
       />
       <Controls
-        count={slides.length}
+        count={items.length}
         index={index}
         onPrev={() => go(-1)}
         onNext={() => go(1)}
@@ -166,7 +212,7 @@ export function ImageCarousel({
   );
 
   return (
-    <figure className={cn("min-w-0", className)} aria-roledescription="carousel">
+    <figure className={cn("min-w-0 overflow-hidden", className)} aria-roledescription="carousel">
       {framed ? <TricolorFrame>{viewport}</TricolorFrame> : viewport}
     </figure>
   );
@@ -176,17 +222,21 @@ type HeroSlideshowProps = {
   slides: CarouselSlide[];
   children: ReactNode;
   interval?: number;
+  fillViewport?: boolean;
 };
 
-export function HeroSlideshow({ slides, children, interval = 7000 }: HeroSlideshowProps) {
-  const { index, setIndex, go, hover } = useCarousel(slides.length, interval, true);
-  const current = slides[index];
+export function HeroSlideshow({ slides, children, interval = 7000, fillViewport = false }: HeroSlideshowProps) {
+  const items = uniqueSlides(slides);
+  const { index, setIndex, go, hover } = useCarousel(items.length, interval, true);
 
-  if (slides.length === 0) return <>{children}</>;
+  if (items.length === 0) return <>{children}</>;
 
   return (
     <section
-      className="relative overflow-hidden bg-[var(--ipf-navy)] text-white"
+      className={cn(
+        "relative overflow-hidden bg-[var(--ipf-navy)] text-white",
+        fillViewport && "flex min-h-[calc(100dvh-6.75rem)] flex-col",
+      )}
       onMouseEnter={() => {
         hover.current = true;
       }}
@@ -194,27 +244,27 @@ export function HeroSlideshow({ slides, children, interval = 7000 }: HeroSlidesh
         hover.current = false;
       }}
     >
-      {slides.map((item, itemIndex) => (
+      {items.map((item, itemIndex) => (
         <img
           key={`${item.src}-${itemIndex}`}
           src={item.src}
           alt={itemIndex === index ? item.alt : ""}
           className={cn(
-            "absolute inset-0 h-full w-full object-cover object-[68%_center] transition-opacity duration-700",
+            "absolute inset-0 h-full w-full max-w-none object-cover object-[68%_center] transition-opacity duration-700",
             itemIndex === index ? "opacity-70" : "opacity-0",
           )}
         />
       ))}
       <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(11,31,58,0.92)_0%,rgba(11,31,58,0.72)_38%,rgba(11,31,58,0.28)_68%,rgba(11,31,58,0.12)_100%)]" />
-      <div className="relative">{children}</div>
+      <div className={cn("relative", fillViewport && "flex flex-1 flex-col justify-center")}>{children}</div>
       <Controls
-        count={slides.length}
+        count={items.length}
         index={index}
         onPrev={() => go(-1)}
         onNext={() => go(1)}
         onSelect={setIndex}
         light
-        caption={current?.title}
+        compact
       />
     </section>
   );

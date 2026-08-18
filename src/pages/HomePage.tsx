@@ -17,6 +17,7 @@ import { CalendarDays, HeartHandshake, Landmark, Newspaper, Users } from "lucide
 import {
   chapterList,
   featuredInitiatives,
+  glimpseStories,
   historyMilestones,
   impactStats,
   latestUpdates,
@@ -38,50 +39,95 @@ export default function HomePage() {
   return (
     <>
       <DocumentTitle title="Official Community Website" />
-      <HeroSlideshow slides={content.heroSlides}>
-        <Container className="relative py-10 lg:py-12">
-          <div className="max-w-xl">
-            <Badge>Official community organisation</Badge>
-            <h1 className="mt-4 text-[1.85rem] font-bold leading-[1.15] text-white sm:text-[2.15rem] md:text-5xl">
-              Indian People's
-              <span className="block">Forum</span>
-              <span className="mt-2 block text-xl font-semibold text-[var(--ipf-gold)] sm:text-2xl">
-                United Arab Emirates
-              </span>
+
+      <div className="lg:hidden">
+        <ImageCarousel
+          framed={false}
+          fit="cover"
+          positionClass="object-[center_62%]"
+          slides={content.heroSlides}
+          heightClass="aspect-video h-auto max-h-[70vh] w-full"
+        />
+        <section className="bg-[var(--ipf-navy)] text-white">
+          <Container className="flex flex-col items-center py-12 text-center">
+            <BrandLoader size={110} label="Official emblem of Indian People's Forum UAE" />
+            <p className="mt-4 text-[11px] font-semibold uppercase tracking-[0.16em] text-[var(--ipf-gold)]">
+              Official emblem
+            </p>
+            <div className="mt-5">
+              <Badge>Official community organisation</Badge>
+            </div>
+            <h1 className="mt-4 text-[1.85rem] font-bold leading-[1.15] text-white">
+              Indian People's Forum
+              <span className="mt-2 block text-xl font-semibold text-[var(--ipf-gold)]">United Arab Emirates</span>
             </h1>
-            <p className="mt-4 text-sm leading-7 text-white/85 sm:text-[15px]">
+            <p className="mt-4 max-w-md text-sm leading-7 text-white/85">
               Since 2014, IPF has served the Indian community in the UAE through welfare support, cultural
               programmes, and coordination with Indian missions.
             </p>
-            <div className="mt-5 flex flex-wrap gap-3">
-              <Button asChild>
+            <div className="mt-5 flex flex-wrap justify-center gap-3">
+              <Button asChild variant="gold">
                 <Link to="/contact">Contact IPF</Link>
               </Button>
               <Button asChild variant="secondary">
                 <Link to="/about">About IPF</Link>
               </Button>
             </div>
-          </div>
-          <div className="mt-8 flex max-w-xl flex-col items-start gap-4 border border-white/15 bg-[var(--ipf-navy)]/55 px-4 py-4 sm:flex-row sm:items-center sm:gap-5 sm:px-5">
-            <BrandLoader size={96} label="Official emblem of Indian People's Forum UAE" />
-            <div className="min-w-0">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[var(--ipf-gold)]">
-                Official emblem
-              </p>
-              <p className="mt-1 text-sm leading-6 text-white/85">
-                Vasudhaiva Kutumbakam — one family, one team, serving Indians in the UAE.
-              </p>
+            <div className="mt-8 grid w-full gap-px overflow-hidden border border-white/10 bg-white/10 sm:grid-cols-2">
+              {impactStats.map((stat) => (
+                <StatPill key={stat.label} label={stat.label} value={stat.value} tone="dark" />
+              ))}
             </div>
-          </div>
-          <div className="mt-8 grid gap-px overflow-hidden border border-white/10 bg-white/10 sm:grid-cols-2 xl:grid-cols-4">
-            {impactStats.map((stat) => (
-              <StatPill key={stat.label} label={stat.label} value={stat.value} />
-            ))}
-          </div>
-        </Container>
-      </HeroSlideshow>
+          </Container>
+        </section>
+      </div>
 
-      <Section tone="white">
+      <div className="hidden lg:block">
+        <HeroSlideshow slides={content.heroSlides} fillViewport>
+          <Container className="relative py-10 lg:py-12">
+            <div className="max-w-xl">
+              <Badge>Official community organisation</Badge>
+              <h1 className="mt-4 text-[1.85rem] font-bold leading-[1.15] text-white sm:text-[2.15rem] md:text-5xl">
+                Indian People's
+                <span className="block">Forum</span>
+                <span className="mt-2 block text-xl font-semibold text-[var(--ipf-gold)] sm:text-2xl">
+                  United Arab Emirates
+                </span>
+              </h1>
+              <p className="mt-4 text-sm leading-7 text-white/85 sm:text-[15px]">
+                Since 2014, IPF has served the Indian community in the UAE through welfare support, cultural
+                programmes, and coordination with Indian missions.
+              </p>
+              <div className="mt-5 flex flex-wrap gap-3">
+                <Button asChild variant="gold">
+                  <Link to="/contact">Contact IPF</Link>
+                </Button>
+                <Button asChild variant="secondary">
+                  <Link to="/about">About IPF</Link>
+                </Button>
+              </div>
+            </div>
+            <div className="mt-8 flex max-w-xl flex-col items-start gap-4 border border-white/15 bg-[var(--ipf-navy)]/55 px-4 py-4 sm:flex-row sm:items-center sm:gap-5 sm:px-5">
+              <BrandLoader size={96} label="Official emblem of Indian People's Forum UAE" />
+              <div className="min-w-0">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[var(--ipf-gold)]">
+                  Official emblem
+                </p>
+                <p className="mt-1 text-sm leading-6 text-white/85">
+                  Vasudhaiva Kutumbakam — one family, one team, serving Indians in the UAE.
+                </p>
+              </div>
+            </div>
+            <div className="mt-8 grid gap-px overflow-hidden border border-white/10 bg-white/10 sm:grid-cols-2 xl:grid-cols-4">
+              {impactStats.map((stat) => (
+                <StatPill key={stat.label} label={stat.label} value={stat.value} tone="dark" />
+              ))}
+            </div>
+          </Container>
+        </HeroSlideshow>
+      </div>
+
+      <Section tone="white" className="py-5 sm:py-6 lg:py-6">
         <Container>
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {quickLinks.map((item) => {
@@ -90,7 +136,7 @@ export default function HomePage() {
                 <Link
                   key={item.label}
                   to={item.to}
-                  className="flex items-center gap-3 border border-[var(--ipf-line)] bg-[var(--ipf-ivory)] px-4 py-4 text-sm font-semibold text-[var(--ipf-navy)] transition hover:border-[var(--ipf-navy)]"
+                  className="flex items-center gap-3 border border-[var(--ipf-line)] bg-[var(--ipf-ivory)] px-4 py-3 text-sm font-semibold text-[var(--ipf-navy)] transition hover:border-[var(--ipf-navy)]"
                 >
                   <Icon size={18} />
                   {item.label}
@@ -147,8 +193,8 @@ export default function HomePage() {
           />
           <div className="mt-10 grid gap-5 lg:grid-cols-3">
             {featuredInitiatives.map((item) => (
-              <Link key={item.title} to={item.to} className="bg-[var(--ipf-paper)]">
-                <FramedPhoto src={item.image} alt={item.title} imgClassName="h-48" />
+              <Link key={item.title} to={item.to} className="min-w-0 bg-[var(--ipf-paper)]">
+                <FramedPhoto src={item.image} alt={item.title} imgClassName="aspect-[4/3] h-auto w-full" />
                 <div className="p-5">
                   <h3 className="text-lg font-semibold text-[var(--ipf-navy)]">{item.title}</h3>
                   <p className="mt-2 text-sm leading-7 text-[var(--ipf-muted)]">{item.description}</p>
@@ -292,12 +338,21 @@ export default function HomePage() {
       <Section>
         <Container>
           <SectionTitle
-            eyebrow="Major programmes"
+            eyebrow="Our gallery"
             title="Moments of participation and service"
-            description="The same flagship occasions published on the official IPF homepage — Ahlan Modi, ministerial meetings, the Business Council Conclave, and the Ajman office inauguration."
+            description="Highlights from chapter events, office inauguration, welfare drives and community outreach."
           />
-          <div className="mt-10">
-            <ImageCarousel slides={content.heroSlides} heightClass="h-[280px] sm:h-[400px] lg:h-[460px]" />
+          <div className="mt-10 grid gap-5 lg:grid-cols-3">
+            {glimpseStories.map((story) => (
+              <Link key={story.title} to={story.to} className="min-w-0 bg-[var(--ipf-paper)]">
+                <FramedPhoto src={story.image} alt={story.title} imgClassName="aspect-[4/3] h-auto w-full" />
+                <div className="p-5">
+                  <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--ipf-green)]">{story.date}</p>
+                  <h3 className="mt-2 text-lg font-semibold text-[var(--ipf-navy)]">{story.title}</h3>
+                  <p className="mt-2 text-sm leading-7 text-[var(--ipf-muted)]">{story.text}</p>
+                </div>
+              </Link>
+            ))}
           </div>
           <div className="mt-8">
             <Button asChild variant="outline">

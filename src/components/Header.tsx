@@ -42,13 +42,13 @@ export function Header({ logoSrc }: HeaderProps) {
         </Container>
       </div>
       <div className="border-b border-[var(--ipf-line)] bg-[var(--ipf-paper)]">
-        <Container className="flex items-center justify-between gap-3 py-2.5 sm:gap-6 sm:py-3">
+        <Container className="flex items-center justify-between gap-2 py-2.5 sm:gap-6 sm:py-3">
           <Link to="/" className="flex min-w-0 items-center gap-3" onClick={() => setOpen(false)}>
             {logoSrc ? (
               <img
                 src={logoSrc}
                 alt="Indian People's Forum UAE emblem"
-                className="h-10 w-auto max-w-[42vw] bg-white object-contain p-1 sm:h-12 sm:max-w-none"
+                className="h-9 w-auto max-w-[min(200px,58vw)] bg-white object-contain p-1 sm:h-12 sm:max-w-[240px]"
               />
             ) : (
               <span className="font-bold text-[var(--ipf-navy)]">IPF</span>
@@ -115,7 +115,7 @@ export function Header({ logoSrc }: HeaderProps) {
           <div className="flex items-center gap-2">
             <Link
               to="/membership"
-              className="shrink-0 rounded-md bg-[var(--ipf-navy)] px-3 py-2 text-[11px] font-semibold uppercase tracking-wide text-white hover:bg-[var(--ipf-navy-soft)] sm:px-4 sm:text-xs"
+              className="hidden shrink-0 rounded-md bg-[var(--ipf-navy)] px-3 py-2 text-[11px] font-semibold uppercase tracking-wide text-white hover:bg-[var(--ipf-navy-soft)] sm:inline-flex sm:px-4 sm:text-xs"
             >
               Join IPF
             </Link>

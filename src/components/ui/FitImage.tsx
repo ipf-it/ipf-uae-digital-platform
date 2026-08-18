@@ -18,7 +18,7 @@ export function FitImage({ src, alt, fit = "cover", fill = false, className = ""
       className={cn(fill && "h-full min-h-[200px] sm:min-h-[260px]", className)}
       imgClassName={cn(
         "w-full bg-[var(--ipf-paper)]",
-        fill ? "h-full min-h-[180px] sm:min-h-[240px]" : "h-[200px] sm:h-[240px]",
+        fill ? "h-full min-h-[180px] sm:min-h-[240px]" : "aspect-[4/3] h-auto w-full",
         fit === "contain" && "p-2",
       )}
     />

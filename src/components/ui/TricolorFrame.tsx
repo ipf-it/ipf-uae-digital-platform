@@ -10,7 +10,7 @@ export function TricolorFrame({ children, className = "", inset = "md" }: Tricol
   return (
     <div
       className={cn(
-        "max-w-full bg-[linear-gradient(180deg,rgba(255,153,51,0.55)_0%,rgba(255,255,255,0.92)_50%,rgba(19,136,8,0.5)_100%)] p-[3px]",
+        "max-w-full overflow-hidden bg-[linear-gradient(180deg,rgba(255,153,51,0.55)_0%,rgba(255,255,255,0.92)_50%,rgba(19,136,8,0.5)_100%)] p-[3px]",
         className,
       )}
     >
@@ -45,7 +45,7 @@ export function FramedPhoto({
         alt={alt}
         loading={loading}
         className={cn(
-          "h-full w-full max-w-full",
+          "block h-full w-full max-w-none",
           fit === "contain" ? "object-contain object-center" : "object-cover object-top",
           imgClassName,
         )}

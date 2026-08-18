@@ -28,7 +28,9 @@ export default function EventsPage() {
               {event.location ? <p className="mt-2 text-sm text-[var(--ipf-muted)]">{event.location}</p> : null}
               {event.body ? <p className="mt-4 text-sm leading-7 text-[var(--ipf-muted)]">{event.body}</p> : null}
             </div>
-            {event.slides.length > 0 ? <ImageCarousel slides={event.slides} heightClass="h-[220px] sm:h-[320px]" /> : null}
+            {event.slides.length > 0 ? (
+              <ImageCarousel slides={event.slides} heightClass="aspect-[4/3] h-auto w-full" />
+            ) : null}
           </Container>
         </Section>
       ))}

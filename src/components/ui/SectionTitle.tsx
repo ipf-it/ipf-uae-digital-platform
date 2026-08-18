@@ -27,7 +27,7 @@ export function SectionTitle({
           {eyebrow}
         </p>
       ) : null}
-      <h2 className={cn("text-2xl font-bold sm:text-3xl", tone === "light" ? "text-white" : "text-[var(--ipf-navy)]")}>
+      <h2 className={cn("text-2xl font-bold break-words sm:text-3xl", tone === "light" ? "text-white" : "text-[var(--ipf-navy)]")}>
         {title}
       </h2>
       <div

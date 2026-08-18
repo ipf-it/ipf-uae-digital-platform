@@ -31,7 +31,11 @@ export default function ExploreUaePage() {
               </article>
             ))}
           </div>
-          {slides.length > 0 ? <ImageCarousel slides={slides} heightClass="h-[240px] sm:h-[360px]" /> : <FitImage src={img.slider} alt="Community life in the UAE" />}
+          {slides.length > 0 ? (
+            <ImageCarousel slides={slides} heightClass="aspect-[4/3] h-auto w-full" />
+          ) : (
+            <FitImage src={img.slider} alt="Community life in the UAE" />
+          )}
         </Container>
       </Section>
       <Section>
