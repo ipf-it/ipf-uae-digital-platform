@@ -20,11 +20,11 @@ export default function PresidentPage() {
       />
       <Section tone="white">
         <Container>
-          <figure className="mx-auto max-w-[200px] text-center">
+          <figure className="mx-auto max-w-[248px] text-center">
             <FramedPhoto
               src={img.president}
               alt="Shri Jitendra Vaidya, President IPF UAE"
-              imgClassName="h-56 object-top"
+              imgClassName="h-72 object-top"
             />
             <figcaption className="mt-4">
               <p className="text-lg font-bold text-[var(--ipf-navy)]">Shri Jitendra Vaidya</p>

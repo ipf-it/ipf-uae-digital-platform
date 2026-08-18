@@ -15,6 +15,7 @@ type CardProps = PropsWithChildren<{
   imageClassName?: string;
   tone?: "paper" | "ivory" | "navy";
   size?: "sm" | "md" | "lg";
+  flush?: boolean;
   align?: "left" | "center";
   id?: string;
   className?: string;
@@ -32,13 +33,14 @@ export function Card({
   imageClassName = "",
   tone = "paper",
   size = "md",
+  flush = false,
   align = "left",
   id,
   className = "",
   children,
 }: CardProps) {
   const navy = tone === "navy";
-  const pad = size === "sm" ? "p-4" : size === "lg" ? "p-6 sm:p-8" : image ? "p-5" : "p-6";
+  const pad = flush ? "p-0" : size === "sm" ? "p-4" : size === "lg" ? "p-6 sm:p-8" : image ? "p-5" : "p-6";
   const titleSize = size === "sm" ? "text-base font-semibold" : size === "lg" ? "text-xl font-bold sm:text-2xl" : "text-lg font-semibold";
 
   const body = (

@@ -1,6 +1,10 @@
 export const site = {
   name: "Indian People's Forum UAE",
   shortName: "IPF UAE",
+  titleLine: "Indian People's Forum",
+  tagline: "UAE • Community Welfare & Culture",
+  joinCta: "Join IPF",
+  utilityBar: "Registered socio-cultural organisation • Ajman, United Arab Emirates",
   email: "info@ipf-uae.org",
   grievanceEmail: "ipfuae@ipf-uae.org",
   abuDhabiEmail: "abudhabi@ipf-uae.org",
@@ -8,6 +12,9 @@ export const site = {
   office: "Office 208, Horizon Towers, Al Rashidiya, Ajman, United Arab Emirates",
   founded: "2014",
   president: "Shri Jitendra Vaidya",
+  presidentRole: "President, IPF UAE",
+  presidentQuote:
+    "We believe in अनेकता में एकता. IPF invites every member of the community to join this journey of service, unity and responsibility.",
   domain: "ipf-uae.org",
 } as const;
 

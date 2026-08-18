@@ -30,7 +30,7 @@ export function Header({ logoSrc }: HeaderProps) {
     <header className="sticky top-0 z-40">
       <div className="hidden border-b border-white/10 bg-[var(--ipf-navy)] text-xs text-white/80 md:block">
         <Container className="flex items-center justify-between py-2">
-          <p>Registered socio-cultural organisation • Ajman, United Arab Emirates</p>
+          <p>{site.utilityBar}</p>
           <div className="flex items-center gap-5">
             {utilityLinks.map((item) => (
               <Link key={item.to} className="rounded-md px-1 py-0.5 transition hover:bg-white/10 hover:text-white" to={item.to}>
@@ -44,31 +44,34 @@ export function Header({ logoSrc }: HeaderProps) {
         </Container>
       </div>
       <div className="border-b border-[var(--ipf-line)] bg-[var(--ipf-paper)]/95 backdrop-blur-md">
-        <Container className="flex items-center justify-between gap-2 py-2.5 sm:gap-6 sm:py-3">
-          <Link to="/" className="flex min-w-0 items-center gap-3" onClick={() => setOpen(false)}>
+        <Container className="flex items-center justify-between gap-3 py-2.5 sm:py-3">
+          <Link to="/" className="flex shrink-0 items-center gap-3" onClick={() => setOpen(false)}>
             {logoSrc ? (
               <img
                 src={logoSrc}
-                alt="Indian People's Forum UAE emblem"
+                alt={`${site.name} emblem`}
                 className="h-9 w-auto max-w-[min(200px,58vw)] bg-white object-contain p-1 sm:h-12 sm:max-w-[240px]"
               />
             ) : (
-              <span className="font-bold text-[var(--ipf-navy)]">IPF</span>
+              <span className="font-bold text-[var(--ipf-navy)]">{site.shortName}</span>
             )}
-            <span className="hidden min-w-0 lg:block">
-              <span className="block text-[11px] font-bold uppercase tracking-[0.16em] text-[var(--ipf-navy)]">
-                Indian People's Forum
+            <span className="hidden shrink-0 lg:block">
+              <span className="block whitespace-nowrap text-[11px] font-bold uppercase tracking-[0.12em] text-[var(--ipf-navy)]">
+                {site.titleLine}
               </span>
-              <span className="block text-xs text-[var(--ipf-muted)]">UAE • Community Welfare & Culture</span>
+              <span className="mt-0.5 block whitespace-nowrap text-xs text-[var(--ipf-muted)]">{site.tagline}</span>
             </span>
           </Link>
 
-          <nav className="hidden items-center gap-1 text-sm font-medium text-[var(--ipf-navy)] xl:flex">
+          <nav className="hidden items-center text-sm font-medium text-[var(--ipf-navy)] xl:flex">
             <NavLink
               to="/"
               end
               className={({ isActive }) =>
-                cn("rounded-lg px-3 py-2 transition hover:bg-[var(--ipf-ivory)] hover:text-[var(--ipf-green)]", isActive && "text-[var(--ipf-green)]")
+                cn(
+                  "whitespace-nowrap rounded-lg px-2.5 py-2 transition hover:bg-[var(--ipf-ivory)] hover:text-[var(--ipf-green)] 2xl:px-3",
+                  isActive && "text-[var(--ipf-green)]",
+                )
               }
             >
               Home
@@ -84,7 +87,7 @@ export function Header({ logoSrc }: HeaderProps) {
                   <Link
                     to={group.to ?? group.children[0].to}
                     className={cn(
-                      "inline-flex items-center gap-1 rounded-lg px-3 py-2 transition hover:bg-[var(--ipf-ivory)] hover:text-[var(--ipf-green)]",
+                      "inline-flex items-center gap-1 whitespace-nowrap rounded-lg px-2.5 py-2 transition hover:bg-[var(--ipf-ivory)] hover:text-[var(--ipf-green)] 2xl:px-3",
                       active && "text-[var(--ipf-green)]",
                     )}
                   >
@@ -108,16 +111,19 @@ export function Header({ logoSrc }: HeaderProps) {
             <NavLink
               to="/contact"
               className={({ isActive }) =>
-                cn("rounded-lg px-3 py-2 transition hover:bg-[var(--ipf-ivory)] hover:text-[var(--ipf-green)]", isActive && "text-[var(--ipf-green)]")
+                cn(
+                  "whitespace-nowrap rounded-lg px-2.5 py-2 transition hover:bg-[var(--ipf-ivory)] hover:text-[var(--ipf-green)] 2xl:px-3",
+                  isActive && "text-[var(--ipf-green)]",
+                )
               }
             >
               Contact
             </NavLink>
           </nav>
 
-          <div className="flex items-center gap-2">
-            <Button asChild size="sm" className="hidden uppercase tracking-wide sm:inline-flex">
-              <Link to="/membership">Join IPF</Link>
+          <div className="flex shrink-0 items-center gap-2">
+            <Button asChild size="sm" className="hidden px-4 uppercase sm:inline-flex">
+              <Link to="/membership">{site.joinCta}</Link>
             </Button>
             <Button
               type="button"
@@ -143,7 +149,7 @@ export function Header({ logoSrc }: HeaderProps) {
                 to="/membership"
                 onClick={() => setOpen(false)}
               >
-                Join IPF
+                {site.joinCta}
               </Link>
               <Accordion type="single" collapsible className="mt-1">
                 {primaryNav.map((group) => (

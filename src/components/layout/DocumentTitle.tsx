@@ -1,4 +1,5 @@
 import { useEffect } from "react";
+import { site } from "../../data/site";
 
 type DocumentTitleProps = {
   title: string;
@@ -6,7 +7,7 @@ type DocumentTitleProps = {
 
 export function DocumentTitle({ title }: DocumentTitleProps) {
   useEffect(() => {
-    document.title = `${title} | Indian People's Forum UAE`;
+    document.title = `${title} | ${site.name}`;
   }, [title]);
 
   return null;

@@ -5,7 +5,7 @@ import { Badge } from "../components/ui/Badge";
 import { Button } from "../components/ui/Button";
 import { Card, CardGrid } from "../components/ui/Card";
 import { Container } from "../components/ui/Container";
-import { PersonIdentity } from "../components/ui/PersonIdentity";
+import { Quote } from "../components/ui/Quote";
 import { HeroSlideshow, ImageCarousel } from "../components/ui/ImageCarousel";
 import { PageExtras } from "../cms/PageExtras";
 import { useCms } from "../cms/ContentProvider";
@@ -24,7 +24,7 @@ import {
   servicePanels,
   upcomingEvents,
 } from "../data/platformContent";
-import { img } from "../data/site";
+import { img, site } from "../data/site";
 
 const quickLinks = [
   { to: "/membership", label: "Membership", icon: Users },
@@ -268,27 +268,33 @@ export default function HomePage() {
       </Section>
 
       <Section tone="white">
-        <Container className="grid gap-8 lg:grid-cols-[0.9fr,1.1fr] lg:items-center">
-          <Card tone="navy" eyebrow="President's message">
-            <PersonIdentity
-              size="sm"
-              tone="dark"
-              src={img.president}
-              alt="Shri Jitendra Vaidya, President IPF UAE"
-              name="Shri Jitendra Vaidya"
-              role="President, IPF UAE"
-            />
-            <p className="mt-5 text-sm leading-7 text-white/85">
-              We believe in अनेकता में एकता. IPF invites every member of the community to join this journey of service,
-              unity and responsibility.
-            </p>
-            <div className="mt-6">
-              <Button asChild variant="secondary">
-                <Link to="/president">Read the full message</Link>
-              </Button>
+        <Container>
+          <Card tone="navy" flush className="h-auto overflow-hidden">
+            <div className="flex min-h-[18rem] flex-row items-stretch sm:min-h-[22rem]">
+              <div className="flex min-w-0 flex-1 flex-col justify-center px-5 py-7 sm:px-10 sm:py-9">
+                <p className="text-xs font-bold uppercase tracking-[0.16em] text-[var(--ipf-gold)]">
+                  President's message
+                </p>
+                <Quote className="mt-5" attribution={site.president}>
+                  {site.presidentQuote}
+                </Quote>
+                <div className="mt-6 flex justify-center">
+                  <Button asChild variant="secondary" size="sm">
+                    <Link to="/president">Read the full message</Link>
+                  </Button>
+                </div>
+              </div>
+              <div className="relative w-[42%] min-w-[8.5rem] max-w-[24rem] shrink-0 bg-[var(--ipf-navy)]">
+                <img
+                  src={img.president}
+                  alt={`${site.president}, ${site.presidentRole}`}
+                  className="absolute inset-0 h-full w-full object-cover object-[center_22%]"
+                />
+                <div className="pointer-events-none absolute inset-y-0 left-0 w-8 bg-gradient-to-r from-[var(--ipf-navy)] to-transparent sm:w-10" />
+              </div>
             </div>
           </Card>
-          <div>
+          <div className="mt-10 max-w-3xl">
             <SectionTitle
               title="Leadership and public trust"
               description="IPF works with volunteers across professions — medicine, law, business, culture and social service — to support the diaspora in a lawful and organised manner."
