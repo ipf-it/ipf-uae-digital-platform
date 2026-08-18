@@ -3,6 +3,8 @@ import { PageHero } from "../components/layout/PageHero";
 import { Container } from "../components/ui/Container";
 import { FitImage } from "../components/ui/FitImage";
 import { Section } from "../components/ui/Section";
+import { PillNav } from "../components/ui/Tabs";
+import { galleryNavItems } from "../data/galleryNav";
 import { img } from "../data/site";
 
 export default function DiscoverIndiaPage() {
@@ -16,7 +18,11 @@ export default function DiscoverIndiaPage() {
         crumbs={[{ label: "Gallery", to: "/gallery" }, { label: "Discover India" }]}
       />
       <Section tone="white">
-        <Container className="grid gap-8 lg:grid-cols-[0.9fr,1.1fr] lg:items-start">
+        <Container>
+          <div className="mb-8">
+            <PillNav items={galleryNavItems} />
+          </div>
+          <div className="grid gap-8 lg:grid-cols-[0.9fr,1.1fr] lg:items-start">
           <article className="space-y-5 text-sm leading-8 text-[var(--ipf-muted)]">
             <p>
               India — Bharat — Hindustan, officially the Republic of India, is the most populous democracy in the world
@@ -46,6 +52,7 @@ export default function DiscoverIndiaPage() {
             </p>
           </article>
           <FitImage className="lg:order-first" src={img.indiaUae} alt="India and UAE cultural connection" />
+          </div>
         </Container>
       </Section>
     </>

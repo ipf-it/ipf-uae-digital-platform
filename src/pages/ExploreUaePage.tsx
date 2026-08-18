@@ -1,11 +1,13 @@
-import { Link } from "react-router-dom";
 import { DocumentTitle } from "../components/layout/DocumentTitle";
 import { PageHero } from "../components/layout/PageHero";
+import { Card, CardGrid } from "../components/ui/Card";
 import { Container } from "../components/ui/Container";
 import { FitImage } from "../components/ui/FitImage";
 import { ImageCarousel } from "../components/ui/ImageCarousel";
 import { useCms } from "../cms/ContentProvider";
 import { Section } from "../components/ui/Section";
+import { PillNav } from "../components/ui/Tabs";
+import { galleryNavItems } from "../data/galleryNav";
 import { chapterList, uaeHighlights } from "../data/platformContent";
 import { img } from "../data/site";
 
@@ -22,13 +24,14 @@ export default function ExploreUaePage() {
         crumbs={[{ label: "Gallery", to: "/gallery" }, { label: "Explore UAE" }]}
       />
       <Section tone="white">
-        <Container className="grid gap-8 lg:grid-cols-[1.1fr,0.9fr]">
-          <div className="space-y-5">
+        <Container>
+          <div className="mb-8">
+            <PillNav items={galleryNavItems} />
+          </div>
+          <div className="grid items-stretch gap-8 lg:grid-cols-[1.1fr,0.9fr]">
+          <div className="grid gap-5">
             {uaeHighlights.map((item) => (
-              <article key={item.title} className="border border-[var(--ipf-line)] bg-[var(--ipf-ivory)] p-5">
-                <h2 className="text-lg font-bold text-[var(--ipf-navy)]">{item.title}</h2>
-                <p className="mt-2 text-sm leading-7 text-[var(--ipf-muted)]">{item.description}</p>
-              </article>
+              <Card key={item.title} tone="ivory" title={item.title} description={item.description} />
             ))}
           </div>
           {slides.length > 0 ? (
@@ -36,22 +39,17 @@ export default function ExploreUaePage() {
           ) : (
             <FitImage src={img.slider} alt="Community life in the UAE" />
           )}
+          </div>
         </Container>
       </Section>
       <Section>
         <Container>
           <h2 className="text-2xl font-bold text-[var(--ipf-navy)]">IPF across the Emirates</h2>
-          <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          <CardGrid columns={4} className="mt-6">
             {chapterList.map((chapter) => (
-              <Link
-                key={chapter}
-                to="/chapters"
-                className="border border-[var(--ipf-line)] bg-[var(--ipf-paper)] px-4 py-4 text-center text-sm font-semibold text-[var(--ipf-navy)] hover:border-[var(--ipf-navy)]"
-              >
-                {chapter}
-              </Link>
+              <Card key={chapter} to="/chapters" size="sm" align="center" title={chapter} />
             ))}
-          </div>
+          </CardGrid>
         </Container>
       </Section>
     </>

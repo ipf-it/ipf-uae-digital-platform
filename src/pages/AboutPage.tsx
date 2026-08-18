@@ -1,5 +1,6 @@
 import { DocumentTitle } from "../components/layout/DocumentTitle";
 import { PageHero } from "../components/layout/PageHero";
+import { Card, CardGrid } from "../components/ui/Card";
 import { Container } from "../components/ui/Container";
 import { FitImage } from "../components/ui/FitImage";
 import { PageExtras } from "../cms/PageExtras";
@@ -66,16 +67,11 @@ export default function AboutPage() {
               We aim to gain credibility by adhering to IPF's commitments — displaying honesty and integrity, and
               reaching IPF goals solely through honourable conduct.
             </p>
-            <div className="mt-6 grid gap-3 sm:grid-cols-2">
+            <CardGrid columns={2} className="mt-6">
               {aboutValues.map((value) => (
-                <div
-                  key={value}
-                  className="border border-[var(--ipf-line)] bg-[var(--ipf-ivory)] px-4 py-4 text-sm font-semibold text-[var(--ipf-navy)]"
-                >
-                  {value}
-                </div>
+                <Card key={value} size="sm" tone="ivory" title={value} />
               ))}
-            </div>
+            </CardGrid>
           </div>
           <FitImage
             fit="contain"
@@ -97,13 +93,11 @@ export default function AboutPage() {
             celebrated, cultural heritage is nurtured, and the hope of all Indians remains vibrant, inspired and
             empowered.
           </p>
-          <ol className="mt-8 grid gap-3 md:grid-cols-2">
+          <CardGrid columns={2} className="mt-8">
             {aboutAims.map((item, index) => (
-              <li key={item} className="border border-[var(--ipf-line)] bg-[var(--ipf-paper)] px-4 py-4 text-sm leading-7 text-[var(--ipf-muted)]">
-                <span className="font-semibold text-[var(--ipf-navy)]">{index + 1}.</span> {item}
-              </li>
+              <Card key={item} size="sm" eyebrow={`0${index + 1}`.slice(-2)} description={item} />
             ))}
-          </ol>
+          </CardGrid>
         </Container>
       </Section>
 

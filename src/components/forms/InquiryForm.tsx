@@ -1,5 +1,12 @@
 import { useState, type FormEvent } from "react";
 import { Button } from "../ui/Button";
+import { Card } from "../ui/Card";
+import { Checkbox } from "../ui/Checkbox";
+import { Field } from "../ui/Field";
+import { Input } from "../ui/Input";
+import { Label } from "../ui/Label";
+import { SimpleSelect } from "../ui/Select";
+import { Textarea } from "../ui/Textarea";
 import { site } from "../../data/site";
 import { emirates } from "../../data/forms";
 
@@ -14,8 +21,13 @@ const titles = {
   jobs: "Job board enquiry",
 } as const;
 
+const honorifics = ["Mr", "Mrs", "Miss"] as const;
+
 export function InquiryForm({ intent }: InquiryFormProps) {
   const [submitted, setSubmitted] = useState(false);
+  const [honorific, setHonorific] = useState("");
+  const [emirate, setEmirate] = useState("");
+  const [agreed, setAgreed] = useState(false);
 
   function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -24,104 +36,112 @@ export function InquiryForm({ intent }: InquiryFormProps) {
 
   if (submitted) {
     return (
-      <div className="border border-[var(--ipf-line)] bg-[var(--ipf-paper)] px-4 py-6 sm:px-6 sm:py-8">
-        <p className="text-sm font-semibold uppercase tracking-[0.18em] text-[var(--ipf-green)]">Received</p>
-        <h2 className="mt-2 text-2xl font-bold text-[var(--ipf-navy)]">Thank you. IPF will respond by email.</h2>
-        <p className="mt-3 text-sm leading-7 text-[var(--ipf-muted)]">
+      <Card size="lg" eyebrow="Received" title="Thank you. IPF will respond by email.">
+        <p className="text-sm leading-7 text-[var(--ipf-muted)]">
           This public website does not yet send form data to a server. Please also write to{" "}
           <a className="font-semibold text-[var(--ipf-navy)]" href={`mailto:${site.email}`}>
             {site.email}
           </a>{" "}
           so the team can assist you without delay. A CMS-backed intake will be connected in the next phase.
         </p>
-      </div>
+      </Card>
     );
   }
 
   return (
-    <form onSubmit={onSubmit} className="border border-[var(--ipf-line)] bg-[var(--ipf-paper)] px-4 py-6 sm:px-6 sm:py-8">
-      <h2 className="text-xl font-bold text-[var(--ipf-navy)]">{titles[intent]}</h2>
-      <p className="mt-2 text-sm leading-7 text-[var(--ipf-muted)]">
-        Fields marked with * are required. Responses are handled by IPF volunteers.
-      </p>
-      <div className="mt-6 grid gap-4 sm:grid-cols-2">
-        {intent === "membership" ? (
-          <label className="grid gap-1 text-sm font-medium text-[var(--ipf-navy)]">
-            Title *
-            <select required name="title" className="ipf-input" defaultValue="">
-              <option value="" disabled>
-                Select
-              </option>
-              <option>Mr</option>
-              <option>Mrs</option>
-              <option>Miss</option>
-            </select>
-          </label>
-        ) : null}
-        <label className="grid gap-1 text-sm font-medium text-[var(--ipf-navy)]">
-          Full name *
-          <input required name="name" className="ipf-input" autoComplete="name" placeholder={intent === "membership" ? "As in passport" : undefined} />
-        </label>
-        <label className="grid gap-1 text-sm font-medium text-[var(--ipf-navy)]">
-          Email *
-          <input required type="email" name="email" className="ipf-input" autoComplete="email" />
-        </label>
-        <label className="grid gap-1 text-sm font-medium text-[var(--ipf-navy)]">
-          Mobile (UAE) *
-          <input required type="tel" name="phone" className="ipf-input" autoComplete="tel" />
-        </label>
-        {intent === "membership" ? (
-          <label className="grid gap-1 text-sm font-medium text-[var(--ipf-navy)]">
-            Tel / Mobile (India)
-            <input type="tel" name="phoneIndia" className="ipf-input" />
-          </label>
-        ) : null}
-        <label className="grid gap-1 text-sm font-medium text-[var(--ipf-navy)]">
-          Emirate *
-          <select required name="emirate" className="ipf-input" defaultValue="">
-            <option value="" disabled>
-              Select emirate
-            </option>
-            {emirates.map((item) => (
-              <option key={item} value={item}>
-                {item}
-              </option>
-            ))}
-          </select>
-        </label>
-        {intent === "membership" ? (
-          <>
-            <label className="grid gap-1 text-sm font-medium text-[var(--ipf-navy)] sm:col-span-2">
-              Local address (UAE)
-              <input name="address" className="ipf-input" autoComplete="street-address" />
-            </label>
-            <label className="grid gap-1 text-sm font-medium text-[var(--ipf-navy)]">
-              Occupation
-              <input name="occupation" className="ipf-input" />
-            </label>
-            <label className="grid gap-1 text-sm font-medium text-[var(--ipf-navy)]">
-              Emergency contact / mobile
-              <input name="emergency" className="ipf-input" />
-            </label>
-            <label className="grid gap-1 text-sm font-medium text-[var(--ipf-navy)] sm:col-span-2">
-              Reason for joining *
-              <textarea required name="message" rows={4} className="ipf-input min-h-24" />
-            </label>
-            <label className="flex items-start gap-2 text-sm leading-6 text-[var(--ipf-muted)] sm:col-span-2">
-              <input required type="checkbox" name="agree" className="mt-1" />
-              I apply for annual membership and agree to abide by the Bye Law and Code of Ethics of Indian People's Forum.
-            </label>
-          </>
-        ) : (
-          <label className="grid gap-1 text-sm font-medium text-[var(--ipf-navy)] sm:col-span-2">
-            Message *
-            <textarea required name="message" rows={5} className="ipf-input min-h-32" />
-          </label>
-        )}
-      </div>
-      <div className="mt-6">
-        <Button type="submit">Submit</Button>
-      </div>
+    <form onSubmit={onSubmit}>
+      <Card
+        size="lg"
+        title={titles[intent]}
+        description="Fields marked with * are required. Responses are handled by IPF volunteers."
+      >
+        <div className="grid gap-5 sm:grid-cols-2">
+          {intent === "membership" ? (
+            <Field label="Title" htmlFor="inquiry-title" required>
+              <SimpleSelect
+                id="inquiry-title"
+                name="title"
+                required
+                value={honorific}
+                onValueChange={setHonorific}
+                placeholder="Select"
+                options={honorifics}
+              />
+            </Field>
+          ) : null}
+
+          <Field label="Full name" htmlFor="inquiry-name" required>
+            <Input
+              id="inquiry-name"
+              required
+              name="name"
+              autoComplete="name"
+              placeholder={intent === "membership" ? "As in passport" : "Your full name"}
+            />
+          </Field>
+
+          <Field label="Email" htmlFor="inquiry-email" required>
+            <Input id="inquiry-email" required type="email" name="email" autoComplete="email" placeholder="name@email.com" />
+          </Field>
+
+          <Field label="Mobile (UAE)" htmlFor="inquiry-phone" required>
+            <Input id="inquiry-phone" required type="tel" name="phone" autoComplete="tel" placeholder="+971" />
+          </Field>
+
+          {intent === "membership" ? (
+            <Field label="Tel / Mobile (India)" htmlFor="inquiry-phone-india">
+              <Input id="inquiry-phone-india" type="tel" name="phoneIndia" placeholder="+91" />
+            </Field>
+          ) : null}
+
+          <Field label="Emirate" htmlFor="inquiry-emirate" required>
+            <SimpleSelect
+              id="inquiry-emirate"
+              name="emirate"
+              required
+              value={emirate}
+              onValueChange={setEmirate}
+              placeholder="Select emirate"
+              options={emirates}
+            />
+          </Field>
+
+          {intent === "membership" ? (
+            <>
+              <Field label="Local address (UAE)" htmlFor="inquiry-address" className="sm:col-span-2">
+                <Input id="inquiry-address" name="address" autoComplete="street-address" placeholder="Street, area, emirate" />
+              </Field>
+              <Field label="Occupation" htmlFor="inquiry-occupation">
+                <Input id="inquiry-occupation" name="occupation" placeholder="Profession" />
+              </Field>
+              <Field label="Emergency contact / mobile" htmlFor="inquiry-emergency">
+                <Input id="inquiry-emergency" name="emergency" type="tel" placeholder="Contact number" />
+              </Field>
+              <Field label="Reason for joining" htmlFor="inquiry-message" required className="sm:col-span-2">
+                <Textarea id="inquiry-message" required name="message" rows={4} placeholder="Tell us briefly why you wish to join IPF." />
+              </Field>
+              <div className="flex items-start gap-3 sm:col-span-2">
+                <Checkbox
+                  id="inquiry-agree"
+                  checked={agreed}
+                  onCheckedChange={(value) => setAgreed(value === true)}
+                />
+                <input type="hidden" name="agree" value={agreed ? "yes" : ""} required />
+                <Label htmlFor="inquiry-agree" className="text-sm font-normal leading-6 text-[var(--ipf-muted)]">
+                  I apply for membership and agree to abide by the Bye Law and Code of Ethics of Indian People's Forum.
+                </Label>
+              </div>
+            </>
+          ) : (
+            <Field label="Message" htmlFor="inquiry-message" required className="sm:col-span-2">
+              <Textarea id="inquiry-message" required name="message" rows={5} placeholder="How can IPF help?" />
+            </Field>
+          )}
+        </div>
+        <div className="mt-6">
+          <Button type="submit">Submit</Button>
+        </div>
+      </Card>
     </form>
   );
 }

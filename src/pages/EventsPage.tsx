@@ -5,6 +5,7 @@ import { PageHero } from "../components/layout/PageHero";
 import { Container } from "../components/ui/Container";
 import { ImageCarousel } from "../components/ui/ImageCarousel";
 import { Section } from "../components/ui/Section";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../components/ui/Table";
 import { eventCalendar } from "../data/platformContent";
 
 export default function EventsPage() {
@@ -39,28 +40,26 @@ export default function EventsPage() {
           <p className="mb-6 max-w-3xl text-sm leading-7 text-[var(--ipf-muted)]">
             Standing annual cycle. Dated programmes with photographs are added from the content desk as events take place.
           </p>
-          <div className="overflow-x-auto">
-            <table className="ipf-table">
-              <thead>
-                <tr>
-                  <th>Month</th>
-                  <th>Programme</th>
-                  <th>Level</th>
-                  <th>Committee</th>
-                </tr>
-              </thead>
-              <tbody>
-                {eventCalendar.map((event) => (
-                  <tr key={`${event.month}-${event.title}`}>
-                    <td>{event.month}</td>
-                    <td>{event.title}</td>
-                    <td>{event.level}</td>
-                    <td>{event.committee}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+          <Table>
+            <TableHead>
+              <tr>
+                <TableHeader>Month</TableHeader>
+                <TableHeader>Programme</TableHeader>
+                <TableHeader>Level</TableHeader>
+                <TableHeader>Committee</TableHeader>
+              </tr>
+            </TableHead>
+            <TableBody>
+              {eventCalendar.map((event) => (
+                <TableRow key={`${event.month}-${event.title}`}>
+                  <TableCell className="font-medium text-[var(--ipf-navy)]">{event.month}</TableCell>
+                  <TableCell>{event.title}</TableCell>
+                  <TableCell>{event.level}</TableCell>
+                  <TableCell>{event.committee}</TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
         </Container>
       </Section>
       <PageExtras page="events" />

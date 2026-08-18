@@ -1,3 +1,4 @@
+import { ChevronRight } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Container } from "../ui/Container";
 
@@ -20,17 +21,17 @@ export function PageHero({ eyebrow, title, description, crumbs = [] }: PageHeroP
       <Container className="relative py-10 sm:py-16">
         {crumbs.length > 0 ? (
           <nav aria-label="Breadcrumb" className="mb-5 text-xs text-white/70">
-            <ol className="flex flex-wrap items-center gap-2">
+            <ol className="flex flex-wrap items-center gap-1.5">
               <li>
-                <Link to="/" className="hover:text-white">
+                <Link to="/" className="rounded-md px-1 py-0.5 transition hover:bg-white/10 hover:text-white">
                   Home
                 </Link>
               </li>
               {crumbs.map((crumb) => (
-                <li key={crumb.label} className="flex items-center gap-2">
-                  <span aria-hidden="true">/</span>
+                <li key={crumb.label} className="flex items-center gap-1.5">
+                  <ChevronRight className="size-3.5 opacity-60" aria-hidden="true" />
                   {crumb.to ? (
-                    <Link to={crumb.to} className="hover:text-white">
+                    <Link to={crumb.to} className="rounded-md px-1 py-0.5 transition hover:bg-white/10 hover:text-white">
                       {crumb.label}
                     </Link>
                   ) : (

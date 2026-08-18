@@ -1,5 +1,6 @@
 import { DocumentTitle } from "../components/layout/DocumentTitle";
 import { PageHero } from "../components/layout/PageHero";
+import { Card, CardGrid } from "../components/ui/Card";
 import { Container } from "../components/ui/Container";
 import { Section } from "../components/ui/Section";
 import { historyMilestones } from "../data/platformContent";
@@ -16,15 +17,11 @@ export default function HistoryPage() {
       />
       <Section tone="white">
         <Container>
-          <div className="grid gap-4 md:grid-cols-2">
+          <CardGrid columns={2}>
             {historyMilestones.map((mile) => (
-              <article key={mile.title} className="border border-[var(--ipf-line)] bg-[var(--ipf-ivory)] p-6">
-                <p className="text-xs font-bold uppercase tracking-[0.16em] text-[var(--ipf-green)]">{mile.year}</p>
-                <h2 className="mt-2 text-xl font-bold text-[var(--ipf-navy)]">{mile.title}</h2>
-                <p className="mt-3 text-sm leading-7 text-[var(--ipf-muted)]">{mile.detail}</p>
-              </article>
+              <Card key={mile.title} tone="ivory" eyebrow={mile.year} title={mile.title} description={mile.detail} />
             ))}
-          </div>
+          </CardGrid>
         </Container>
       </Section>
     </>

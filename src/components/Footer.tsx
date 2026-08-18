@@ -17,7 +17,7 @@ export function Footer() {
           <p className="mt-4 text-sm leading-7">
             {site.office}
             <br />
-            <a className="hover:text-white" href={`mailto:${site.email}`}>
+            <a className="rounded-md text-white/90 underline-offset-2 hover:text-white hover:underline" href={`mailto:${site.email}`}>
               {site.email}
             </a>
           </p>
@@ -28,7 +28,7 @@ export function Footer() {
             <ul className="mt-3 space-y-2 text-sm">
               {group.links.map((item) => (
                 <li key={item.to}>
-                  <Link className="hover:text-white" to={item.to}>
+                  <Link className="rounded-md transition hover:text-white" to={item.to}>
                     {item.label}
                   </Link>
                 </li>
@@ -43,9 +43,15 @@ export function Footer() {
             This is the official website of Indian People's Forum (IPF), United Arab Emirates. Content is intended for
             public community information and organisational outreach.
           </p>
-          <div className="flex flex-wrap gap-4 text-xs">
+          <div className="flex flex-wrap gap-2 text-xs">
             {socialLinks.map((item) => (
-              <a key={item.href} className="hover:text-white" href={item.href} target="_blank" rel="noreferrer">
+              <a
+                key={item.href}
+                className="rounded-full border border-white/15 px-3 py-1.5 transition hover:border-white/40 hover:bg-white/10 hover:text-white"
+                href={item.href}
+                target="_blank"
+                rel="noreferrer"
+              >
                 {item.label}
               </a>
             ))}

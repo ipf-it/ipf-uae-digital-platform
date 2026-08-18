@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import { Button } from "../components/ui/Button";
+import { Card } from "../components/ui/Card";
 import { Container } from "../components/ui/Container";
 import { ImageCarousel } from "../components/ui/ImageCarousel";
 import { Section } from "../components/ui/Section";
@@ -21,10 +22,9 @@ export function PageExtras({ page, tone = "ivory" }: { page: CmsPageKey; tone?: 
           <Section key={section.id} tone={sectionTone}>
             <Container>
               {section.type === "cta" ? (
-                <div className="border border-[var(--ipf-line)] bg-[var(--ipf-ivory)] px-5 py-8 sm:px-8">
-                  <SectionTitle title={section.title} description={section.description} />
+                <Card size="lg" tone="ivory" title={section.title} description={section.description}>
                   {section.buttons?.length ? (
-                    <div className="mt-6 flex flex-wrap gap-3">
+                    <div className="flex flex-wrap gap-3">
                       {section.buttons.map((button) => (
                         <Button key={button.to + button.label} asChild variant="outline">
                           <Link to={button.to}>{button.label}</Link>
@@ -32,7 +32,7 @@ export function PageExtras({ page, tone = "ivory" }: { page: CmsPageKey; tone?: 
                       ))}
                     </div>
                   ) : null}
-                </div>
+                </Card>
               ) : (
                 <>
                   <SectionTitle eyebrow={section.eyebrow} title={section.title} description={section.description} />

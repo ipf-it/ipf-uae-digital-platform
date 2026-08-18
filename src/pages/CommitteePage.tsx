@@ -1,9 +1,10 @@
-import { Link } from "react-router-dom";
 import { DocumentTitle } from "../components/layout/DocumentTitle";
 import { PageHero } from "../components/layout/PageHero";
+import { Card, CardGrid } from "../components/ui/Card";
 import { Container } from "../components/ui/Container";
 import { PersonIdentity } from "../components/ui/PersonIdentity";
 import { Section } from "../components/ui/Section";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../components/ui/Table";
 import { committeeExtended, committeeMembers, chapters } from "../data/platformContent";
 
 export default function CommitteePage() {
@@ -24,18 +25,18 @@ export default function CommitteePage() {
             <p className="mt-3 max-w-3xl text-sm leading-7 text-[var(--ipf-muted)]">
               Office-bearers who lead operations, culture, sports, communications, finance and chapter coordination.
             </p>
-            <div className="mt-8 grid gap-3 md:grid-cols-2">
+            <CardGrid columns={2} className="mt-8">
               {committeeMembers.map((member) => (
-                <article key={member.name} className="border border-[var(--ipf-line)] bg-[var(--ipf-ivory)] px-4 py-3">
+                <Card key={member.name} size="sm" tone="ivory">
                   <PersonIdentity
                     src={member.image}
                     alt={member.name}
                     name={member.name}
                     role={member.role}
                   />
-                </article>
+                </Card>
               ))}
-            </div>
+            </CardGrid>
           </Container>
       </Section>
       <Section>
@@ -44,29 +45,29 @@ export default function CommitteePage() {
           <p className="mt-3 max-w-3xl text-sm leading-7 text-[var(--ipf-muted)]">
             Full published roll, including Business Council, CSR, Legal Cell, Drishti and IT & Media.
           </p>
-          <div className="mt-6 overflow-x-auto">
-            <table className="ipf-table">
-              <thead>
+          <div className="mt-6">
+            <Table>
+              <TableHead>
                 <tr>
-                  <th>Role</th>
-                  <th>Member</th>
+                  <TableHeader>Role</TableHeader>
+                  <TableHeader>Member</TableHeader>
                 </tr>
-              </thead>
-              <tbody>
+              </TableHead>
+              <TableBody>
                 {committeeMembers.map((row) => (
-                  <tr key={row.name}>
-                    <td>{row.role}</td>
-                    <td>{row.name}</td>
-                  </tr>
+                  <TableRow key={row.name}>
+                    <TableCell className="font-medium text-[var(--ipf-navy)]">{row.role}</TableCell>
+                    <TableCell>{row.name}</TableCell>
+                  </TableRow>
                 ))}
                 {committeeExtended.map((row) => (
-                  <tr key={`${row.role}-${row.name}`}>
-                    <td>{row.role}</td>
-                    <td>{row.name}</td>
-                  </tr>
+                  <TableRow key={`${row.role}-${row.name}`}>
+                    <TableCell className="font-medium text-[var(--ipf-navy)]">{row.role}</TableCell>
+                    <TableCell>{row.name}</TableCell>
+                  </TableRow>
                 ))}
-              </tbody>
-            </table>
+              </TableBody>
+            </Table>
           </div>
         </Container>
       </Section>
@@ -87,17 +88,11 @@ export default function CommitteePage() {
           <p className="mt-3 max-w-3xl text-sm leading-7 text-[var(--ipf-muted)]">
             A chapter is an IPF sub-body assigned to a city or emirate. IPF has eight chapters across the UAE.
           </p>
-          <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          <CardGrid columns={4} className="mt-6">
             {chapters.map((chapter) => (
-              <Link
-                key={chapter.id}
-                to={`/chapters#${chapter.id}`}
-                className="border border-[var(--ipf-line)] bg-[var(--ipf-paper)] px-4 py-4 text-sm font-semibold text-[var(--ipf-navy)] hover:border-[var(--ipf-navy)]"
-              >
-                {chapter.name}
-              </Link>
+              <Card key={chapter.id} to={`/chapters#${chapter.id}`} size="sm" align="center" title={chapter.name} />
             ))}
-          </div>
+          </CardGrid>
         </Container>
       </Section>
     </>

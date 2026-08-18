@@ -89,8 +89,8 @@ function Controls({
             type="button"
             aria-label="Previous"
             className={cn(
-              "absolute left-2 top-1/2 z-10 flex h-9 w-9 -translate-y-1/2 items-center justify-center text-white sm:left-3 sm:h-10 sm:w-10",
-              light ? "bg-black/45" : "bg-[var(--ipf-navy)]/80",
+              "absolute left-2 top-1/2 z-10 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full text-white shadow-sm backdrop-blur-md transition hover:scale-105 sm:left-3",
+              light ? "bg-black/40 hover:bg-black/55" : "bg-[var(--ipf-navy)]/75 hover:bg-[var(--ipf-navy)]",
             )}
             onClick={onPrev}
           >
@@ -100,8 +100,8 @@ function Controls({
             type="button"
             aria-label="Next"
             className={cn(
-              "absolute right-2 top-1/2 z-10 flex h-9 w-9 -translate-y-1/2 items-center justify-center text-white sm:right-3 sm:h-10 sm:w-10",
-              light ? "bg-black/45" : "bg-[var(--ipf-navy)]/80",
+              "absolute right-2 top-1/2 z-10 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full text-white shadow-sm backdrop-blur-md transition hover:scale-105 sm:right-3",
+              light ? "bg-black/40 hover:bg-black/55" : "bg-[var(--ipf-navy)]/75 hover:bg-[var(--ipf-navy)]",
             )}
             onClick={onNext}
           >
@@ -118,7 +118,10 @@ function Controls({
                 type="button"
                 aria-label={`Slide ${itemIndex + 1}`}
                 aria-current={itemIndex === index}
-                className={cn("h-2 w-2 rounded-full", itemIndex === index ? "bg-white" : "bg-white/45")}
+                className={cn(
+                  "h-2 rounded-full transition",
+                  itemIndex === index ? "w-5 bg-white" : "w-2 bg-white/45 hover:bg-white/70",
+                )}
                 onClick={() => onSelect(itemIndex)}
               />
             ))}
@@ -139,7 +142,10 @@ function Controls({
                       type="button"
                       aria-label={`Slide ${itemIndex + 1}`}
                       aria-current={itemIndex === index}
-                      className={cn("h-2 w-2 rounded-full", itemIndex === index ? "bg-white" : "bg-white/45")}
+                      className={cn(
+                        "h-2 rounded-full transition",
+                        itemIndex === index ? "w-5 bg-white" : "w-2 bg-white/45 hover:bg-white/70",
+                      )}
                       onClick={() => onSelect(itemIndex)}
                     />
                   ))}

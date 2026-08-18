@@ -1,8 +1,8 @@
 import { DocumentTitle } from "../components/layout/DocumentTitle";
 import { PageHero } from "../components/layout/PageHero";
+import { Card, CardGrid } from "../components/ui/Card";
 import { Container } from "../components/ui/Container";
 import { Section } from "../components/ui/Section";
-import { FramedPhoto } from "../components/ui/TricolorFrame";
 import { drishtiEditions } from "../data/platformContent";
 
 export default function DrishtiPage() {
@@ -17,24 +17,22 @@ export default function DrishtiPage() {
       />
       <Section tone="white">
         <Container>
-          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+          <CardGrid>
             {drishtiEditions.map((edition) => (
-              <a
+              <Card
                 key={edition.period}
                 href={edition.href}
-                target="_blank"
-                rel="noreferrer"
-                className="bg-[var(--ipf-ivory)] hover:opacity-95"
-              >
-                <FramedPhoto src={edition.image} alt={`${edition.title} ${edition.period}`} imgClassName="h-64" loading="lazy" />
-                <div className="p-4">
-                  <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--ipf-green)]">{edition.period}</p>
-                  <h2 className="mt-2 text-lg font-bold text-[var(--ipf-navy)]">{edition.title}</h2>
-                  <p className="mt-1 text-xs text-[var(--ipf-muted)]">Open reader</p>
-                </div>
-              </a>
+                tone="ivory"
+                image={edition.image}
+                imageAlt={`${edition.title} ${edition.period}`}
+                imageFit="contain"
+                imageClassName="h-64"
+                eyebrow={edition.period}
+                title={edition.title}
+                description="Open reader"
+              />
             ))}
-          </div>
+          </CardGrid>
         </Container>
       </Section>
     </>

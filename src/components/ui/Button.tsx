@@ -4,19 +4,23 @@ import type { ButtonHTMLAttributes, PropsWithChildren } from "react";
 import { cn } from "../../lib/utils";
 
 const buttonVariants = cva(
-  "inline-flex items-center justify-center rounded-md px-5 text-sm font-semibold tracking-wide transition-colors duration-200",
+  "inline-flex items-center justify-center gap-2 rounded-lg text-sm font-semibold tracking-wide transition duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ipf-navy)]/20 disabled:pointer-events-none disabled:opacity-50",
   {
     variants: {
       variant: {
-        primary: "bg-[var(--ipf-navy)] text-white hover:bg-[var(--ipf-navy-soft)]",
-        secondary: "border border-white/40 bg-transparent text-white hover:bg-white/10",
-        outline: "border border-[var(--ipf-navy)] bg-transparent text-[var(--ipf-navy)] hover:bg-[var(--ipf-ivory)]",
-        gold: "bg-[var(--ipf-saffron)] text-[var(--ipf-navy)] hover:bg-[#ff8a14]",
+        primary:
+          "bg-[var(--ipf-navy)] text-white shadow-sm hover:bg-[var(--ipf-navy-soft)] hover:shadow-md",
+        secondary: "border border-white/40 bg-white/10 text-white backdrop-blur-sm hover:bg-white/20",
+        outline:
+          "border border-[var(--ipf-line)] bg-white text-[var(--ipf-navy)] hover:border-[var(--ipf-navy)] hover:bg-[var(--ipf-ivory)]",
+        gold: "bg-[var(--ipf-saffron)] text-[var(--ipf-navy)] shadow-sm hover:bg-[#ff8a14]",
+        ghost: "text-[var(--ipf-navy)] hover:bg-[var(--ipf-ivory)]",
       },
       size: {
         default: "h-11 px-5",
-        sm: "h-9 rounded px-3 text-xs",
+        sm: "h-9 px-3 text-xs",
         lg: "h-12 px-7",
+        icon: "h-10 w-10 p-0",
       },
     },
     defaultVariants: {

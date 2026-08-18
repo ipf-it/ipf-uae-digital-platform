@@ -1,5 +1,6 @@
 import { DocumentTitle } from "../components/layout/DocumentTitle";
 import { PageHero } from "../components/layout/PageHero";
+import { Card, CardGrid } from "../components/ui/Card";
 import { Container } from "../components/ui/Container";
 import { Section } from "../components/ui/Section";
 import { chapters } from "../data/platformContent";
@@ -16,16 +17,10 @@ export default function ChaptersPage() {
       />
       <Section tone="white">
         <Container>
-          <div className="grid gap-5 md:grid-cols-2">
+          <CardGrid columns={2}>
             {chapters.map((chapter) => (
-              <article
-                id={chapter.id}
-                key={chapter.id}
-                className="scroll-mt-32 border border-[var(--ipf-line)] bg-[var(--ipf-ivory)] p-6"
-              >
-                <h2 className="text-xl font-bold text-[var(--ipf-navy)]">{chapter.name}</h2>
-                <p className="mt-3 text-sm leading-7 text-[var(--ipf-muted)]">{chapter.note}</p>
-                <div className="mt-4 flex flex-wrap gap-4 text-sm">
+              <Card id={chapter.id} key={chapter.id} tone="ivory" title={chapter.name} description={chapter.note}>
+                <div className="flex flex-wrap gap-4 text-sm">
                   {chapter.email ? (
                     <a className="font-semibold text-[var(--ipf-navy)]" href={`mailto:${chapter.email}`}>
                       {chapter.email}
@@ -35,9 +30,9 @@ export default function ChaptersPage() {
                     Chapter Facebook
                   </a>
                 </div>
-              </article>
+              </Card>
             ))}
-          </div>
+          </CardGrid>
         </Container>
       </Section>
     </>

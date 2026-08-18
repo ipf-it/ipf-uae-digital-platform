@@ -3,6 +3,7 @@ import { InquiryForm } from "../components/forms/InquiryForm";
 import { DocumentTitle } from "../components/layout/DocumentTitle";
 import { PageHero } from "../components/layout/PageHero";
 import { Button } from "../components/ui/Button";
+import { Card } from "../components/ui/Card";
 import { Container } from "../components/ui/Container";
 import { Section } from "../components/ui/Section";
 
@@ -20,12 +21,10 @@ export default function MembershipPage() {
         <Container className="grid gap-10 lg:grid-cols-[1fr,0.85fr] lg:items-start">
           <InquiryForm intent="membership" />
           <aside className="space-y-5">
-            <div className="border border-[var(--ipf-line)] bg-[var(--ipf-ivory)] p-6">
-              <h2 className="text-xl font-bold text-[var(--ipf-navy)]">After you apply</h2>
-              <p className="mt-3 text-sm leading-7 text-[var(--ipf-muted)]">
+            <Card tone="ivory" title="After you apply">
+              <p className="text-sm leading-7 text-[var(--ipf-muted)]">
                 The Executive Committee will consider your application and write to you by email. On acceptance you
-                will need to send proof of resident status (passport and valid visa copy) and the membership payment
-                to be officially enrolled.
+                will need to send proof of resident status (passport and valid visa copy) to be officially enrolled.
               </p>
               <p className="mt-3 text-sm leading-7 text-[var(--ipf-muted)]">
                 Review{" "}
@@ -42,7 +41,7 @@ export default function MembershipPage() {
                 </Link>{" "}
                 before applying.
               </p>
-            </div>
+            </Card>
             <Button asChild variant="outline">
               <Link to="/register">Register / volunteer desk</Link>
             </Button>

@@ -1,5 +1,11 @@
 import { useMemo, useState } from "react";
 import { Button } from "../components/ui/Button";
+import { Card } from "../components/ui/Card";
+import { Field } from "../components/ui/Field";
+import { Input } from "../components/ui/Input";
+import { SimpleSelect } from "../components/ui/Select";
+import { SegmentedTabs } from "../components/ui/Tabs";
+import { Textarea } from "../components/ui/Textarea";
 import { defaultCmsContent } from "../cms/defaults";
 import { cmsPageKeys, type CmsContent, type CmsPageKey, type CmsSection } from "../cms/types";
 
@@ -93,23 +99,28 @@ export default function CmsPage() {
   if (!signedIn) {
     return (
       <main className="min-h-screen bg-[var(--ipf-ivory)] px-4 py-16">
-        <div className="mx-auto max-w-md border border-[var(--ipf-line)] bg-[var(--ipf-paper)] p-6">
-          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[var(--ipf-green)]">IPF UAE</p>
-          <h1 className="mt-2 text-2xl font-bold text-[var(--ipf-navy)]">Content desk</h1>
-          <p className="mt-3 text-sm leading-7 text-[var(--ipf-muted)]">
-            Update photographs, events, news and extra page sections without changing code.
-          </p>
-          <label className="mt-6 grid gap-1 text-sm font-medium text-[var(--ipf-navy)]">
-            Password
-            <input className="ipf-input" type="password" value={password} onChange={(event) => setPassword(event.target.value)} />
-          </label>
+        <Card
+          className="mx-auto max-w-md"
+          size="lg"
+          eyebrow="IPF UAE"
+          title="Content desk"
+          description="Update photographs, events, news and extra page sections without changing code."
+        >
+          <Field label="Password" htmlFor="cms-password">
+            <Input
+              id="cms-password"
+              type="password"
+              value={password}
+              onChange={(event) => setPassword(event.target.value)}
+            />
+          </Field>
           <div className="mt-4">
             <Button type="button" onClick={() => void signIn()}>
               Sign in
             </Button>
           </div>
           {status ? <p className="mt-4 text-sm text-[var(--ipf-muted)]">{status}</p> : null}
-        </div>
+        </Card>
       </main>
     );
   }
@@ -135,25 +146,18 @@ export default function CmsPage() {
 
       <div className="mx-auto max-w-6xl px-4 py-6">
         {status ? <p className="mb-4 text-sm text-[var(--ipf-muted)]">{status}</p> : null}
-        <div className="mb-6 flex flex-wrap gap-2">
-          {(
-            [
-              ["hero", "Home hero"],
-              ["gallery", "Gallery"],
-              ["events", "Events"],
-              ["news", "News"],
-              ["sections", "Page sections"],
-            ] as const
-          ).map(([id, label]) => (
-            <button
-              key={id}
-              type="button"
-              className={`border px-3 py-2 text-sm ${tab === id ? "border-[var(--ipf-navy)] bg-[var(--ipf-navy)] text-white" : "border-[var(--ipf-line)] text-[var(--ipf-navy)]"}`}
-              onClick={() => setTab(id)}
-            >
-              {label}
-            </button>
-          ))}
+        <div className="mb-6">
+          <SegmentedTabs
+            value={tab}
+            onValueChange={setTab}
+            items={[
+              { value: "hero", label: "Home hero" },
+              { value: "gallery", label: "Gallery" },
+              { value: "events", label: "Events" },
+              { value: "news", label: "News" },
+              { value: "sections", label: "Page sections" },
+            ]}
+          />
         </div>
 
         {tab === "hero" ? (
@@ -194,24 +198,37 @@ export default function CmsPage() {
               Add a dated event with a photograph carousel. These appear on the Events page above the annual calendar.
             </p>
             {content.eventHighlights.map((event, eventIndex) => (
-              <article key={event.id} className="border border-[var(--ipf-line)] bg-[var(--ipf-paper)] p-4">
+              <Card key={event.id} size="sm">
                 <div className="grid gap-3 sm:grid-cols-2">
-                  <input className="ipf-input" value={event.title} onChange={(e) => {
-                    const eventHighlights = [...content.eventHighlights];
-                    eventHighlights[eventIndex] = { ...event, title: e.target.value };
-                    setContent({ ...content, eventHighlights });
-                  }} />
-                  <input className="ipf-input" value={event.date} onChange={(e) => {
-                    const eventHighlights = [...content.eventHighlights];
-                    eventHighlights[eventIndex] = { ...event, date: e.target.value };
-                    setContent({ ...content, eventHighlights });
-                  }} />
+                  <Input
+                    value={event.title}
+                    onChange={(e) => {
+                      const eventHighlights = [...content.eventHighlights];
+                      eventHighlights[eventIndex] = { ...event, title: e.target.value };
+                      setContent({ ...content, eventHighlights });
+                    }}
+                    placeholder="Event title"
+                  />
+                  <Input
+                    value={event.date}
+                    onChange={(e) => {
+                      const eventHighlights = [...content.eventHighlights];
+                      eventHighlights[eventIndex] = { ...event, date: e.target.value };
+                      setContent({ ...content, eventHighlights });
+                    }}
+                    placeholder="Date"
+                  />
                 </div>
-                <textarea className="ipf-input mt-3 min-h-24" value={event.body ?? ""} onChange={(e) => {
-                  const eventHighlights = [...content.eventHighlights];
-                  eventHighlights[eventIndex] = { ...event, body: e.target.value };
-                  setContent({ ...content, eventHighlights });
-                }} />
+                <Textarea
+                  className="mt-3 min-h-24"
+                  value={event.body ?? ""}
+                  onChange={(e) => {
+                    const eventHighlights = [...content.eventHighlights];
+                    eventHighlights[eventIndex] = { ...event, body: e.target.value };
+                    setContent({ ...content, eventHighlights });
+                  }}
+                  placeholder="Event description"
+                />
                 <EditorList
                   title="Event photographs"
                   items={event.slides}
@@ -234,7 +251,7 @@ export default function CmsPage() {
                     setContent({ ...content, eventHighlights });
                   }}
                 />
-              </article>
+              </Card>
             ))}
             <Button
               type="button"
@@ -257,66 +274,103 @@ export default function CmsPage() {
         {tab === "news" ? (
           <div className="space-y-4">
             {content.news.map((item, index) => (
-              <article key={item.slug} className="border border-[var(--ipf-line)] bg-[var(--ipf-paper)] p-4">
-                <input className="ipf-input" value={item.title} onChange={(e) => {
-                  const news = [...content.news];
-                  news[index] = { ...item, title: e.target.value };
-                  setContent({ ...content, news });
-                }} />
-                <input className="ipf-input mt-2" value={item.image} onChange={(e) => {
-                  const news = [...content.news];
-                  news[index] = { ...item, image: e.target.value };
-                  setContent({ ...content, news });
-                }} />
-                <input className="mt-2 block w-full text-sm" type="file" accept="image/*" onChange={(e) => {
-                  const file = e.target.files?.[0];
-                  if (file) void upload(file, (src) => {
+              <Card key={item.slug} size="sm">
+                <Input
+                  value={item.title}
+                  onChange={(e) => {
                     const news = [...content.news];
-                    news[index] = { ...item, image: src };
+                    news[index] = { ...item, title: e.target.value };
                     setContent({ ...content, news });
-                  });
-                }} />
-                <textarea className="ipf-input mt-2 min-h-24" value={item.body} onChange={(e) => {
-                  const news = [...content.news];
-                  news[index] = { ...item, body: e.target.value };
-                  setContent({ ...content, news });
-                }} />
-              </article>
+                  }}
+                  placeholder="Headline"
+                />
+                <Input
+                  className="mt-2"
+                  value={item.image}
+                  onChange={(e) => {
+                    const news = [...content.news];
+                    news[index] = { ...item, image: e.target.value };
+                    setContent({ ...content, news });
+                  }}
+                  placeholder="Image path"
+                />
+                <Input
+                  className="mt-2"
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file)
+                      void upload(file, (src) => {
+                        const news = [...content.news];
+                        news[index] = { ...item, image: src };
+                        setContent({ ...content, news });
+                      });
+                  }}
+                />
+                <Textarea
+                  className="mt-2 min-h-24"
+                  value={item.body}
+                  onChange={(e) => {
+                    const news = [...content.news];
+                    news[index] = { ...item, body: e.target.value };
+                    setContent({ ...content, news });
+                  }}
+                  placeholder="Article body"
+                />
+              </Card>
             ))}
           </div>
         ) : null}
 
         {tab === "sections" ? (
           <div className="space-y-4">
-            <label className="grid max-w-sm gap-1 text-sm font-medium text-[var(--ipf-navy)]">
-              Page
-              <select className="ipf-input" value={pageKey} onChange={(event) => setPageKey(event.target.value as CmsPageKey)}>
-                {cmsPageKeys.map((key) => (
-                  <option key={key} value={key}>
-                    {key}
-                  </option>
-                ))}
-              </select>
-            </label>
+            <Field label="Page" htmlFor="cms-page" className="max-w-sm">
+              <SimpleSelect
+                id="cms-page"
+                value={pageKey}
+                onValueChange={(value) => setPageKey(value as CmsPageKey)}
+                placeholder="Select page"
+                options={cmsPageKeys}
+              />
+            </Field>
             <p className="text-sm leading-7 text-[var(--ipf-muted)]">
               Add a carousel, text block, photo grid or call-to-action. New sections appear at the bottom of that page.
             </p>
             {extras.map((section, index) => (
-              <article key={section.id} className="border border-[var(--ipf-line)] bg-[var(--ipf-paper)] p-4">
+              <Card key={section.id} size="sm">
                 <div className="grid gap-3 sm:grid-cols-2">
-                  <select
-                    className="ipf-input"
+                  <SimpleSelect
                     value={section.type}
-                    onChange={(event) => updateSection(pageKey, index, { ...section, type: event.target.value as CmsSection["type"] })}
-                  >
-                    <option value="carousel">Image carousel</option>
-                    <option value="photoGrid">Photo grid</option>
-                    <option value="richText">Text section</option>
-                    <option value="cta">Call to action</option>
-                  </select>
-                  <input className="ipf-input" value={section.title} onChange={(event) => updateSection(pageKey, index, { ...section, title: event.target.value })} />
+                    onValueChange={(value) =>
+                      updateSection(pageKey, index, { ...section, type: value as CmsSection["type"] })
+                    }
+                    placeholder="Section type"
+                    options={[
+                      { value: "carousel", label: "Image carousel" },
+                      { value: "photoGrid", label: "Photo grid" },
+                      { value: "richText", label: "Text section" },
+                      { value: "cta", label: "Call to action" },
+                    ]}
+                  />
+                  <Input
+                    value={section.title}
+                    onChange={(event) => updateSection(pageKey, index, { ...section, title: event.target.value })}
+                    placeholder="Section title"
+                  />
                 </div>
-                <textarea className="ipf-input mt-3 min-h-20" value={section.description ?? section.body ?? ""} onChange={(event) => updateSection(pageKey, index, { ...section, description: event.target.value, body: event.target.value })} />
+                <Textarea
+                  className="mt-3 min-h-20"
+                  value={section.description ?? section.body ?? ""}
+                  onChange={(event) =>
+                    updateSection(pageKey, index, {
+                      ...section,
+                      description: event.target.value,
+                      body: event.target.value,
+                    })
+                  }
+                  placeholder="Section text"
+                />
                 {section.type === "carousel" || section.type === "photoGrid" ? (
                   <EditorList
                     title="Section photographs"
@@ -331,17 +385,19 @@ export default function CmsPage() {
                     onAdd={() => updateSection(pageKey, index, { ...section, slides: [...(section.slides ?? []), { src: "", alt: section.title }] })}
                   />
                 ) : null}
-                <button
+                <Button
                   type="button"
-                  className="mt-3 text-sm text-[var(--ipf-muted)] underline"
+                  variant="ghost"
+                  size="sm"
+                  className="mt-3"
                   onClick={() => {
                     const next = extras.filter((_, itemIndex) => itemIndex !== index);
                     setContent({ ...content, extras: { ...content.extras, [pageKey]: next } });
                   }}
                 >
                   Remove section
-                </button>
-              </article>
+                </Button>
+              </Card>
             ))}
             <Button
               type="button"
@@ -391,28 +447,44 @@ function EditorList({ title, hint, items, onChange, onUpload, onAdd }: EditorLis
       {hint ? <p className="mt-1 text-sm leading-6 text-[var(--ipf-muted)]">{hint}</p> : null}
       <div className="mt-4 space-y-3">
         {items.map((item, index) => (
-          <div key={`${item.src}-${index}`} className="grid gap-3 border border-[var(--ipf-line)] bg-[var(--ipf-paper)] p-3 sm:grid-cols-[96px,1fr]">
-            {item.src ? <img src={item.src} alt="" className="h-20 w-full object-cover" /> : <div className="h-20 bg-[var(--ipf-line)]" />}
+          <div key={`${item.src}-${index}`} className="grid gap-3 overflow-hidden rounded-xl border border-[var(--ipf-line)] bg-[var(--ipf-paper)] p-3 shadow-[0_8px_24px_rgba(11,31,58,0.06)] sm:grid-cols-[96px,1fr]">
+            {item.src ? <img src={item.src} alt="" className="h-20 w-full rounded-lg object-cover" /> : <div className="h-20 rounded-lg bg-[var(--ipf-line)]" />}
             <div className="grid gap-2">
-              <input className="ipf-input" placeholder="Image path" value={item.src} onChange={(event) => {
-                const next = [...items];
-                next[index] = { ...item, src: event.target.value };
-                onChange(next);
-              }} />
-              <input className="ipf-input" placeholder="Title" value={item.title ?? ""} onChange={(event) => {
-                const next = [...items];
-                next[index] = { ...item, title: event.target.value };
-                onChange(next);
-              }} />
-              <input className="ipf-input" placeholder="Caption" value={item.caption ?? item.alt} onChange={(event) => {
-                const next = [...items];
-                next[index] = { ...item, caption: event.target.value, alt: event.target.value };
-                onChange(next);
-              }} />
-              <input className="block text-sm" type="file" accept="image/*" onChange={(event) => {
-                const file = event.target.files?.[0];
-                if (file) onUpload(file, index);
-              }} />
+              <Input
+                placeholder="Image path"
+                value={item.src}
+                onChange={(event) => {
+                  const next = [...items];
+                  next[index] = { ...item, src: event.target.value };
+                  onChange(next);
+                }}
+              />
+              <Input
+                placeholder="Title"
+                value={item.title ?? ""}
+                onChange={(event) => {
+                  const next = [...items];
+                  next[index] = { ...item, title: event.target.value };
+                  onChange(next);
+                }}
+              />
+              <Input
+                placeholder="Caption"
+                value={item.caption ?? item.alt}
+                onChange={(event) => {
+                  const next = [...items];
+                  next[index] = { ...item, caption: event.target.value, alt: event.target.value };
+                  onChange(next);
+                }}
+              />
+              <Input
+                type="file"
+                accept="image/*"
+                onChange={(event) => {
+                  const file = event.target.files?.[0];
+                  if (file) onUpload(file, index);
+                }}
+              />
             </div>
           </div>
         ))}
