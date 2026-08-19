@@ -18,7 +18,15 @@ async function loadContent(): Promise<CmsContent> {
   try {
     const response = await fetch("/api/cms/content");
     if (!response.ok) return defaultCmsContent;
-    return (await response.json()) as CmsContent;
+    const raw = (await response.json()) as Partial<CmsContent>;
+    return {
+      ...defaultCmsContent,
+      ...raw,
+      extras: { ...defaultCmsContent.extras, ...(raw.extras ?? {}) },
+      leadership: raw.leadership?.length ? raw.leadership : defaultCmsContent.leadership,
+      heroSlides: raw.heroSlides?.length ? raw.heroSlides : defaultCmsContent.heroSlides,
+      galleryImages: raw.galleryImages?.length ? raw.galleryImages : defaultCmsContent.galleryImages,
+    };
   } catch {
     return defaultCmsContent;
   }

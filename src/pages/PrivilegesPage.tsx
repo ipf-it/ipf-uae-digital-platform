@@ -25,9 +25,15 @@ export default function PrivilegesPage() {
               <Card key={item} size="sm" description={item} />
             ))}
           </div>
-          <div className="mt-8">
+          <div className="mt-8 flex flex-wrap gap-3">
             <Button asChild>
               <Link to="/membership">Submit a membership enquiry</Link>
+            </Button>
+            <Button asChild variant="outline">
+              <Link to="/portal">Log volunteer hours</Link>
+            </Button>
+            <Button asChild variant="outline">
+              <Link to="/donate">Donate</Link>
             </Button>
           </div>
         </Container>

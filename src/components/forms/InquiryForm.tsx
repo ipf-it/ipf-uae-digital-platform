@@ -9,6 +9,7 @@ import { SimpleSelect } from "../ui/Select";
 import { Textarea } from "../ui/Textarea";
 import { site } from "../../data/site";
 import { emirates } from "../../data/forms";
+import { api } from "../../lib/api";
 
 type InquiryFormProps = {
   intent: "contact" | "membership" | "support" | "jobs";
@@ -25,12 +26,44 @@ const honorifics = ["Mr", "Mrs", "Miss"] as const;
 
 export function InquiryForm({ intent }: InquiryFormProps) {
   const [submitted, setSubmitted] = useState(false);
+  const [recorded, setRecorded] = useState(false);
   const [honorific, setHonorific] = useState("");
   const [emirate, setEmirate] = useState("");
   const [agreed, setAgreed] = useState(false);
+  const [status, setStatus] = useState("");
+  const [busy, setBusy] = useState(false);
 
-  function onSubmit(event: FormEvent<HTMLFormElement>) {
+  async function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    if (intent === "membership" && !agreed) {
+      setStatus("Please agree to the Bye Law and Code of Ethics.");
+      return;
+    }
+    const form = new FormData(event.currentTarget);
+    const payload = {
+      intent,
+      name: String(form.get("name") ?? ""),
+      email: String(form.get("email") ?? ""),
+      phone: String(form.get("phone") ?? ""),
+      emirate,
+      message: String(form.get("message") ?? ""),
+      extra: {
+        title: honorific,
+        phoneIndia: String(form.get("phoneIndia") ?? ""),
+        address: String(form.get("address") ?? ""),
+        occupation: String(form.get("occupation") ?? ""),
+        emergency: String(form.get("emergency") ?? ""),
+      },
+    };
+    setBusy(true);
+    setStatus("");
+    try {
+      await api("/api/inquiries", { method: "POST", body: JSON.stringify(payload) });
+      setRecorded(true);
+    } catch {
+      setRecorded(false);
+    }
+    setBusy(false);
     setSubmitted(true);
   }
 
@@ -38,11 +71,14 @@ export function InquiryForm({ intent }: InquiryFormProps) {
     return (
       <Card size="lg" eyebrow="Received" title="Thank you. IPF will respond by email.">
         <p className="text-sm leading-7 text-[var(--ipf-muted)]">
-          This public website does not yet send form data to a server. Please also write to{" "}
+          {recorded
+            ? "Your message has been recorded for the IPF desk."
+            : "This public host could not store the form automatically."}{" "}
+          Please also write to{" "}
           <a className="font-semibold text-[var(--ipf-navy)]" href={`mailto:${site.email}`}>
             {site.email}
           </a>{" "}
-          so the team can assist you without delay. A CMS-backed intake will be connected in the next phase.
+          if you need a reply without delay.
         </p>
       </Card>
     );
@@ -126,7 +162,6 @@ export function InquiryForm({ intent }: InquiryFormProps) {
                   checked={agreed}
                   onCheckedChange={(value) => setAgreed(value === true)}
                 />
-                <input type="hidden" name="agree" value={agreed ? "yes" : ""} required />
                 <Label htmlFor="inquiry-agree" className="text-sm font-normal leading-6 text-[var(--ipf-muted)]">
                   I apply for membership and agree to abide by the Bye Law and Code of Ethics of Indian People's Forum.
                 </Label>
@@ -138,8 +173,11 @@ export function InquiryForm({ intent }: InquiryFormProps) {
             </Field>
           )}
         </div>
+        {status ? <p className="mt-4 text-sm text-red-700">{status}</p> : null}
         <div className="mt-6">
-          <Button type="submit">Submit</Button>
+          <Button type="submit" disabled={busy}>
+            {busy ? "Sending…" : "Submit"}
+          </Button>
         </div>
       </Card>
     </form>

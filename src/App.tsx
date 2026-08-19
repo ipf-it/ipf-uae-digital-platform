@@ -5,8 +5,7 @@ import { PageLoader } from "./components/layout/PageLoader";
 import HomePage from "./pages/HomePage";
 
 const AboutPage = lazy(() => import("./pages/AboutPage"));
-const PresidentPage = lazy(() => import("./pages/PresidentPage"));
-const CommitteePage = lazy(() => import("./pages/CommitteePage"));
+const LeadershipPage = lazy(() => import("./pages/LeadershipPage"));
 const GovernancePage = lazy(() => import("./pages/GovernancePage"));
 const HistoryPage = lazy(() => import("./pages/HistoryPage"));
 const ChaptersPage = lazy(() => import("./pages/ChaptersPage"));
@@ -25,6 +24,8 @@ const ContactPage = lazy(() => import("./pages/ContactPage"));
 const TestimonialsPage = lazy(() => import("./pages/TestimonialsPage"));
 const RegisterPage = lazy(() => import("./pages/RegisterPage"));
 const SignInPage = lazy(() => import("./pages/SignInPage"));
+const DonatePage = lazy(() => import("./pages/DonatePage"));
+const PortalPage = lazy(() => import("./pages/PortalPage"));
 const JobsPage = lazy(() => import("./pages/JobsPage"));
 const CmsPage = lazy(() => import("./pages/CmsPage"));
 const NotFoundPage = lazy(() => import("./pages/NotFoundPage"));
@@ -38,8 +39,11 @@ function App() {
         <Route element={<SiteLayout />}>
           <Route index element={<HomePage />} />
           <Route path="about" element={<AboutPage />} />
-          <Route path="president" element={<PresidentPage />} />
-          <Route path="committee" element={<CommitteePage />} />
+          <Route path="leadership" element={<LeadershipPage />} />
+          <Route path="president" element={<Navigate to="/leadership" replace />} />
+          <Route path="committee" element={<Navigate to="/leadership#committee" replace />} />
+          <Route path="commitee" element={<Navigate to="/leadership#committee" replace />} />
+          <Route path="president-message" element={<Navigate to="/leadership" replace />} />
           <Route path="governance" element={<GovernancePage />} />
           <Route path="history" element={<HistoryPage />} />
           <Route path="chapters" element={<ChaptersPage />} />
@@ -60,11 +64,14 @@ function App() {
           <Route path="testimonials" element={<TestimonialsPage />} />
           <Route path="register" element={<RegisterPage />} />
           <Route path="sign-in" element={<SignInPage />} />
+          <Route path="donate" element={<DonatePage />} />
+          <Route path="donation" element={<Navigate to="/donate" replace />} />
+          <Route path="donations" element={<Navigate to="/donate" replace />} />
+          <Route path="portal" element={<PortalPage />} />
           <Route path="jobs" element={<JobsPage />} />
           <Route path="join" element={<Navigate to="/membership" replace />} />
           <Route path="about-ipf" element={<Navigate to="/about" replace />} />
-          <Route path="president-message" element={<Navigate to="/president" replace />} />
-          <Route path="commitee" element={<Navigate to="/committee" replace />} />
+          <Route path="blog" element={<Navigate to="/news" replace />} />
           <Route path="drishti-e-magazine" element={<Navigate to="/drishti" replace />} />
           <Route path="event-calendar" element={<Navigate to="/events" replace />} />
           <Route path="support-activity" element={<Navigate to="/support" replace />} />

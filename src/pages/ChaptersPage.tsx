@@ -1,3 +1,4 @@
+import { ChapterMap } from "../components/ChapterMap";
 import { DocumentTitle } from "../components/layout/DocumentTitle";
 import { PageHero } from "../components/layout/PageHero";
 import { Card, CardGrid } from "../components/ui/Card";
@@ -16,10 +17,11 @@ export default function ChaptersPage() {
         crumbs={[{ label: "Chapters" }]}
       />
       <Section tone="white">
-        <Container>
+        <Container className="space-y-10">
+          <ChapterMap />
           <CardGrid columns={2}>
             {chapters.map((chapter) => (
-              <Card id={chapter.id} key={chapter.id} tone="ivory" title={chapter.name} description={chapter.note}>
+              <Card id={chapter.id} key={chapter.id} className="scroll-mt-28" tone="ivory" title={chapter.name} description={chapter.note}>
                 <div className="flex flex-wrap gap-4 text-sm">
                   {chapter.email ? (
                     <a className="font-semibold text-[var(--ipf-navy)]" href={`mailto:${chapter.email}`}>

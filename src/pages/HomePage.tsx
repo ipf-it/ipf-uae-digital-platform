@@ -10,33 +10,16 @@ import { Card, CardGrid } from "../components/ui/Card";
 import { Container } from "../components/ui/Container";
 import { Quote } from "../components/ui/Quote";
 import { HeroSlideshow, ImageCarousel } from "../components/ui/ImageCarousel";
-import { PageExtras } from "../cms/PageExtras";
 import { useCms } from "../cms/ContentProvider";
 import { Section } from "../components/ui/Section";
 import { SectionTitle } from "../components/ui/SectionTitle";
 import { StatPill } from "../components/ui/StatPill";
-import { CalendarDays, HeartHandshake, Landmark, Newspaper, Users } from "lucide-react";
+import { PersonIdentity } from "../components/ui/PersonIdentity";
+import { FramedPhoto } from "../components/ui/TricolorFrame";
 import { cn } from "../lib/utils";
-import {
-  chapterList,
-  featuredInitiatives,
-  glimpseStories,
-  historyMilestones,
-  impactStats,
-  latestUpdates,
-  missionPillars,
-  servicePanels,
-  upcomingEvents,
-} from "../data/platformContent";
+import { impactStats } from "../data/platformContent";
 import { img, site } from "../data/site";
 import { markMobileIntroPlayed, shouldPlayMobileIntro } from "../lib/mobileIntro";
-
-const quickLinks = [
-  { to: "/membership", label: "Membership", icon: Users },
-  { to: "/support", label: "Community Support", icon: HeartHandshake },
-  { to: "/history", label: "Our Journey", icon: Landmark },
-  { to: "/chapters", label: "UAE Chapters", icon: CalendarDays },
-];
 
 export default function HomePage() {
   const { content } = useCms();
@@ -46,6 +29,9 @@ export default function HomePage() {
     markMobileIntroPlayed();
     setIntroReady(true);
   }, []);
+  const leaders = content.leadership;
+  const galleryPreview = content.galleryImages.slice(0, 6);
+  const eventsPreview = content.eventHighlights.slice(0, 3);
 
   return (
     <>
@@ -54,7 +40,7 @@ export default function HomePage() {
       <div className="lg:hidden">
         {!introReady ? <MobileIntro anchorRef={markRef} onDone={finishIntro} /> : null}
         <section className="bg-[var(--ipf-navy)] text-white">
-          <Container className="flex flex-col items-center py-12 text-center">
+          <Container className="flex flex-col items-center py-10 text-center">
             <div ref={markRef} className={cn("flex flex-col items-center", !introReady && "invisible")}>
               <BrandLoader size={110} label={`${site.brandMark} emblem`} />
               <BrandMark className="mt-4" />
@@ -65,30 +51,27 @@ export default function HomePage() {
                 introReady ? "opacity-100" : "opacity-0",
               )}
             >
-            <div className="mt-5">
-              <Badge>Official community organisation</Badge>
-            </div>
-            <h1 className="mt-4 text-[1.85rem] font-bold leading-[1.15] text-white">
-              Indian People's Forum
-              <span className="mt-2 block text-xl font-semibold text-[var(--ipf-gold)]">United Arab Emirates</span>
-            </h1>
-            <p className="mt-4 max-w-md text-sm leading-7 text-white/85">
-              Since 2014, IPF has served the Indian community in the UAE through welfare support, cultural
-              programmes, and coordination with Indian missions.
-            </p>
-            <div className="mt-5 flex flex-wrap justify-center gap-3">
-              <Button asChild variant="gold">
-                <Link to="/contact">Contact IPF</Link>
-              </Button>
-              <Button asChild variant="secondary">
-                <Link to="/about">About IPF</Link>
-              </Button>
-            </div>
-            <div className="mt-8 grid w-full gap-px overflow-hidden rounded-xl border border-white/10 bg-white/10 sm:grid-cols-2">
-              {impactStats.map((stat) => (
-                <StatPill key={stat.label} label={stat.label} value={stat.value} tone="dark" />
-              ))}
-            </div>
+              <div className="mt-5">
+                <Badge>Official community organisation</Badge>
+              </div>
+              <h1 className="mt-4 text-[1.85rem] font-bold leading-[1.15] text-white">
+                Indian People's Forum
+                <span className="mt-2 block text-xl font-semibold text-[var(--ipf-gold)]">United Arab Emirates</span>
+              </h1>
+              <p className="mt-4 max-w-md text-sm leading-7 text-white/85">{site.homeIntro}</p>
+              <div className="mt-5 flex flex-wrap justify-center gap-3">
+                <Button asChild variant="gold">
+                  <Link to="/membership">{site.joinCta}</Link>
+                </Button>
+                <Button asChild variant="secondary">
+                  <Link to="/leadership">Leadership</Link>
+                </Button>
+              </div>
+              <div className="mt-8 grid w-full gap-px overflow-hidden rounded-xl border border-white/10 bg-white/10 sm:grid-cols-2">
+                {impactStats.map((stat) => (
+                  <StatPill key={stat.label} label={stat.label} value={stat.value} tone="dark" />
+                ))}
+              </div>
             </div>
           </Container>
         </section>
@@ -97,47 +80,31 @@ export default function HomePage() {
           fit="contain"
           positionClass="object-center"
           slides={content.heroSlides}
-          heightClass="aspect-[4/3] h-auto max-h-[62vh] w-full"
+          heightClass="aspect-[4/3] h-auto max-h-[52vh] w-full"
         />
       </div>
 
       <div className="hidden lg:block">
-        <HeroSlideshow slides={content.heroSlides} fillViewport>
-          <Container className="relative py-10 lg:py-12">
+        <HeroSlideshow slides={content.heroSlides}>
+          <Container className="relative py-16">
             <div className="max-w-xl">
               <Badge>Official community organisation</Badge>
-              <h1 className="mt-4 text-[1.85rem] font-bold leading-[1.15] text-white sm:text-[2.15rem] md:text-5xl">
+              <h1 className="mt-4 text-5xl font-bold leading-[1.1] text-white">
                 Indian People's
                 <span className="block">Forum</span>
-                <span className="mt-2 block text-xl font-semibold text-[var(--ipf-gold)] sm:text-2xl">
-                  United Arab Emirates
-                </span>
+                <span className="mt-2 block text-2xl font-semibold text-[var(--ipf-gold)]">United Arab Emirates</span>
               </h1>
-              <p className="mt-4 text-sm leading-7 text-white/85 sm:text-[15px]">
-                Since 2014, IPF has served the Indian community in the UAE through welfare support, cultural
-                programmes, and coordination with Indian missions.
-              </p>
+              <p className="mt-4 text-[15px] leading-7 text-white/85">{site.homeIntro}</p>
               <div className="mt-5 flex flex-wrap gap-3">
                 <Button asChild variant="gold">
-                  <Link to="/contact">Contact IPF</Link>
+                  <Link to="/membership">{site.joinCta}</Link>
                 </Button>
                 <Button asChild variant="secondary">
-                  <Link to="/about">About IPF</Link>
+                  <Link to="/leadership">Meet the leadership</Link>
                 </Button>
               </div>
             </div>
-            <div className="mt-8 flex max-w-xl flex-col items-start gap-4 rounded-xl border border-white/15 bg-[var(--ipf-navy)]/55 px-4 py-4 sm:flex-row sm:items-center sm:gap-5 sm:px-5">
-              <BrandLoader size={96} label={`${site.brandMark} emblem`} />
-              <div className="min-w-0">
-                <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[var(--ipf-gold)]">
-                  {site.emblemLabel}
-                </p>
-                <p className="mt-1 text-sm leading-6 text-white/85">
-                  Vasudhaiva Kutumbakam — one family, one team, serving Indians in the UAE.
-                </p>
-              </div>
-            </div>
-            <div className="mt-8 grid gap-px overflow-hidden rounded-xl border border-white/10 bg-white/10 sm:grid-cols-2 xl:grid-cols-4">
+            <div className="mt-8 grid max-w-3xl gap-px overflow-hidden rounded-xl border border-white/10 bg-white/10 sm:grid-cols-2 xl:grid-cols-4">
               {impactStats.map((stat) => (
                 <StatPill key={stat.label} label={stat.label} value={stat.value} tone="dark" />
               ))}
@@ -146,148 +113,7 @@ export default function HomePage() {
         </HeroSlideshow>
       </div>
 
-      <Section tone="white" className="py-5 sm:py-6 lg:py-6">
-        <Container>
-          <CardGrid columns={4}>
-            {quickLinks.map((item) => {
-              const Icon = item.icon;
-              return (
-                <Card
-                  key={item.label}
-                  to={item.to}
-                  size="sm"
-                  title={
-                    <span className="inline-flex items-center gap-3">
-                      <Icon size={18} />
-                      {item.label}
-                    </span>
-                  }
-                />
-              );
-            })}
-          </CardGrid>
-        </Container>
-      </Section>
-
-      <Section>
-        <Container>
-          <SectionTitle
-            eyebrow="About IPF UAE"
-            title="Serving the Indian community with integrity"
-            description="IPF is open to all Indians in the UAE irrespective of caste, creed, ethnicity or religion. The forum promotes unity, cultural relations, and support for those in need."
-          />
-          <CardGrid className="mt-10">
-            {missionPillars.map((pillar) => (
-              <Card key={pillar.title} title={pillar.title} description={pillar.description} />
-            ))}
-          </CardGrid>
-          <div className="mt-8">
-            <Button asChild variant="outline">
-              <Link to="/about">Read the full about page</Link>
-            </Button>
-          </div>
-        </Container>
-      </Section>
-
-      <Section tone="white">
-        <Container>
-          <SectionTitle
-            eyebrow="Community services"
-            title="Support channels for members and residents"
-            description="Structured help for membership, grievances, counselling, and cultural-welfare programmes across chapters."
-          />
-          <CardGrid className="mt-10">
-            {servicePanels.map((item) => (
-              <Card key={item.title} to={item.to} title={item.title} description={item.description} />
-            ))}
-          </CardGrid>
-        </Container>
-      </Section>
-
-      <Section>
-        <Container>
-          <SectionTitle
-            eyebrow="Flagship initiatives"
-            title="Welfare, health and cultural action"
-            description="Programmes aligned with the needs of residents and workers, executed through chapter volunteers across the UAE."
-          />
-          <CardGrid className="mt-10">
-            {featuredInitiatives.map((item) => (
-              <Card
-                key={item.title}
-                to={item.to}
-                title={item.title}
-                description={item.description}
-                image={item.image}
-                imageAlt={item.title}
-              />
-            ))}
-          </CardGrid>
-        </Container>
-      </Section>
-
-      <Section tone="white">
-        <Container>
-          <SectionTitle
-            eyebrow="IPF journey"
-            title="History and milestones of service"
-            description="A volunteer-led journey from informal community support in 2014 to an organised eight-chapter presence across the UAE."
-          />
-          <CardGrid columns={2} className="mt-10">
-            {historyMilestones.map((mile) => (
-              <Card key={mile.title} tone="ivory" eyebrow={mile.year} title={mile.title} description={mile.detail} />
-            ))}
-          </CardGrid>
-          <div className="mt-8">
-            <Button asChild variant="outline">
-              <Link to="/history">View full history</Link>
-            </Button>
-          </div>
-        </Container>
-      </Section>
-
-      <Section>
-        <Container className="grid items-stretch gap-6 lg:grid-cols-2">
-          <Card title="Events calendar" description="Chapter and central programmes presented in a clear public timeline.">
-            <div className="space-y-3">
-              {upcomingEvents.map((event) => (
-                <Card key={event.title} size="sm" className="h-auto" eyebrow={event.month} title={event.title} description={event.level} />
-              ))}
-            </div>
-            <div className="mt-5">
-              <Button asChild variant="outline" size="sm">
-                <Link to="/events">Open calendar</Link>
-              </Button>
-            </div>
-          </Card>
-          <Card
-            title={
-              <span className="inline-flex items-center gap-2">
-                <Newspaper size={17} />
-                News and updates
-              </span>
-            }
-            description="Public highlights for members, families and the wider Indian community in the UAE."
-          >
-            <ul className="space-y-2 text-sm leading-7 text-[var(--ipf-muted)]">
-              {latestUpdates.map((update) => (
-                <li key={update.title}>
-                  <Link className="hover:text-[var(--ipf-navy)]" to={update.to}>
-                    • {update.title}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-            <div className="mt-5">
-              <Button asChild variant="outline" size="sm">
-                <Link to="/news">All news</Link>
-              </Button>
-            </div>
-          </Card>
-        </Container>
-      </Section>
-
-      <Section tone="white">
+      <Section tone="white" className="py-10 sm:py-12 lg:py-14">
         <Container>
           <Card tone="navy" flush className="h-auto overflow-hidden">
             <div className="flex flex-col lg:min-h-[22rem] lg:flex-row lg:items-stretch">
@@ -300,7 +126,7 @@ export default function HomePage() {
                 </Quote>
                 <div className="mt-6 flex justify-center">
                   <Button asChild variant="secondary" size="sm">
-                    <Link to="/president">Read the full message</Link>
+                    <Link to="/leadership">Read the full message</Link>
                   </Button>
                 </div>
               </div>
@@ -315,58 +141,74 @@ export default function HomePage() {
               </div>
             </div>
           </Card>
-          <div className="mt-10 max-w-3xl">
-            <SectionTitle
-              title="Leadership and public trust"
-              description="IPF works with volunteers across professions — medicine, law, business, culture and social service — to support the diaspora in a lawful and organised manner."
-            />
-            <div className="mt-6">
-              <Button asChild variant="outline">
-                <Link to="/committee">View committee</Link>
-              </Button>
-            </div>
+        </Container>
+      </Section>
+
+      <Section className="py-10 sm:py-12 lg:py-14">
+        <Container>
+          <SectionTitle
+            eyebrow="Leadership"
+            title="Central Committee"
+            description="Office-bearers serving the Indian community across the UAE."
+          />
+          <div className="mt-8 flex gap-4 overflow-x-auto pb-2 lg:grid lg:grid-cols-5 lg:overflow-visible">
+            {leaders.map((member) => (
+              <Link
+                key={`${member.name}-${member.role}`}
+                to="/leadership#committee"
+                className="w-[9.5rem] shrink-0 lg:w-auto"
+              >
+                <PersonIdentity
+                  layout="stack"
+                  size="md"
+                  src={member.image}
+                  alt={member.name}
+                  name={member.name}
+                  role={member.role}
+                />
+              </Link>
+            ))}
           </div>
         </Container>
       </Section>
 
-      <Section tone="navy">
-        <Container>
-          <SectionTitle
-            eyebrow="UAE presence"
-            title="Chapter network across the Emirates"
-            description="Local chapter teams provide support and programme execution through volunteer leadership in every emirate."
-            centered
-            tone="light"
+      <Section tone="white" className="py-10 sm:py-12 lg:py-14">
+        <Container className="grid gap-8 lg:grid-cols-[1.1fr,0.9fr] lg:items-center">
+          <div>
+            <SectionTitle eyebrow="Who we are" title="Serving Indians in the UAE" description={site.whoWeAre} />
+            <div className="mt-6 flex flex-wrap gap-3">
+              <Button asChild>
+                <Link to="/about">About IPF</Link>
+              </Button>
+              <Button asChild variant="outline">
+                <Link to="/chapters">UAE chapters</Link>
+              </Button>
+            </div>
+          </div>
+          <FramedPhoto
+            src={img.indiaUae}
+            alt="India and UAE partnership"
+            fit="contain"
+            imgClassName="aspect-[4/3] h-auto w-full bg-[var(--ipf-navy)]"
           />
-          <CardGrid columns={4} className="mt-10">
-            {chapterList.map((chapter) => (
-              <Card key={chapter} to="/chapters" size="sm" align="center" title={chapter} />
-            ))}
-          </CardGrid>
         </Container>
       </Section>
 
-      <Section>
+      <Section className="py-10 sm:py-12 lg:py-14">
         <Container>
-          <SectionTitle
-            eyebrow="Our gallery"
-            title="Moments of participation and service"
-            description="Highlights from chapter events, office inauguration, welfare drives and community outreach."
-          />
-          <CardGrid className="mt-10">
-            {glimpseStories.map((story) => (
-              <Card
-                key={story.title}
-                to={story.to}
-                eyebrow={story.date}
-                title={story.title}
-                description={story.text}
-                image={story.image}
-                imageAlt={story.title}
+          <SectionTitle eyebrow="Gallery" title="Moments of service" description="Highlights from chapter events, welfare drives and community outreach." />
+          <div className="mt-8 grid grid-cols-2 gap-3 md:grid-cols-3">
+            {galleryPreview.map((item) => (
+              <FramedPhoto
+                key={item.src}
+                src={item.src}
+                alt={item.alt}
+                fit="contain"
+                imgClassName="h-36 w-full bg-[var(--ipf-navy)] sm:h-44"
               />
             ))}
-          </CardGrid>
-          <div className="mt-8">
+          </div>
+          <div className="mt-6">
             <Button asChild variant="outline">
               <Link to="/gallery">Open gallery</Link>
             </Button>
@@ -374,22 +216,44 @@ export default function HomePage() {
         </Container>
       </Section>
 
-      <PageExtras page="home" />
-
-      <Section tone="white">
+      <Section tone="white" className="py-10 sm:py-12 lg:py-14">
         <Container>
-          <Card size="lg" tone="ivory" eyebrow="Get involved" title="Join the IPF mission in the UAE" description="Become a member, volunteer for community programmes, or write to us for support and collaboration.">
+          <SectionTitle eyebrow="Events" title="Programmes and public moments" />
+          <CardGrid className="mt-8">
+            {eventsPreview.map((event) => (
+              <Card
+                key={event.id}
+                to="/events"
+                eyebrow={event.date}
+                title={event.title}
+                description={event.body}
+                image={event.slides[0]?.src}
+                imageAlt={event.slides[0]?.alt ?? event.title}
+                imageFit="contain"
+              />
+            ))}
+          </CardGrid>
+          <div className="mt-6">
+            <Button asChild variant="outline">
+              <Link to="/events">All events</Link>
+            </Button>
+          </div>
+        </Container>
+      </Section>
+
+      <Section tone="navy" className="py-10 sm:py-12 lg:py-14">
+        <Container>
+          <Card size="lg" tone="navy" eyebrow="Get involved" title="Join the IPF mission in the UAE" description="Become a member, volunteer for community programmes, or write to us for support.">
             <div className="flex flex-wrap gap-3">
-              <Button asChild>
-                <Link to="/privileges">Become a volunteer</Link>
+              <Button asChild variant="gold">
+                <Link to="/membership">{site.joinCta}</Link>
               </Button>
-              <Button asChild variant="outline">
-                <Link to="/membership">Membership enquiry</Link>
+              <Button asChild variant="secondary">
+                <Link to="/contact">Contact IPF</Link>
               </Button>
-            </div>
-            <div className="mt-6 text-sm leading-7 text-[var(--ipf-muted)]">
-              <p>Email: info@ipf-uae.org</p>
-              <p>Office 208, Horizon Towers, Al Rashidiya, Ajman, UAE</p>
+              <Button asChild variant="secondary">
+                <Link to="/donate">Donate</Link>
+              </Button>
             </div>
           </Card>
         </Container>

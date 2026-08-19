@@ -1,4 +1,4 @@
-import { featuredHomeEvents, galleryImages, newsItems } from "../data/platformContent";
+import { committeeMembers, featuredHomeEvents, galleryImages, newsItems } from "../data/platformContent";
 import type { CmsContent, CmsPageKey } from "./types";
 
 const emptyExtras = {
@@ -35,5 +35,10 @@ export const defaultCmsContent: CmsContent = {
     image: item.image,
     excerpt: item.excerpt,
     body: item.body,
+  })),
+  leadership: committeeMembers.map((member) => ({
+    name: member.name,
+    role: member.role,
+    image: member.image,
   })),
 };

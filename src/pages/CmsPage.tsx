@@ -36,8 +36,14 @@ export default function CmsPage() {
   const [token, setToken] = useState(() => sessionStorage.getItem(tokenKey) ?? "");
   const [content, setContent] = useState<CmsContent>(defaultCmsContent);
   const [status, setStatus] = useState("");
-  const [tab, setTab] = useState<"hero" | "gallery" | "events" | "news" | "sections">("hero");
+  const [tab, setTab] = useState<"hero" | "gallery" | "events" | "news" | "leadership" | "sections" | "inbox">("hero");
   const [pageKey, setPageKey] = useState<CmsPageKey>("home");
+  const [inbox, setInbox] = useState<{
+    inquiries: { id: string; createdAt: string; intent: string; name: string; email: string; phone?: string; emirate?: string; message?: string }[];
+    rsvps: { id: string; createdAt: string; eventTitle: string; name: string; email: string; phone?: string }[];
+    donations: { id: string; createdAt: string; name: string; email: string; amountAed: number; note?: string; status: string }[];
+    members: { id: string; membershipNo: string; name: string; email: string; phone: string; emirate: string; createdAt: string }[];
+  } | null>(null);
 
   const signedIn = Boolean(token);
   const extras = content.extras[pageKey] ?? [];
@@ -64,8 +70,18 @@ export default function CmsPage() {
       if (loaded.ok) setContent((await loaded.json()) as CmsContent);
       else setContent(defaultCmsContent);
       setStatus("Signed in. Changes save to the site content file.");
+      void loadInbox();
     } catch (error) {
       setStatus(error instanceof Error ? error.message : "Sign-in failed");
+    }
+  }
+
+  async function loadInbox() {
+    try {
+      const data = (await api("/api/cms/inbox")) as NonNullable<typeof inbox>;
+      setInbox(data);
+    } catch (error) {
+      setStatus(error instanceof Error ? error.message : "Could not load inbox");
     }
   }
 
@@ -149,13 +165,18 @@ export default function CmsPage() {
         <div className="mb-6">
           <SegmentedTabs
             value={tab}
-            onValueChange={setTab}
+            onValueChange={(value) => {
+              setTab(value);
+              if (value === "inbox") void loadInbox();
+            }}
             items={[
               { value: "hero", label: "Home hero" },
               { value: "gallery", label: "Gallery" },
               { value: "events", label: "Events" },
               { value: "news", label: "News" },
+              { value: "leadership", label: "Leadership" },
               { value: "sections", label: "Page sections" },
+              { value: "inbox", label: "Inbox" },
             ]}
           />
         </div>
@@ -323,6 +344,73 @@ export default function CmsPage() {
           </div>
         ) : null}
 
+        {tab === "leadership" ? (
+          <div className="space-y-4">
+            <p className="text-sm leading-7 text-[var(--ipf-muted)]">
+              Central Committee photographs and roles shown on the home page and Leadership page.
+            </p>
+            {content.leadership.map((member, index) => (
+              <Card key={`${member.name}-${index}`} size="sm">
+                <Input
+                  value={member.name}
+                  onChange={(e) => {
+                    const leadership = [...content.leadership];
+                    leadership[index] = { ...member, name: e.target.value };
+                    setContent({ ...content, leadership });
+                  }}
+                  placeholder="Name"
+                />
+                <Input
+                  className="mt-2"
+                  value={member.role}
+                  onChange={(e) => {
+                    const leadership = [...content.leadership];
+                    leadership[index] = { ...member, role: e.target.value };
+                    setContent({ ...content, leadership });
+                  }}
+                  placeholder="Role"
+                />
+                <Input
+                  className="mt-2"
+                  value={member.image}
+                  onChange={(e) => {
+                    const leadership = [...content.leadership];
+                    leadership[index] = { ...member, image: e.target.value };
+                    setContent({ ...content, leadership });
+                  }}
+                  placeholder="Image path"
+                />
+                <Input
+                  className="mt-2"
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file)
+                      void upload(file, (src) => {
+                        const leadership = [...content.leadership];
+                        leadership[index] = { ...member, image: src };
+                        setContent({ ...content, leadership });
+                      });
+                  }}
+                />
+              </Card>
+            ))}
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() =>
+                setContent({
+                  ...content,
+                  leadership: [...content.leadership, { name: "", role: "", image: "" }],
+                })
+              }
+            >
+              Add member
+            </Button>
+          </div>
+        ) : null}
+
         {tab === "sections" ? (
           <div className="space-y-4">
             <Field label="Page" htmlFor="cms-page" className="max-w-sm">
@@ -419,6 +507,63 @@ export default function CmsPage() {
             </Button>
           </div>
         ) : null}
+
+        {tab === "inbox" ? (
+          <div className="space-y-8">
+            <div className="flex items-center justify-between gap-3">
+              <p className="text-sm leading-7 text-[var(--ipf-muted)]">
+                Inquiries, RSVPs, donation pledges and member accounts recorded by the local CMS API.
+              </p>
+              <Button type="button" variant="outline" size="sm" onClick={() => void loadInbox()}>
+                Refresh
+              </Button>
+            </div>
+            <InboxList
+              title="Inquiries"
+              empty="No inquiries yet."
+              rows={(inbox?.inquiries ?? []).map((item) => [
+                item.createdAt.slice(0, 10),
+                item.intent,
+                item.name,
+                item.email,
+                item.message ?? "",
+              ])}
+            />
+            <InboxList
+              title="Event RSVPs"
+              empty="No RSVPs yet."
+              rows={(inbox?.rsvps ?? []).map((item) => [
+                item.createdAt.slice(0, 10),
+                item.eventTitle,
+                item.name,
+                item.email,
+                item.phone ?? "",
+              ])}
+            />
+            <InboxList
+              title="Donation pledges"
+              empty="No pledges yet."
+              rows={(inbox?.donations ?? []).map((item) => [
+                item.createdAt.slice(0, 10),
+                `${item.status} · AED ${item.amountAed}`,
+                item.name,
+                item.email,
+                item.note ?? "",
+              ])}
+            />
+            <InboxList
+              title="Members"
+              empty="No member accounts yet."
+              rows={(inbox?.members ?? []).map((item) => [
+                item.createdAt.slice(0, 10),
+                item.membershipNo,
+                item.name,
+                item.email,
+                item.emirate,
+              ])}
+            />
+          </div>
+        ) : null}
       </div>
     </main>
   );
@@ -428,6 +573,33 @@ export default function CmsPage() {
     next[index] = section;
     setContent({ ...content, extras: { ...content.extras, [page]: next } });
   }
+}
+
+function InboxList({ title, empty, rows }: { title: string; empty: string; rows: string[][] }) {
+  return (
+    <section>
+      <h2 className="text-lg font-bold text-[var(--ipf-navy)]">{title}</h2>
+      {rows.length === 0 ? (
+        <p className="mt-2 text-sm text-[var(--ipf-muted)]">{empty}</p>
+      ) : (
+        <div className="mt-3 overflow-x-auto rounded-xl border border-[var(--ipf-line)] bg-[var(--ipf-paper)]">
+          <table className="min-w-full text-left text-sm">
+            <tbody>
+              {rows.map((row, index) => (
+                <tr key={`${title}-${index}`} className="border-t border-[var(--ipf-line)] first:border-0">
+                  {row.map((cell, cellIndex) => (
+                    <td key={cellIndex} className="max-w-xs px-3 py-2 align-top text-[var(--ipf-navy)]">
+                      {cell}
+                    </td>
+                  ))}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </section>
+  );
 }
 
 type EditorListProps = {

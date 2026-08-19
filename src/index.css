@@ -30,6 +30,7 @@ body {
   background: var(--ipf-ivory);
   overflow-x: clip;
   overflow-wrap: break-word;
+  padding-bottom: env(safe-area-inset-bottom);
 }
 
 img {

@@ -34,6 +34,12 @@ export type CmsNews = {
   body: string;
 };
 
+export type CmsPerson = {
+  name: string;
+  role: string;
+  image: string;
+};
+
 export const cmsPageKeys = ["home", "about", "gallery", "events", "news", "support", "president"] as const;
 export type CmsPageKey = (typeof cmsPageKeys)[number];
 
@@ -43,4 +49,5 @@ export type CmsContent = {
   extras: Record<CmsPageKey, CmsSection[]>;
   eventHighlights: CmsEvent[];
   news: CmsNews[];
+  leadership: CmsPerson[];
 };

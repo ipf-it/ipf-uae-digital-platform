@@ -332,6 +332,19 @@ export const glimpseStories = [
   },
 ];
 
+export const presidentMessageBody = [
+  "Dear Friends,",
+  "Namaskar and greetings to my entire fellow Indians in the UAE.",
+  "Indian People's Forum has grown from strength to strength since inception, and we are proud to serve the Indian community in the UAE. Dedicated efforts from the team and years of service were recognised, and IPF today holds the licence for socio-cultural activities in the UAE, with our registered office in the Emirate of Ajman.",
+  "IPF is a non-profit organisation working solely with the motto of serving the Indian community. We have eight chapters across the Emirates. Through honest and selfless volunteerism we help build cultural ties between India and the UAE, and extend a helping hand for the welfare of every Non-Resident Indian living here.",
+  "Our volunteers comprise senior professionals with diverse linguistic and regional representation in each chapter. In IPF we have representation from all the states of India, and we believe in \"अनेकता में एकता भारत की विशेषता\". IPF is a true follower of the principle \"सबका साथ, सबका विकास और सबका विश्वास\".",
+  "Our logo embodies oneness and the principle of Vasudhaiva Kutumbakam — One Family, One Team, One Dream, One Journey, One Aspiration and One Belief of unity and achievement.",
+  "During COVID lockdown and distress, IPF arranged independent chartered flights to help relocate people, and arranged food, shelter, clothing, bedding, masks, sanitizers and financial support. A long list of national and cultural festivals is celebrated to keep the community engaged, thousands of miles away from home.",
+  "Our next goal is that today we have our own office, and we will have our own building. The way our community showers love and affection, we will fulfil this dream.",
+  "We have the excellent backing of both the Indian Embassy and the Indian Consulate, to whom we are highly indebted. I thank the Indian Ambassador, the Indian Consulate and their entire teams for working to serve the community.",
+  "I invite all of you to join us in this journey of serving the Indian community of the UAE. Jai Hind.",
+];
+
 export const testimonials = [
   {
     group: "Vande Bharat Mission",

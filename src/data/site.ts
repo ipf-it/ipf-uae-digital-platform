@@ -17,6 +17,10 @@ export const site = {
   presidentRole: "President, IPF UAE",
   presidentQuote:
     "We believe in अनेकता में एकता. IPF invites every member of the community to join this journey of service, unity and responsibility.",
+  homeIntro:
+    "Since 2014, IPF has served the Indian community in the UAE through welfare support, cultural programmes, and coordination with Indian missions.",
+  whoWeAre:
+    "IPF is open to all Indians in the UAE irrespective of caste, creed, ethnicity or religion. The forum promotes unity, cultural relations, and support for those in need.",
   domain: "ipf-uae.org",
 } as const;
 

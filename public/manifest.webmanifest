@@ -1,0 +1,13 @@
+{
+  "name": "Indian People's Forum UAE",
+  "short_name": "IPF UAE",
+  "description": "Official community website of Indian People's Forum UAE.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0b1f3a",
+  "theme_color": "#0b1f3a",
+  "icons": [
+    { "src": "/apple-touch-icon.png", "sizes": "180x180", "type": "image/png" },
+    { "src": "/favicon.png", "sizes": "32x32", "type": "image/png" }
+  ]
+}

@@ -43,7 +43,7 @@ export default function MembershipPage() {
               </p>
             </Card>
             <Button asChild variant="outline">
-              <Link to="/register">Register / volunteer desk</Link>
+              <Link to="/register">Create a member account</Link>
             </Button>
           </aside>
         </Container>

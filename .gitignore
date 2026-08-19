@@ -19,6 +19,7 @@ build/
 
 # Local CMS edits and uploaded files
 data/cms/content.json
+data/cms/platform.json
 public/uploads/*
 !public/uploads/.gitkeep
 
