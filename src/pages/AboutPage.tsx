@@ -5,9 +5,24 @@ import { Container } from "../components/ui/Container";
 import { FitImage } from "../components/ui/FitImage";
 import { PageExtras } from "../cms/PageExtras";
 import { Section } from "../components/ui/Section";
-import { aboutAims, aboutResponsibilities, aboutValues, aboutVision } from "../data/platformContent";
 import { img } from "../data/site";
 import { useLocale } from "../i18n/LocaleProvider";
+
+const visionKeys = ["page.about.vision1", "page.about.vision2", "page.about.vision3", "page.about.vision4"] as const;
+const valueKeys = ["page.about.value1", "page.about.value2", "page.about.value3", "page.about.value4"] as const;
+const aimKeys = [
+  "page.about.aim1",
+  "page.about.aim2",
+  "page.about.aim3",
+  "page.about.aim4",
+  "page.about.aim5",
+  "page.about.aim6",
+  "page.about.aim7",
+  "page.about.aim8",
+  "page.about.aim9",
+  "page.about.aim10",
+] as const;
+const respKeys = ["page.about.resp1", "page.about.resp2", "page.about.resp3", "page.about.resp4", "page.about.resp5"] as const;
 
 export default function AboutPage() {
   const { t } = useLocale();
@@ -39,8 +54,8 @@ export default function AboutPage() {
               {t("page.about.visionTitle")}
             </h2>
             <ul className="mt-5 space-y-2 text-sm leading-7 text-[var(--ipf-muted)]">
-              {aboutVision.map((item) => (
-                <li key={item}>• {item}</li>
+              {visionKeys.map((key) => (
+                <li key={key}>• {t(key)}</li>
               ))}
             </ul>
           </div>
@@ -57,8 +72,8 @@ export default function AboutPage() {
               {t("page.about.valuesBody")}
             </p>
             <CardGrid columns={2} className="mt-6">
-              {aboutValues.map((value) => (
-                <Card key={value} size="sm" tone="ivory" title={value} />
+              {valueKeys.map((key) => (
+                <Card key={key} size="sm" tone="ivory" title={t(key)} />
               ))}
             </CardGrid>
           </div>
@@ -81,8 +96,8 @@ export default function AboutPage() {
             {t("page.about.aimsIntro")}
           </p>
           <CardGrid columns={2} className="mt-8">
-            {aboutAims.map((item, index) => (
-              <Card key={item} size="sm" eyebrow={`0${index + 1}`.slice(-2)} description={item} />
+            {aimKeys.map((key, index) => (
+              <Card key={key} size="sm" eyebrow={`0${index + 1}`.slice(-2)} description={t(key)} />
             ))}
           </CardGrid>
         </Container>
@@ -99,8 +114,8 @@ export default function AboutPage() {
               {t("page.about.respBody")}
             </p>
             <ul className="mt-6 space-y-2 text-sm leading-7 text-[var(--ipf-muted)]">
-              {aboutResponsibilities.map((item) => (
-                <li key={item}>• {item}</li>
+              {respKeys.map((key) => (
+                <li key={key}>• {t(key)}</li>
               ))}
             </ul>
           </div>
