@@ -42,7 +42,7 @@ export default function HomePage() {
       <div className="lg:hidden">
         {!introReady ? <MobileIntro anchorRef={markRef} onDone={finishIntro} /> : null}
         <section className="flex min-h-[calc(100svh-var(--ipf-header-h,4.85rem)-var(--ipf-tabbar-h,4.75rem))] flex-col bg-[var(--ipf-navy)] text-white">
-          <Container className="flex flex-1 flex-col items-center justify-center py-8 text-center">
+          <Container className="flex flex-col items-center py-10 text-center">
             <div ref={markRef} className={cn("flex flex-col items-center", !introReady && "invisible")}>
               <BrandLoader size={110} label={`${site.brandMark} emblem`} />
               <BrandMark className="mt-4" />
@@ -69,15 +69,15 @@ export default function HomePage() {
                   <Link to="/yuva">{t("nav.yuva")}</Link>
                 </Button>
               </div>
+              <a
+                href="#home-photos"
+                className="mt-6 inline-flex flex-col items-center gap-0.5 text-[11px] font-semibold tracking-wide text-white/90"
+              >
+                {t("home.scroll")}
+                <ChevronDown className="size-4 animate-bounce" />
+              </a>
             </div>
           </Container>
-          <a
-            href="#home-photos"
-            className="flex shrink-0 flex-col items-center gap-0.5 pb-4 pt-2 text-[11px] font-semibold tracking-wide text-white/90"
-          >
-            {t("home.scroll")}
-            <ChevronDown className="size-4 animate-bounce" />
-          </a>
         </section>
         <section id="home-photos" className="bg-[var(--ipf-navy)] px-2 pb-6">
           <ImageCarousel
