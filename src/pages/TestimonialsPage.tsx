@@ -4,16 +4,18 @@ import { Container } from "../components/ui/Container";
 import { ImageCarousel } from "../components/ui/ImageCarousel";
 import { Section } from "../components/ui/Section";
 import { testimonials } from "../data/platformContent";
+import { useLocale } from "../i18n/LocaleProvider";
 
 export default function TestimonialsPage() {
+  const { t } = useLocale();
   return (
     <>
-      <DocumentTitle title="Testimonials" />
+      <DocumentTitle title={t("page.testimonials.title")} />
       <PageHero
-        eyebrow="Community record"
-        title="Testimonials"
-        description="Public photographs from IPF's Vande Bharat Mission repatriation work and the Mahatma Gandhi 150-year programme."
-        crumbs={[{ label: "Testimonials" }]}
+        eyebrow={t("page.testimonials.eyebrow")}
+        title={t("page.testimonials.title")}
+        description={t("page.testimonials.desc")}
+        crumbs={[{ label: t("page.testimonials.title") }]}
       />
       {testimonials.map((group, index) => (
         <Section key={group.group} tone={index % 2 === 0 ? "white" : "ivory"}>

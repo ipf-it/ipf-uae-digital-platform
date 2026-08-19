@@ -11,19 +11,21 @@ import { FramedPhoto } from "../components/ui/TricolorFrame";
 import { useCms } from "../cms/ContentProvider";
 import { committeeExtended, presidentMessageBody } from "../data/platformContent";
 import { img, site } from "../data/site";
+import { useLocale } from "../i18n/LocaleProvider";
 
 export default function LeadershipPage() {
+  const { t } = useLocale();
   const { content } = useCms();
   const leaders = content.leadership;
 
   return (
     <>
-      <DocumentTitle title="Leadership" />
+      <DocumentTitle title={t("page.leadership.title")} />
       <PageHero
-        eyebrow="Organisation"
-        title="Leadership"
-        description={`A message from ${site.president}, and the Central Committee of Indian People's Forum UAE.`}
-        crumbs={[{ label: "About IPF", to: "/about" }, { label: "Leadership" }]}
+        eyebrow={t("page.leadership.eyebrow")}
+        title={t("page.leadership.title")}
+        description={t("page.leadership.desc", { name: site.president })}
+        crumbs={[{ label: t("nav.aboutIpf"), to: "/about" }, { label: t("page.leadership.title") }]}
       />
       <Section tone="white">
         <Container>
@@ -45,7 +47,7 @@ export default function LeadershipPage() {
             ))}
             <div className="pt-2">
               <Button asChild variant="outline">
-                <Link to="/membership">{site.joinCta}</Link>
+                <Link to="/membership">{t("nav.joinLong")}</Link>
               </Button>
             </div>
           </article>
@@ -53,9 +55,9 @@ export default function LeadershipPage() {
       </Section>
       <Section id="committee">
         <Container>
-          <h2 className="text-2xl font-bold text-[var(--ipf-navy)]">Central Committee</h2>
+          <h2 className="text-2xl font-bold text-[var(--ipf-navy)]">{t("page.leadership.central")}</h2>
           <p className="mt-3 max-w-3xl text-sm leading-7 text-[var(--ipf-muted)]">
-            Office-bearers who lead operations, culture, sports, communications, finance and chapter coordination.
+            {t("page.leadership.committeeBody")}
           </p>
           <CardGrid columns={2} className="mt-8">
             {leaders.map((member) => (
@@ -68,13 +70,13 @@ export default function LeadershipPage() {
       </Section>
       <Section tone="white">
         <Container>
-          <h2 className="text-2xl font-bold text-[var(--ipf-navy)]">Extended committee</h2>
+          <h2 className="text-2xl font-bold text-[var(--ipf-navy)]">{t("page.leadership.extended")}</h2>
           <div className="mt-6">
             <Table>
               <TableHead>
                 <tr>
-                  <TableHeader>Role</TableHeader>
-                  <TableHeader>Member</TableHeader>
+                  <TableHeader>{t("page.leadership.role")}</TableHeader>
+                  <TableHeader>{t("page.leadership.member")}</TableHeader>
                 </tr>
               </TableHead>
               <TableBody>

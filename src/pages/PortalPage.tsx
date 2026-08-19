@@ -1,6 +1,7 @@
 import { useState, type FormEvent } from "react";
 import { Link, Navigate } from "react-router-dom";
 import { useMember } from "../cms/MemberProvider";
+import { DigitalIdCard } from "../components/DigitalIdCard";
 import { DocumentTitle } from "../components/layout/DocumentTitle";
 import { PageHero } from "../components/layout/PageHero";
 import { Button } from "../components/ui/Button";
@@ -9,9 +10,10 @@ import { Container } from "../components/ui/Container";
 import { Field } from "../components/ui/Field";
 import { Input } from "../components/ui/Input";
 import { Section } from "../components/ui/Section";
-import { site } from "../data/site";
+import { useLocale } from "../i18n/LocaleProvider";
 
 export default function PortalPage() {
+  const { t } = useLocale();
   const { member, ready, signOut, addHours } = useMember();
   const [date, setDate] = useState(() => new Date().toISOString().slice(0, 10));
   const [hours, setHours] = useState("2");
@@ -29,7 +31,7 @@ export default function PortalPage() {
     try {
       await addHours({ date, hours: Number(hours), activity });
       setActivity("");
-      setStatus("Hours recorded.");
+      setStatus(t("page.portal.saved"));
     } catch (error) {
       setStatus(error instanceof Error ? error.message : "Could not save hours");
     }
@@ -37,60 +39,52 @@ export default function PortalPage() {
 
   return (
     <>
-      <DocumentTitle title="Member portal" />
+      <DocumentTitle title={member.kind === "yuva" ? t("page.yuva.title") : t("nav.portal")} />
       <PageHero
-        eyebrow="Members"
-        title={`Welcome, ${member.name.split(" ")[0]}`}
-        description="Your digital membership card and volunteer hours. Card payments and renewals will use a UAE gateway when credentials are issued."
-        crumbs={[{ label: "Portal" }]}
+        eyebrow={member.kind === "yuva" ? t("page.yuva.title") : t("page.signin.eyebrow")}
+        title={t("page.portal.welcome", { name: member.name.split(" ")[0] })}
+        description={member.kind === "yuva" ? t("page.portal.yuvaDesc") : t("page.portal.memberDesc")}
+        crumbs={[{ label: t("nav.portal") }]}
       />
       <Section tone="white">
         <Container className="grid gap-8 lg:grid-cols-[0.9fr,1.1fr]">
-          <div className="overflow-hidden rounded-2xl bg-[var(--ipf-navy)] p-6 text-white shadow-[0_16px_40px_rgba(11,31,58,0.18)]">
-            <div className="ipf-tricolor mb-4" />
-            <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-[var(--ipf-gold)]">Indian People's Forum UAE</p>
-            <p className="mt-4 text-2xl font-bold">{member.name}</p>
-            <p className="mt-1 text-sm text-white/75">{member.chapter || member.emirate || "UAE member"}</p>
-            <p className="mt-6 font-mono text-lg tracking-[0.18em] text-[var(--ipf-gold)]">{member.membershipNo}</p>
-            <p className="mt-2 text-xs text-white/60">Issued {new Date(member.createdAt).toLocaleDateString("en-GB")}</p>
-            <p className="mt-6 text-xs text-white/70">{site.office}</p>
-          </div>
+          <DigitalIdCard member={member} />
           <div className="space-y-5">
-            <Card title="Account">
+            <Card title={t("page.portal.account")}>
               <p className="text-sm leading-7 text-[var(--ipf-muted)]">
                 {member.email}
                 {member.phone ? ` · ${member.phone}` : ""}
               </p>
-              <p className="mt-2 text-sm text-[var(--ipf-muted)]">{totalHours} volunteer hours recorded.</p>
+              <p className="mt-2 text-sm text-[var(--ipf-muted)]">{t("page.portal.hoursTotal", { hours: totalHours })}</p>
               <div className="mt-4 flex flex-wrap gap-2">
                 <Button asChild variant="outline" size="sm">
-                  <Link to="/events">RSVP to events</Link>
+                  <Link to="/events">{t("page.portal.rsvpEvents")}</Link>
                 </Button>
                 <Button asChild variant="outline" size="sm">
-                  <Link to="/donate">Support welfare</Link>
+                  <Link to="/donate">{t("page.portal.supportWelfare")}</Link>
                 </Button>
                 <Button type="button" variant="ghost" size="sm" onClick={signOut}>
-                  Sign out
+                  {t("common.signOut")}
                 </Button>
               </div>
             </Card>
             <form onSubmit={onHours}>
-              <Card title="Log volunteer hours">
+              <Card title={t("page.portal.logHours")}>
                 <div className="grid gap-3 sm:grid-cols-2">
-                  <Field label="Date" htmlFor="hrs-date">
+                  <Field label={t("page.portal.date")} htmlFor="hrs-date">
                     <Input id="hrs-date" type="date" value={date} onChange={(e) => setDate(e.target.value)} />
                   </Field>
-                  <Field label="Hours" htmlFor="hrs-hours">
+                  <Field label={t("page.portal.hours")} htmlFor="hrs-hours">
                     <Input id="hrs-hours" type="number" min={0.5} step={0.5} value={hours} onChange={(e) => setHours(e.target.value)} />
                   </Field>
-                  <Field label="Activity" htmlFor="hrs-activity" className="sm:col-span-2" required>
-                    <Input id="hrs-activity" required value={activity} onChange={(e) => setActivity(e.target.value)} placeholder="Chapter programme, counselling, event support" />
+                  <Field label={t("page.portal.activity")} htmlFor="hrs-activity" className="sm:col-span-2" required>
+                    <Input id="hrs-activity" required value={activity} onChange={(e) => setActivity(e.target.value)} placeholder={t("page.portal.placeholder")} />
                   </Field>
                 </div>
                 {status ? <p className="mt-3 text-sm text-[var(--ipf-muted)]">{status}</p> : null}
                 <div className="mt-4">
                   <Button type="submit" size="sm">
-                    Save hours
+                    {t("page.portal.saveHours")}
                   </Button>
                 </div>
               </Card>
@@ -101,7 +95,7 @@ export default function PortalPage() {
       {member.volunteerHours.length > 0 ? (
         <Section>
           <Container>
-            <Card title="Recent hours">
+            <Card title={t("page.portal.recent")}>
               <ul className="space-y-3 text-sm">
                 {member.volunteerHours.slice(0, 12).map((item) => (
                   <li key={item.id} className="flex justify-between gap-4 border-b border-[var(--ipf-line)] pb-3 last:border-0">

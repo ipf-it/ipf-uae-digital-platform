@@ -2,10 +2,12 @@ import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { Search } from "lucide-react";
 import { useCms } from "../cms/ContentProvider";
+import { useLocale } from "../i18n/LocaleProvider";
 import { chapters } from "../data/platformContent";
 import { cn } from "../lib/utils";
 
 export function SearchDialog() {
+  const { t } = useLocale();
   const { content } = useCms();
   const [open, setOpen] = useState(false);
   const [q, setQ] = useState("");
@@ -19,6 +21,8 @@ export function SearchDialog() {
       ...content.leadership.map((item) => ({ title: `${item.name} — ${item.role}`, to: "/leadership", kind: "Leadership" })),
       ...content.galleryImages.map((item) => ({ title: item.alt, to: "/gallery", kind: "Gallery" })),
       ...chapters.map((item) => ({ title: `${item.name} chapter`, to: `/chapters#${item.id}`, kind: "Chapter" })),
+      { title: "IPF Yuva", to: "/yuva", kind: "Programme" },
+      { title: "Membership", to: "/membership", kind: "Join" },
     ];
     return items.filter((item) => item.title.toLowerCase().includes(query)).slice(0, 8);
   }, [content, q]);
@@ -28,7 +32,7 @@ export function SearchDialog() {
       <button
         type="button"
         className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-[var(--ipf-line)] text-[var(--ipf-navy)] hover:bg-[var(--ipf-ivory)]"
-        aria-label="Search the site"
+        aria-label={t("nav.search")}
         onClick={() => setOpen(true)}
       >
         <Search size={16} />
@@ -43,7 +47,7 @@ export function SearchDialog() {
               autoFocus
               value={q}
               onChange={(event) => setQ(event.target.value)}
-              placeholder="Search news, events, leadership, chapters"
+              placeholder={t("nav.searchPlaceholder")}
               className="w-full rounded-lg border border-[var(--ipf-line)] px-3 py-2 text-sm text-[var(--ipf-navy)] outline-none focus:border-[var(--ipf-navy)]"
             />
             <ul className="mt-3 space-y-1">
@@ -60,7 +64,7 @@ export function SearchDialog() {
                 </li>
               ))}
               {q.trim().length >= 2 && results.length === 0 ? (
-                <li className="px-3 py-2 text-sm text-[var(--ipf-muted)]">No matching public records.</li>
+                <li className="px-3 py-2 text-sm text-[var(--ipf-muted)]">{t("nav.searchEmpty")}</li>
               ) : null}
             </ul>
           </div>

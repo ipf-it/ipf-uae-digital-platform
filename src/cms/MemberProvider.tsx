@@ -5,6 +5,7 @@ const tokenKey = "ipf-member-token";
 
 export type Member = {
   id: string;
+  kind: "member" | "yuva";
   membershipNo: string;
   name: string;
   email: string;
@@ -19,7 +20,14 @@ type MemberContextValue = {
   member: Member | null;
   ready: boolean;
   signIn: (email: string, password: string) => Promise<void>;
-  register: (payload: { name: string; email: string; phone: string; emirate: string; password: string }) => Promise<void>;
+  register: (payload: {
+    name: string;
+    email: string;
+    phone: string;
+    emirate: string;
+    password: string;
+    kind: "member" | "yuva";
+  }) => Promise<void>;
   signOut: () => void;
   refresh: () => Promise<void>;
   addHours: (payload: { date: string; hours: number; activity: string }) => Promise<void>;

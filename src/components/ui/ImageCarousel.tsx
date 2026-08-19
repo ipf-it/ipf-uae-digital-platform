@@ -68,6 +68,7 @@ function Controls({
   light = false,
   caption,
   compact = false,
+  heroFill = false,
 }: {
   count: number;
   index: number;
@@ -77,6 +78,7 @@ function Controls({
   light?: boolean;
   caption?: string;
   compact?: boolean;
+  heroFill?: boolean;
 }) {
   if (count < 2 && !caption) return null;
   const showDots = count > 1 && count <= 6;
@@ -111,7 +113,12 @@ function Controls({
       ) : null}
       {compact ? (
         count > 1 ? (
-          <div className="absolute bottom-5 left-0 right-0 z-10 flex justify-center gap-1.5">
+          <div
+            className={cn(
+              "absolute left-0 right-0 z-10 flex justify-center gap-1.5",
+              heroFill ? "bottom-16 max-lg:bottom-[5.85rem] lg:bottom-16" : "bottom-5",
+            )}
+          >
             {Array.from({ length: count }).map((_, itemIndex) => (
               <button
                 key={itemIndex}
@@ -243,7 +250,7 @@ export function HeroSlideshow({ slides, children, interval = 7000, fillViewport 
     <section
       className={cn(
         "relative overflow-hidden bg-[var(--ipf-navy)] text-white",
-        fillViewport && "flex min-h-[calc(100dvh-6.75rem)] flex-col",
+        fillViewport && "flex h-[calc(100svh-var(--ipf-header-h,4.85rem))] flex-col overflow-hidden",
       )}
       onMouseEnter={() => {
         hover.current = true;
@@ -273,6 +280,7 @@ export function HeroSlideshow({ slides, children, interval = 7000, fillViewport 
         onSelect={setIndex}
         light
         compact
+        heroFill={fillViewport}
       />
     </section>
   );

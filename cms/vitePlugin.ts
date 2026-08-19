@@ -4,9 +4,12 @@ import path from "node:path";
 import type { IncomingMessage, ServerResponse } from "node:http";
 import type { Plugin } from "vite";
 import {
+  chapterDesks,
+  chapterToken,
   dataPath,
   ensureDirs,
   hashPassword,
+  matchesChapter,
   memberIdFromToken,
   memberToken,
   membershipNo,
@@ -15,6 +18,8 @@ import {
   readPlatform,
   verifyPassword,
   writePlatform,
+  yuvaId,
+  type AccountKind,
   type InquiryRecord,
 } from "./store.ts";
 
@@ -37,8 +42,16 @@ function send(res: ServerResponse, status: number, payload: unknown) {
   res.end(JSON.stringify(payload));
 }
 
-function adminAuth(req: IncomingMessage) {
-  return (req.headers.authorization ?? "") === `Bearer ${expectedToken}`;
+function cmsSession(req: IncomingMessage) {
+  const token = bearer(req);
+  if (!token) return null;
+  if (token === expectedToken) return { role: "central" as const, chapterId: "" };
+  const desk = chapterDesks.find((item) => chapterToken(secret, item.id) === token);
+  return desk ? { role: "chapter" as const, chapterId: desk.id } : null;
+}
+
+function centralAuth(req: IncomingMessage) {
+  return cmsSession(req)?.role === "central";
 }
 
 function bearer(req: IncomingMessage) {
@@ -69,7 +82,39 @@ export function cmsApiPlugin(root: string): Plugin {
               send(res, 401, { error: "Invalid password" });
               return;
             }
-            send(res, 200, { token: expectedToken });
+            send(res, 200, { token: expectedToken, role: "central", chapterId: "", chapterName: "Central desk" });
+            return;
+          }
+
+          if (req.method === "POST" && url === "/api/cms/chapter-login") {
+            const body = JSON.parse((await readBody(req)).toString("utf8") || "{}") as { chapterId?: string; password?: string };
+            const platform = await readPlatform(root);
+            const admin = platform.chapterAdmins.find((item) => item.chapterId === body.chapterId);
+            if (!admin || !body.password || !verifyPassword(body.password, admin.passwordHash)) {
+              send(res, 401, { error: "Chapter or password is incorrect" });
+              return;
+            }
+            send(res, 200, {
+              token: chapterToken(secret, admin.chapterId),
+              role: "chapter",
+              chapterId: admin.chapterId,
+              chapterName: admin.chapterName,
+            });
+            return;
+          }
+
+          if (req.method === "GET" && url === "/api/cms/session") {
+            const session = cmsSession(req);
+            if (!session) {
+              send(res, 401, { error: "Sign in required" });
+              return;
+            }
+            const desk = chapterDesks.find((item) => item.id === session.chapterId);
+            send(res, 200, {
+              role: session.role,
+              chapterId: session.chapterId,
+              chapterName: session.role === "central" ? "Central desk" : desk?.name,
+            });
             return;
           }
 
@@ -82,8 +127,26 @@ export function cmsApiPlugin(root: string): Plugin {
             return;
           }
 
+          if (req.method === "GET" && url === "/api/stats") {
+            const platform = await readPlatform(root);
+            let events = 0;
+            try {
+              const content = JSON.parse(await readFile(files.content, "utf8")) as { eventHighlights?: unknown[] };
+              events = Array.isArray(content.eventHighlights) ? content.eventHighlights.length : 0;
+            } catch {
+              events = 0;
+            }
+            send(res, 200, {
+              members: platform.members.filter((item) => item.kind !== "yuva").length,
+              yuva: platform.members.filter((item) => item.kind === "yuva").length,
+              events,
+              chapters: chapterDesks.length,
+            });
+            return;
+          }
+
           if (req.method === "PUT" && url === "/api/cms/content") {
-            if (!adminAuth(req)) {
+            if (!centralAuth(req)) {
               send(res, 401, { error: "Sign in required" });
               return;
             }
@@ -95,7 +158,7 @@ export function cmsApiPlugin(root: string): Plugin {
           }
 
           if (req.method === "POST" && url === "/api/cms/upload") {
-            if (!adminAuth(req)) {
+            if (!centralAuth(req)) {
               send(res, 401, { error: "Sign in required" });
               return;
             }
@@ -109,16 +172,25 @@ export function cmsApiPlugin(root: string): Plugin {
           }
 
           if (req.method === "GET" && url === "/api/cms/inbox") {
-            if (!adminAuth(req)) {
+            const session = cmsSession(req);
+            if (!session) {
               send(res, 401, { error: "Sign in required" });
               return;
             }
             const platform = await readPlatform(root);
+            const chapter = session.chapterId;
+            const members = platform.members.filter(
+              (item) => session.role === "central" || matchesChapter(item.emirate, chapter) || matchesChapter(item.chapter, chapter),
+            );
             send(res, 200, {
-              inquiries: platform.inquiries,
-              rsvps: platform.rsvps,
-              donations: platform.donations,
-              members: platform.members.map(publicMember),
+              inquiries: platform.inquiries.filter((item) => session.role === "central" || matchesChapter(item.emirate, chapter)),
+              rsvps:
+                session.role === "central"
+                  ? platform.rsvps
+                  : platform.rsvps.filter((item) => members.some((member) => member.email === item.email)),
+              donations: session.role === "central" ? platform.donations : [],
+              members: members.filter((item) => item.kind !== "yuva").map(publicMember),
+              yuva: members.filter((item) => item.kind === "yuva").map(publicMember),
             });
             return;
           }
@@ -156,6 +228,7 @@ export function cmsApiPlugin(root: string): Plugin {
               phone?: string;
               emirate?: string;
               password?: string;
+              kind?: AccountKind;
             };
             if (!body.name || !body.email || !body.password || body.password.length < 8) {
               send(res, 400, { error: "Name, email and a password of at least 8 characters are required" });
@@ -167,9 +240,11 @@ export function cmsApiPlugin(root: string): Plugin {
               send(res, 409, { error: "An account with this email already exists" });
               return;
             }
+            const kind: AccountKind = body.kind === "yuva" ? "yuva" : "member";
             const member = {
-              id: newId("mem"),
-              membershipNo: membershipNo(),
+              id: newId(kind === "yuva" ? "yuva" : "mem"),
+              kind,
+              membershipNo: kind === "yuva" ? yuvaId() : membershipNo(),
               name: body.name.trim(),
               email,
               phone: String(body.phone ?? ""),

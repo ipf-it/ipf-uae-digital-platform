@@ -6,21 +6,23 @@ import { Section } from "../components/ui/Section";
 import { PillNav } from "../components/ui/Tabs";
 import { galleryNavItems } from "../data/galleryNav";
 import { img } from "../data/site";
+import { useLocale } from "../i18n/LocaleProvider";
 
 export default function DiscoverIndiaPage() {
+  const { t } = useLocale();
   return (
     <>
-      <DocumentTitle title="Discover India" />
+      <DocumentTitle title={t("page.discover.title")} />
       <PageHero
-        eyebrow="Gallery"
-        title="Discover India"
-        description="Visit India: the incredible marvel of nature, history, diversity and culture. Article courtesy Dr. Nishi Singh, MD, MS, FRCPath, FIMSA."
-        crumbs={[{ label: "Gallery", to: "/gallery" }, { label: "Discover India" }]}
+        eyebrow={t("page.gallery.eyebrow")}
+        title={t("page.discover.title")}
+        description={t("page.discover.desc")}
+        crumbs={[{ label: t("nav.gallery"), to: "/gallery" }, { label: t("page.discover.title") }]}
       />
       <Section tone="white">
         <Container>
           <div className="mb-8">
-            <PillNav items={galleryNavItems} />
+            <PillNav items={galleryNavItems.map((item) => ({ to: item.to, label: t(item.key) }))} />
           </div>
           <div className="grid gap-8 lg:grid-cols-[0.9fr,1.1fr] lg:items-start">
           <article className="space-y-5 text-sm leading-8 text-[var(--ipf-muted)]">

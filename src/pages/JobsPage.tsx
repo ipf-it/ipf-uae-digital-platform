@@ -5,27 +5,31 @@ import { Card } from "../components/ui/Card";
 import { Container } from "../components/ui/Container";
 import { Section } from "../components/ui/Section";
 import { site } from "../data/site";
+import { useLocale } from "../i18n/LocaleProvider";
 
 export default function JobsPage() {
+  const { t } = useLocale();
+  const how = t("page.jobs.howBody", { email: "EMAIL" });
+  const [before, after] = how.split("EMAIL");
   return (
     <>
-      <DocumentTitle title="Job Board" />
+      <DocumentTitle title={t("page.jobs.title")} />
       <PageHero
-        eyebrow="Opportunities"
-        title="Job Board"
-        description="On the original website this link opened Contact Us. Vacancies and professional referrals are handled by IPF volunteers and the Business Council."
-        crumbs={[{ label: "Job Board" }]}
+        eyebrow={t("page.jobs.eyebrow")}
+        title={t("page.jobs.title")}
+        description={t("page.jobs.desc")}
+        crumbs={[{ label: t("page.jobs.title") }]}
       />
       <Section tone="white">
         <Container className="grid gap-10 lg:grid-cols-[1fr,0.85fr] lg:items-start">
           <InquiryForm intent="jobs" />
-          <Card tone="ivory" title="How it works">
+          <Card tone="ivory" title={t("page.jobs.how")}>
             <p className="text-sm leading-7 text-[var(--ipf-muted)]">
-              Send your enquiry to the registered office. Business Council matters may also be sent to{" "}
+              {before}
               <a className="font-semibold text-[var(--ipf-navy)]" href={`mailto:${site.businessEmail}`}>
                 {site.businessEmail}
               </a>
-              .
+              {after}
             </p>
           </Card>
         </Container>

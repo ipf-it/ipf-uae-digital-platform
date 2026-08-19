@@ -10,23 +10,25 @@ import { PillNav } from "../components/ui/Tabs";
 import { galleryNavItems } from "../data/galleryNav";
 import { chapterList, uaeHighlights } from "../data/platformContent";
 import { img } from "../data/site";
+import { useLocale } from "../i18n/LocaleProvider";
 
 export default function ExploreUaePage() {
+  const { t } = useLocale();
   const { content } = useCms();
   const slides = content.galleryImages.slice(0, 6);
   return (
     <>
-      <DocumentTitle title="Explore UAE" />
+      <DocumentTitle title={t("page.explore.title")} />
       <PageHero
-        eyebrow="Gallery"
-        title="Explore the UAE"
-        description="The United Arab Emirates is home to the Indian community IPF serves. Respect for local law, culture and institutions is part of every chapter's work."
-        crumbs={[{ label: "Gallery", to: "/gallery" }, { label: "Explore UAE" }]}
+        eyebrow={t("page.gallery.eyebrow")}
+        title={t("page.explore.title")}
+        description={t("page.explore.desc")}
+        crumbs={[{ label: t("nav.gallery"), to: "/gallery" }, { label: t("page.explore.title") }]}
       />
       <Section tone="white">
         <Container>
           <div className="mb-8">
-            <PillNav items={galleryNavItems} />
+            <PillNav items={galleryNavItems.map((item) => ({ to: item.to, label: t(item.key) }))} />
           </div>
           <div className="grid items-stretch gap-8 lg:grid-cols-[1.1fr,0.9fr]">
           <div className="grid gap-5">
@@ -44,7 +46,7 @@ export default function ExploreUaePage() {
       </Section>
       <Section>
         <Container>
-          <h2 className="text-2xl font-bold text-[var(--ipf-navy)]">IPF across the Emirates</h2>
+          <h2 className="text-2xl font-bold text-[var(--ipf-navy)]">{t("page.explore.across")}</h2>
           <CardGrid columns={4} className="mt-6">
             {chapterList.map((chapter) => (
               <Card key={chapter} to="/chapters" size="sm" align="center" title={chapter} />

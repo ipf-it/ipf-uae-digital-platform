@@ -4,7 +4,7 @@ import type { ButtonHTMLAttributes, PropsWithChildren } from "react";
 import { cn } from "../../lib/utils";
 
 const buttonVariants = cva(
-  "inline-flex shrink-0 items-center justify-center gap-2 whitespace-nowrap rounded-lg text-sm font-semibold tracking-wide transition duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ipf-navy)]/20 disabled:pointer-events-none disabled:opacity-50",
+  "inline-flex items-center justify-center gap-2 rounded-lg text-center text-sm font-semibold leading-tight tracking-wide transition duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ipf-navy)]/20 disabled:pointer-events-none disabled:opacity-50",
   {
     variants: {
       variant: {
@@ -17,10 +17,10 @@ const buttonVariants = cva(
         ghost: "text-[var(--ipf-navy)] hover:bg-[var(--ipf-ivory)]",
       },
       size: {
-        default: "h-11 px-5",
-        sm: "h-9 px-3 text-xs",
-        lg: "h-12 px-7",
-        icon: "h-10 w-10 p-0",
+        default: "min-h-11 px-4 py-2",
+        sm: "min-h-9 px-3 py-1.5 text-xs",
+        lg: "min-h-12 px-6 py-2",
+        icon: "h-10 w-10 shrink-0 p-0",
       },
     },
     defaultVariants: {

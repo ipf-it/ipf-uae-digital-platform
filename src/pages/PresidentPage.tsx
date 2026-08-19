@@ -6,17 +6,19 @@ import { Container } from "../components/ui/Container";
 import { Section } from "../components/ui/Section";
 import { PageExtras } from "../cms/PageExtras";
 import { FramedPhoto } from "../components/ui/TricolorFrame";
-import { img } from "../data/site";
+import { img, site } from "../data/site";
+import { useLocale } from "../i18n/LocaleProvider";
 
 export default function PresidentPage() {
+  const { t } = useLocale();
   return (
     <>
-      <DocumentTitle title="President's Message" />
+      <DocumentTitle title={t("page.president.title")} />
       <PageHero
-        eyebrow="Leadership"
-        title="President's Message"
-        description="A message from Shri Jitendra Vaidya, President of Indian People's Forum UAE."
-        crumbs={[{ label: "About IPF", to: "/about" }, { label: "President's Message" }]}
+        eyebrow={t("page.president.eyebrow")}
+        title={t("page.president.title")}
+        description={t("page.president.desc", { name: site.president })}
+        crumbs={[{ label: t("nav.aboutIpf"), to: "/about" }, { label: t("page.president.title") }]}
       />
       <Section tone="white">
         <Container>
@@ -74,7 +76,7 @@ export default function PresidentPage() {
               <p>I invite all of you to join us in this journey of serving the Indian community of the UAE. Jai Hind.</p>
               <div className="pt-2">
                 <Button asChild variant="outline">
-                  <Link to="/membership">Join IPF</Link>
+                  <Link to="/membership">{t("nav.joinLong")}</Link>
                 </Button>
               </div>
             </article>

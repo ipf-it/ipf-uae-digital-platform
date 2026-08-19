@@ -4,21 +4,23 @@ import { PageHero } from "../components/layout/PageHero";
 import { Button } from "../components/ui/Button";
 import { Container } from "../components/ui/Container";
 import { Section } from "../components/ui/Section";
+import { useLocale } from "../i18n/LocaleProvider";
 
 export default function NotFoundPage() {
+  const { t } = useLocale();
   return (
     <>
-      <DocumentTitle title="Page not found" />
+      <DocumentTitle title={t("page.notfound.title")} />
       <PageHero
         eyebrow="404"
-        title="This page is not available"
-        description="The address may have changed. Use the menu or return to the official homepage."
-        crumbs={[{ label: "Not found" }]}
+        title={t("page.notfound.title")}
+        description={t("page.notfound.desc")}
+        crumbs={[{ label: t("page.notfound.title") }]}
       />
       <Section tone="white">
         <Container>
           <Button asChild>
-            <Link to="/">Return home</Link>
+            <Link to="/">{t("common.returnHome")}</Link>
           </Button>
         </Container>
       </Section>

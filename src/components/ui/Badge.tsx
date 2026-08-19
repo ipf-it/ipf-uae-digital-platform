@@ -2,7 +2,7 @@ import { cva, type VariantProps } from "class-variance-authority";
 import type { PropsWithChildren } from "react";
 import { cn } from "../../lib/utils";
 
-const badgeVariants = cva("inline-flex items-center rounded-full border px-3 py-1 text-xs font-semibold", {
+const badgeVariants = cva("inline-flex max-w-full items-center text-balance rounded-full border px-3 py-1 text-center text-xs font-semibold leading-snug", {
   variants: {
     tone: {
       navy: "border-white/25 bg-white/10 text-white",

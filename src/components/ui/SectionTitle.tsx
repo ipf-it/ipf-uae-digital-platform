@@ -20,7 +20,7 @@ export function SectionTitle({
       {eyebrow ? (
         <p
           className={cn(
-            "mb-2 text-xs font-semibold uppercase tracking-[0.22em]",
+            "section-eyebrow mb-2 text-xs font-semibold uppercase tracking-[0.22em]",
             tone === "light" ? "text-[var(--ipf-gold)]" : "text-[var(--ipf-green)]",
           )}
         >

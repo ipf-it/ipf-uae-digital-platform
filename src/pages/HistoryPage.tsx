@@ -4,16 +4,18 @@ import { Card, CardGrid } from "../components/ui/Card";
 import { Container } from "../components/ui/Container";
 import { Section } from "../components/ui/Section";
 import { historyMilestones } from "../data/platformContent";
+import { useLocale } from "../i18n/LocaleProvider";
 
 export default function HistoryPage() {
+  const { t } = useLocale();
   return (
     <>
-      <DocumentTitle title="History" />
+      <DocumentTitle title={t("nav.history")} />
       <PageHero
-        eyebrow="Our journey"
-        title="History of IPF UAE"
-        description="From volunteer beginnings in 2014 to a licensed eight-chapter socio-cultural organisation serving Indians across the UAE."
-        crumbs={[{ label: "About IPF", to: "/about" }, { label: "History" }]}
+        eyebrow={t("page.history.eyebrow")}
+        title={t("page.history.title")}
+        description={t("page.history.desc")}
+        crumbs={[{ label: t("nav.aboutIpf"), to: "/about" }, { label: t("nav.history") }]}
       />
       <Section tone="white">
         <Container>

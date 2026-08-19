@@ -1,7 +1,9 @@
 import { useCallback, useRef, useState } from "react";
 import { Link } from "react-router-dom";
+import { ChevronDown } from "lucide-react";
 import { BrandLoader } from "../components/BrandLoader";
 import { BrandMark } from "../components/BrandMark";
+import { CommunityStats } from "../components/CommunityStats";
 import { MobileIntro } from "../components/MobileIntro";
 import { DocumentTitle } from "../components/layout/DocumentTitle";
 import { Badge } from "../components/ui/Badge";
@@ -13,15 +15,15 @@ import { HeroSlideshow, ImageCarousel } from "../components/ui/ImageCarousel";
 import { useCms } from "../cms/ContentProvider";
 import { Section } from "../components/ui/Section";
 import { SectionTitle } from "../components/ui/SectionTitle";
-import { StatPill } from "../components/ui/StatPill";
 import { PersonIdentity } from "../components/ui/PersonIdentity";
 import { FramedPhoto } from "../components/ui/TricolorFrame";
 import { cn } from "../lib/utils";
-import { impactStats } from "../data/platformContent";
 import { img, site } from "../data/site";
+import { useLocale } from "../i18n/LocaleProvider";
 import { markMobileIntroPlayed, shouldPlayMobileIntro } from "../lib/mobileIntro";
 
 export default function HomePage() {
+  const { t } = useLocale();
   const { content } = useCms();
   const markRef = useRef<HTMLDivElement>(null);
   const [introReady, setIntroReady] = useState(() => !shouldPlayMobileIntro());
@@ -35,15 +37,15 @@ export default function HomePage() {
 
   return (
     <>
-      <DocumentTitle title="Official Community Website" />
+      <DocumentTitle title={t("home.documentTitle")} />
 
       <div className="lg:hidden">
         {!introReady ? <MobileIntro anchorRef={markRef} onDone={finishIntro} /> : null}
-        <section className="bg-[var(--ipf-navy)] text-white">
-          <Container className="flex flex-col items-center py-10 text-center">
+        <section className="flex h-[calc(100svh-var(--ipf-header-h,4.85rem))] flex-col overflow-hidden bg-[var(--ipf-navy)] text-white">
+          <Container className="flex shrink-0 flex-col items-center pb-3 pt-5 text-center">
             <div ref={markRef} className={cn("flex flex-col items-center", !introReady && "invisible")}>
-              <BrandLoader size={110} label={`${site.brandMark} emblem`} />
-              <BrandMark className="mt-4" />
+              <BrandLoader size={96} label={`${site.brandMark} emblem`} />
+              <BrandMark className="mt-3" />
             </div>
             <div
               className={cn(
@@ -51,82 +53,95 @@ export default function HomePage() {
                 introReady ? "opacity-100" : "opacity-0",
               )}
             >
-              <div className="mt-5">
-                <Badge>Official community organisation</Badge>
+              <div className="mt-3">
+                <Badge>{t("home.badge")}</Badge>
               </div>
-              <h1 className="mt-4 text-[1.85rem] font-bold leading-[1.15] text-white">
-                Indian People's Forum
-                <span className="mt-2 block text-xl font-semibold text-[var(--ipf-gold)]">United Arab Emirates</span>
+              <h1 className="mt-3 text-balance text-[1.7rem] font-bold leading-[1.15] text-white">
+                {t("home.title")}
+                <span className="mt-1.5 block text-lg font-semibold text-[var(--ipf-gold)]">{t("home.uae")}</span>
               </h1>
-              <p className="mt-4 max-w-md text-sm leading-7 text-white/85">{site.homeIntro}</p>
-              <div className="mt-5 flex flex-wrap justify-center gap-3">
-                <Button asChild variant="gold">
-                  <Link to="/membership">{site.joinCta}</Link>
+              <p className="mt-3 max-w-md text-pretty text-sm leading-6 text-white/85 line-clamp-3">{t("home.intro")}</p>
+              <div className="mt-4 flex flex-wrap justify-center gap-2.5">
+                <Button asChild variant="gold" className="min-h-10 px-3 text-xs">
+                  <Link to="/membership">{t("nav.join")}</Link>
                 </Button>
-                <Button asChild variant="secondary">
-                  <Link to="/leadership">Leadership</Link>
+                <Button asChild variant="secondary" className="min-h-10 px-3 text-xs">
+                  <Link to="/yuva">{t("nav.yuva")}</Link>
                 </Button>
-              </div>
-              <div className="mt-8 grid w-full gap-px overflow-hidden rounded-xl border border-white/10 bg-white/10 sm:grid-cols-2">
-                {impactStats.map((stat) => (
-                  <StatPill key={stat.label} label={stat.label} value={stat.value} tone="dark" />
-                ))}
               </div>
             </div>
           </Container>
+          <div className="relative min-h-0 flex-1">
+            <ImageCarousel
+              framed={false}
+              fit="contain"
+              positionClass="object-center"
+              slides={content.heroSlides}
+              className="h-full"
+              heightClass="h-full w-full"
+            />
+            <a
+              href="#community-stats"
+              className="absolute bottom-3 left-1/2 z-20 inline-flex -translate-x-1/2 flex-col items-center gap-0.5 text-[11px] font-semibold tracking-wide text-white/90"
+            >
+              {t("home.scroll")}
+              <ChevronDown className="size-4 animate-bounce" />
+            </a>
+          </div>
         </section>
-        <ImageCarousel
-          framed={false}
-          fit="contain"
-          positionClass="object-center"
-          slides={content.heroSlides}
-          heightClass="aspect-[4/3] h-auto max-h-[52vh] w-full"
-        />
       </div>
 
       <div className="hidden lg:block">
-        <HeroSlideshow slides={content.heroSlides}>
-          <Container className="relative py-16">
+        <HeroSlideshow slides={content.heroSlides} fillViewport>
+          <Container className="relative flex min-h-0 flex-1 flex-col justify-center py-10 pb-28 text-left">
             <div className="max-w-xl">
-              <Badge>Official community organisation</Badge>
-              <h1 className="mt-4 text-5xl font-bold leading-[1.1] text-white">
-                Indian People's
-                <span className="block">Forum</span>
-                <span className="mt-2 block text-2xl font-semibold text-[var(--ipf-gold)]">United Arab Emirates</span>
+              <Badge>{t("home.badge")}</Badge>
+              <h1 className="mt-4 text-balance text-5xl font-bold leading-[1.15] text-white">
+                {t("home.title")}
+                <span className="mt-2 block text-2xl font-semibold text-[var(--ipf-gold)]">{t("home.uae")}</span>
               </h1>
-              <p className="mt-4 text-[15px] leading-7 text-white/85">{site.homeIntro}</p>
-              <div className="mt-5 flex flex-wrap gap-3">
+              <p className="mt-4 text-pretty text-[15px] leading-7 text-white/85">{t("home.intro")}</p>
+              <div className="mt-6 flex flex-wrap gap-3">
                 <Button asChild variant="gold">
-                  <Link to="/membership">{site.joinCta}</Link>
+                  <Link to="/membership">{t("nav.joinLong")}</Link>
                 </Button>
                 <Button asChild variant="secondary">
-                  <Link to="/leadership">Meet the leadership</Link>
+                  <Link to="/yuva">{t("nav.yuva")}</Link>
+                </Button>
+                <Button asChild variant="secondary">
+                  <Link to="/leadership">{t("home.meetLeaders")}</Link>
                 </Button>
               </div>
             </div>
-            <div className="mt-8 grid max-w-3xl gap-px overflow-hidden rounded-xl border border-white/10 bg-white/10 sm:grid-cols-2 xl:grid-cols-4">
-              {impactStats.map((stat) => (
-                <StatPill key={stat.label} label={stat.label} value={stat.value} tone="dark" />
-              ))}
-            </div>
+            <a
+              href="#community-stats"
+              className="absolute bottom-6 left-1/2 inline-flex -translate-x-1/2 flex-col items-center gap-0.5 text-[11px] font-semibold tracking-wide text-white/80"
+            >
+              {t("home.scroll")}
+              <ChevronDown className="size-4 animate-bounce" />
+            </a>
           </Container>
         </HeroSlideshow>
       </div>
 
-      <Section tone="white" className="py-10 sm:py-12 lg:py-14">
+      <div id="community-stats">
+        <CommunityStats />
+      </div>
+
+      <Section tone="ivory" className="py-10 sm:py-12 lg:py-14">
         <Container>
           <Card tone="navy" flush className="h-auto overflow-hidden">
             <div className="flex flex-col lg:min-h-[22rem] lg:flex-row lg:items-stretch">
               <div className="order-2 flex min-w-0 flex-1 flex-col justify-center px-5 py-7 sm:px-10 sm:py-9 lg:order-1">
                 <p className="text-xs font-bold uppercase tracking-[0.16em] text-[var(--ipf-gold)]">
-                  President's message
+                  {t("home.presidentMsg")}
                 </p>
                 <Quote className="mt-5" attribution={site.president}>
-                  {site.presidentQuote}
+                  {t("home.presidentQuote")}
                 </Quote>
                 <div className="mt-6 flex justify-center">
                   <Button asChild variant="secondary" size="sm">
-                    <Link to="/leadership">Read the full message</Link>
+                    <Link to="/leadership">{t("home.readFull")}</Link>
                   </Button>
                 </div>
               </div>
@@ -147,9 +162,9 @@ export default function HomePage() {
       <Section className="py-10 sm:py-12 lg:py-14">
         <Container>
           <SectionTitle
-            eyebrow="Leadership"
-            title="Central Committee"
-            description="Office-bearers serving the Indian community across the UAE."
+            eyebrow={t("nav.leadership")}
+            title={t("home.central")}
+            description={t("home.centralDesc")}
           />
           <div className="mt-8 flex gap-4 overflow-x-auto pb-2 lg:grid lg:grid-cols-5 lg:overflow-visible">
             {leaders.map((member) => (
@@ -175,13 +190,13 @@ export default function HomePage() {
       <Section tone="white" className="py-10 sm:py-12 lg:py-14">
         <Container className="grid gap-8 lg:grid-cols-[1.1fr,0.9fr] lg:items-center">
           <div>
-            <SectionTitle eyebrow="Who we are" title="Serving Indians in the UAE" description={site.whoWeAre} />
+            <SectionTitle eyebrow={t("home.whoEyebrow")} title={t("home.whoTitle")} description={t("home.whoBody")} />
             <div className="mt-6 flex flex-wrap gap-3">
               <Button asChild>
-                <Link to="/about">About IPF</Link>
+                <Link to="/about">{t("home.aboutCta")}</Link>
               </Button>
               <Button asChild variant="outline">
-                <Link to="/chapters">UAE chapters</Link>
+                <Link to="/chapters">{t("home.chaptersCta")}</Link>
               </Button>
             </div>
           </div>
@@ -196,7 +211,7 @@ export default function HomePage() {
 
       <Section className="py-10 sm:py-12 lg:py-14">
         <Container>
-          <SectionTitle eyebrow="Gallery" title="Moments of service" description="Highlights from chapter events, welfare drives and community outreach." />
+          <SectionTitle eyebrow={t("home.galleryEyebrow")} title={t("home.galleryTitle")} description={t("home.galleryDesc")} />
           <div className="mt-8 grid grid-cols-2 gap-3 md:grid-cols-3">
             {galleryPreview.map((item) => (
               <FramedPhoto
@@ -210,7 +225,7 @@ export default function HomePage() {
           </div>
           <div className="mt-6">
             <Button asChild variant="outline">
-              <Link to="/gallery">Open gallery</Link>
+              <Link to="/gallery">{t("home.openGallery")}</Link>
             </Button>
           </div>
         </Container>
@@ -218,7 +233,7 @@ export default function HomePage() {
 
       <Section tone="white" className="py-10 sm:py-12 lg:py-14">
         <Container>
-          <SectionTitle eyebrow="Events" title="Programmes and public moments" />
+          <SectionTitle eyebrow={t("home.eventsEyebrow")} title={t("home.eventsTitle")} />
           <CardGrid className="mt-8">
             {eventsPreview.map((event) => (
               <Card
@@ -235,7 +250,7 @@ export default function HomePage() {
           </CardGrid>
           <div className="mt-6">
             <Button asChild variant="outline">
-              <Link to="/events">All events</Link>
+              <Link to="/events">{t("home.allEvents")}</Link>
             </Button>
           </div>
         </Container>
@@ -243,16 +258,19 @@ export default function HomePage() {
 
       <Section tone="navy" className="py-10 sm:py-12 lg:py-14">
         <Container>
-          <Card size="lg" tone="navy" eyebrow="Get involved" title="Join the IPF mission in the UAE" description="Become a member, volunteer for community programmes, or write to us for support.">
+          <Card size="lg" tone="navy" eyebrow={t("home.getInvolved")} title={t("home.joinTitle")} description={t("home.joinDesc")}>
             <div className="flex flex-wrap gap-3">
               <Button asChild variant="gold">
-                <Link to="/membership">{site.joinCta}</Link>
+                <Link to="/membership">{t("nav.joinLong")}</Link>
               </Button>
               <Button asChild variant="secondary">
-                <Link to="/contact">Contact IPF</Link>
+                <Link to="/yuva">{t("nav.yuva")}</Link>
               </Button>
               <Button asChild variant="secondary">
-                <Link to="/donate">Donate</Link>
+                <Link to="/contact">{t("home.contactIpf")}</Link>
+              </Button>
+              <Button asChild variant="secondary">
+                <Link to="/donate">{t("nav.donate")}</Link>
               </Button>
             </div>
           </Card>

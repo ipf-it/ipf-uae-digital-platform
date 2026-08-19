@@ -10,24 +10,26 @@ import { PillNav } from "../components/ui/Tabs";
 import { FramedPhoto } from "../components/ui/TricolorFrame";
 import { galleryNavItems } from "../data/galleryNav";
 import { glimpseStories } from "../data/platformContent";
+import { useLocale } from "../i18n/LocaleProvider";
 
 export default function GalleryPage() {
+  const { t } = useLocale();
   const { content } = useCms();
   const slides = content.galleryImages.map((item) => ({ src: item.src, alt: item.alt, caption: item.alt }));
 
   return (
     <>
-      <DocumentTitle title="Glimpses of IPF UAE" />
+      <DocumentTitle title={t("page.gallery.title")} />
       <PageHero
-        eyebrow="Gallery"
-        title="Glimpses of IPF UAE"
-        description="Photographs and highlights from chapter events, office inauguration, welfare drives and community outreach."
-        crumbs={[{ label: "Gallery" }]}
+        eyebrow={t("page.gallery.eyebrow")}
+        title={t("page.gallery.title")}
+        description={t("page.gallery.desc")}
+        crumbs={[{ label: t("nav.gallery") }]}
       />
       <Section tone="white">
         <Container>
           <div className="mb-8">
-            <PillNav items={galleryNavItems} />
+            <PillNav items={galleryNavItems.map((item) => ({ to: item.to, label: t(item.key) }))} />
           </div>
           <ImageCarousel
             slides={slides}

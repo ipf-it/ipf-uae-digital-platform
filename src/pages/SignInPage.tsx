@@ -9,8 +9,10 @@ import { Container } from "../components/ui/Container";
 import { Field } from "../components/ui/Field";
 import { Input } from "../components/ui/Input";
 import { Section } from "../components/ui/Section";
+import { useLocale } from "../i18n/LocaleProvider";
 
 export default function SignInPage() {
+  const { t } = useLocale();
   const { member, ready, signIn } = useMember();
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
@@ -32,21 +34,21 @@ export default function SignInPage() {
 
   return (
     <>
-      <DocumentTitle title="Sign In" />
+      <DocumentTitle title={t("page.signin.title")} />
       <PageHero
-        eyebrow="Members"
-        title="Sign in"
-        description="Members can open a digital membership card, log volunteer hours, and RSVP to programmes."
-        crumbs={[{ label: "Sign in" }]}
+        eyebrow={t("page.signin.eyebrow")}
+        title={t("page.signin.title")}
+        description={t("page.signin.desc")}
+        crumbs={[{ label: t("nav.signIn") }]}
       />
       <Section tone="white">
         <Container className="max-w-lg">
           <form onSubmit={onSubmit}>
-            <Card size="lg" title="Member login">
-              <Field label="Email" htmlFor="signin-email" required>
+            <Card size="lg" title={t("page.signin.title")}>
+              <Field label={t("common.email")} htmlFor="signin-email" required>
                 <Input id="signin-email" required type="email" autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)} />
               </Field>
-              <Field className="mt-4" label="Password" htmlFor="signin-password" required>
+              <Field className="mt-4" label={t("common.password")} htmlFor="signin-password" required>
                 <Input
                   id="signin-password"
                   required
@@ -58,17 +60,20 @@ export default function SignInPage() {
               </Field>
               {status ? <p className="mt-3 text-sm text-red-700">{status}</p> : null}
               <div className="mt-5 flex flex-wrap gap-3">
-                <Button type="submit">Sign in</Button>
+                <Button type="submit">{t("nav.signIn")}</Button>
                 <Button asChild variant="outline">
-                  <Link to="/register">Create account</Link>
+                  <Link to="/register">{t("page.register.create")}</Link>
                 </Button>
               </div>
               <p className="mt-4 text-sm text-[var(--ipf-muted)]">
-                New to IPF?{" "}
-                <Link className="font-semibold text-[var(--ipf-navy)]" to="/membership">
-                  Apply for membership
+                {t("page.signin.new")}{" "}
+                <Link className="font-semibold text-[var(--ipf-navy)]" to="/register">
+                  {t("page.yuva.registerMember")}
+                </Link>{" "}
+                ·{" "}
+                <Link className="font-semibold text-[var(--ipf-navy)]" to="/register?kind=yuva">
+                  {t("page.yuva.title")}
                 </Link>
-                .
               </p>
             </Card>
           </form>

@@ -6,24 +6,25 @@ import { FaqAssistant } from "../FaqAssistant";
 import { TricolorWaves } from "../TricolorWaves";
 import { ContentProvider } from "../../cms/ContentProvider";
 import { MemberProvider } from "../../cms/MemberProvider";
+import { LocaleProvider, useLocale } from "../../i18n/LocaleProvider";
 import { img } from "../../data/site";
 import { markMobileIntroPlayed } from "../../lib/mobileIntro";
 import { MobileTabBar } from "./MobileTabBar";
 import { ScrollToTop } from "./ScrollToTop";
 import { PageLoader } from "./PageLoader";
 
-export function SiteLayout() {
+function LayoutShell() {
   const { pathname } = useLocation();
+  const { t } = useLocale();
 
   useEffect(() => {
     if (pathname !== "/") markMobileIntroPlayed();
   }, [pathname]);
+
   return (
-    <MemberProvider>
-    <ContentProvider>
     <div className="relative min-h-screen bg-[var(--ipf-ivory)] pb-20 lg:pb-0">
       <a className="ipf-skip" href="#main">
-        Skip to main content
+        {t("common.skip")}
       </a>
       <TricolorWaves />
       <ScrollToTop />
@@ -37,7 +38,17 @@ export function SiteLayout() {
       <FaqAssistant />
       <MobileTabBar />
     </div>
-    </ContentProvider>
-    </MemberProvider>
+  );
+}
+
+export function SiteLayout() {
+  return (
+    <LocaleProvider>
+      <MemberProvider>
+        <ContentProvider>
+          <LayoutShell />
+        </ContentProvider>
+      </MemberProvider>
+    </LocaleProvider>
   );
 }

@@ -2,6 +2,8 @@ import { mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { createHash, randomBytes, scryptSync, timingSafeEqual } from "node:crypto";
 
+export type AccountKind = "member" | "yuva";
+
 export type InquiryRecord = {
   id: string;
   createdAt: string;
@@ -16,6 +18,7 @@ export type InquiryRecord = {
 
 export type MemberRecord = {
   id: string;
+  kind: AccountKind;
   membershipNo: string;
   name: string;
   email: string;
@@ -47,14 +50,30 @@ export type DonationRecord = {
   status: "pledge";
 };
 
+export type ChapterAdmin = {
+  chapterId: string;
+  chapterName: string;
+  passwordHash: string;
+};
+
 export type PlatformData = {
   inquiries: InquiryRecord[];
   members: MemberRecord[];
   rsvps: RsvpRecord[];
   donations: DonationRecord[];
+  chapterAdmins: ChapterAdmin[];
 };
 
-const empty: PlatformData = { inquiries: [], members: [], rsvps: [], donations: [] };
+export const chapterDesks = [
+  { id: "abu-dhabi", name: "Abu Dhabi" },
+  { id: "al-ain", name: "Al Ain" },
+  { id: "dubai", name: "Dubai" },
+  { id: "sharjah", name: "Sharjah" },
+  { id: "ajman", name: "Ajman" },
+  { id: "umm-al-quwain", name: "Umm Al Quwain" },
+  { id: "ras-al-khaimah", name: "Ras Al Khaimah" },
+  { id: "fujairah", name: "Fujairah" },
+] as const;
 
 export function dataPath(root: string) {
   return {
@@ -70,12 +89,40 @@ export async function ensureDirs(root: string) {
   await mkdir(paths.uploads, { recursive: true });
 }
 
+function withDefaults(raw: Partial<PlatformData>): PlatformData {
+  const members: MemberRecord[] = (raw.members ?? []).map((member) => ({
+    ...member,
+    kind: member.kind === "yuva" ? "yuva" : "member",
+  }));
+  let chapterAdmins = raw.chapterAdmins ?? [];
+  if (chapterAdmins.length === 0) {
+    chapterAdmins = chapterDesks.map((desk) => ({
+      chapterId: desk.id,
+      chapterName: desk.name,
+      passwordHash: hashPassword(`ipf-${desk.id}`),
+    }));
+  }
+  return {
+    inquiries: raw.inquiries ?? [],
+    members,
+    rsvps: raw.rsvps ?? [],
+    donations: raw.donations ?? [],
+    chapterAdmins,
+  };
+}
+
 export async function readPlatform(root: string): Promise<PlatformData> {
   try {
     const raw = await readFile(dataPath(root).platform, "utf8");
-    return { ...empty, ...(JSON.parse(raw) as Partial<PlatformData>) };
+    const data = withDefaults(JSON.parse(raw) as Partial<PlatformData>);
+    if (!(JSON.parse(raw) as Partial<PlatformData>).chapterAdmins?.length) {
+      await writePlatform(root, data);
+    }
+    return data;
   } catch {
-    return { ...empty };
+    const data = withDefaults({});
+    await writePlatform(root, data);
+    return data;
   }
 }
 
@@ -100,6 +147,7 @@ export function verifyPassword(password: string, stored: string) {
 export function publicMember(member: MemberRecord) {
   return {
     id: member.id,
+    kind: member.kind ?? "member",
     membershipNo: member.membershipNo,
     name: member.name,
     email: member.email,
@@ -119,6 +167,15 @@ export function memberIdFromToken(secret: string, token: string, members: Member
   return members.find((member) => memberToken(secret, member.id) === token)?.id;
 }
 
+export function chapterToken(secret: string, chapterId: string) {
+  return createHash("sha256").update(`${secret}:chapter:${chapterId}`).digest("hex");
+}
+
+export function matchesChapter(value: string | undefined, chapterId: string) {
+  const key = (value ?? "").trim().toLowerCase().replace(/\s+/g, "-");
+  return key === chapterId || key.replace(/[^a-z-]/g, "") === chapterId;
+}
+
 export function newId(prefix: string) {
   return `${prefix}-${Date.now()}-${randomBytes(3).toString("hex")}`;
 }
@@ -127,4 +184,8 @@ export function membershipNo() {
   const year = new Date().getFullYear();
   const suffix = randomBytes(2).toString("hex").toUpperCase();
   return `IPF-UAE-${year}-${suffix}`;
+}
+
+export function yuvaId() {
+  return `YUVA-UAE-${randomBytes(3).toString("hex").toUpperCase()}`;
 }

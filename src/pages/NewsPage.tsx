@@ -5,17 +5,19 @@ import { PageHero } from "../components/layout/PageHero";
 import { Card, CardGrid } from "../components/ui/Card";
 import { Container } from "../components/ui/Container";
 import { Section } from "../components/ui/Section";
+import { useLocale } from "../i18n/LocaleProvider";
 
 export default function NewsPage() {
+  const { t } = useLocale();
   const { content } = useCms();
   return (
     <>
-      <DocumentTitle title="News" />
+      <DocumentTitle title={t("nav.news")} />
       <PageHero
-        eyebrow="Resources"
-        title="News and updates"
-        description="Public highlights from IPF programmes, community meetings and organisational milestones."
-        crumbs={[{ label: "News" }]}
+        eyebrow={t("page.events.eyebrow")}
+        title={t("page.news.title")}
+        description={t("page.news.desc")}
+        crumbs={[{ label: t("nav.news") }]}
       />
       <Section tone="white">
         <Container>

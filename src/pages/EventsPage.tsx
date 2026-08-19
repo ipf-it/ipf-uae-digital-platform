@@ -9,19 +9,21 @@ import { ImageCarousel } from "../components/ui/ImageCarousel";
 import { Section } from "../components/ui/Section";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../components/ui/Table";
 import { eventCalendar } from "../data/platformContent";
+import { useLocale } from "../i18n/LocaleProvider";
 import { downloadIcs } from "../lib/ics";
 
 export default function EventsPage() {
+  const { t } = useLocale();
   const { content } = useCms();
 
   return (
     <>
-      <DocumentTitle title="Events Calendar" />
+      <DocumentTitle title={t("page.events.title")} />
       <PageHero
-        eyebrow="Resources"
-        title="Events Calendar"
-        description="IPF's annual community programme cycle — cultural days, national commemorations, health awareness and chapter celebrations across the UAE."
-        crumbs={[{ label: "Resources", to: "/news" }, { label: "Events Calendar" }]}
+        eyebrow={t("page.events.eyebrow")}
+        title={t("page.events.title")}
+        description={t("page.events.desc")}
+        crumbs={[{ label: t("page.events.eyebrow"), to: "/news" }, { label: t("page.events.title") }]}
       />
       {content.eventHighlights.map((event) => (
         <Section key={event.id} tone="white">
@@ -47,17 +49,15 @@ export default function EventsPage() {
       ))}
       <Section>
         <Container>
-          <p className="mb-6 max-w-3xl text-sm leading-7 text-[var(--ipf-muted)]">
-            Standing annual cycle. Dated programmes with photographs are added from the content desk as events take place.
-          </p>
+          <p className="mb-6 max-w-3xl text-sm leading-7 text-[var(--ipf-muted)]">{t("page.events.standing")}</p>
           <Table>
             <TableHead>
               <tr>
-                <TableHeader>Month</TableHeader>
-                <TableHeader>Programme</TableHeader>
-                <TableHeader>Level</TableHeader>
-                <TableHeader>Committee</TableHeader>
-                <TableHeader>Attend</TableHeader>
+                <TableHeader>{t("page.events.month")}</TableHeader>
+                <TableHeader>{t("page.events.programme")}</TableHeader>
+                <TableHeader>{t("page.events.level")}</TableHeader>
+                <TableHeader>{t("page.events.committeeCol")}</TableHeader>
+                <TableHeader>{t("common.addCalendar")}</TableHeader>
               </tr>
             </TableHead>
             <TableBody>
@@ -74,7 +74,7 @@ export default function EventsPage() {
                       size="sm"
                       onClick={() => downloadIcs({ title: event.title, month: event.month })}
                     >
-                      Calendar
+                      {t("common.addCalendar")}
                     </Button>
                   </TableCell>
                 </TableRow>

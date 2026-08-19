@@ -4,16 +4,18 @@ import { Card, CardGrid } from "../components/ui/Card";
 import { Container } from "../components/ui/Container";
 import { Section } from "../components/ui/Section";
 import { drishtiEditions } from "../data/platformContent";
+import { useLocale } from "../i18n/LocaleProvider";
 
 export default function DrishtiPage() {
+  const { t } = useLocale();
   return (
     <>
-      <DocumentTitle title="Drishti e-Magazine" />
+      <DocumentTitle title={t("page.drishti.title")} />
       <PageHero
-        eyebrow="Resources"
-        title="Drishti e-Magazine"
-        description="IPF's public newsletter and magazine editions, from the first issues through the latest special booklet."
-        crumbs={[{ label: "Resources", to: "/news" }, { label: "Drishti e-Magazine" }]}
+        eyebrow={t("page.events.eyebrow")}
+        title={t("page.drishti.title")}
+        description={t("page.drishti.desc")}
+        crumbs={[{ label: t("page.events.eyebrow"), to: "/news" }, { label: t("page.drishti.title") }]}
       />
       <Section tone="white">
         <Container>
@@ -29,7 +31,7 @@ export default function DrishtiPage() {
                 imageClassName="h-64"
                 eyebrow={edition.period}
                 title={edition.title}
-                description="Open reader"
+                description={t("common.openReader")}
               />
             ))}
           </CardGrid>

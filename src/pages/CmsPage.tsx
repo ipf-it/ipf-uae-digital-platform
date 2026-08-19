@@ -1,15 +1,16 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Button } from "../components/ui/Button";
 import { Card } from "../components/ui/Card";
 import { Field } from "../components/ui/Field";
 import { Input } from "../components/ui/Input";
 import { SimpleSelect } from "../components/ui/Select";
-import { SegmentedTabs } from "../components/ui/Tabs";
 import { Textarea } from "../components/ui/Textarea";
 import { defaultCmsContent } from "../cms/defaults";
 import { cmsPageKeys, type CmsContent, type CmsPageKey, type CmsSection } from "../cms/types";
 
 const tokenKey = "ipf-cms-token";
+const roleKey = "ipf-cms-role";
+const chapterNameKey = "ipf-cms-chapter-name";
 
 async function api(path: string, init?: RequestInit) {
   const token = sessionStorage.getItem(tokenKey);
@@ -33,16 +34,23 @@ function newId() {
 
 export default function CmsPage() {
   const [password, setPassword] = useState("");
+  const [desk, setDesk] = useState<"central" | "chapter">("central");
+  const [chapterId, setChapterId] = useState("dubai");
   const [token, setToken] = useState(() => sessionStorage.getItem(tokenKey) ?? "");
+  const [role, setRole] = useState<"central" | "chapter">(() => (sessionStorage.getItem(roleKey) === "chapter" ? "chapter" : "central"));
+  const [chapterName, setChapterName] = useState(() => sessionStorage.getItem(chapterNameKey) ?? "Central desk");
   const [content, setContent] = useState<CmsContent>(defaultCmsContent);
   const [status, setStatus] = useState("");
-  const [tab, setTab] = useState<"hero" | "gallery" | "events" | "news" | "leadership" | "sections" | "inbox">("hero");
+  const [tab, setTab] = useState<"hero" | "gallery" | "events" | "news" | "leadership" | "sections" | "inbox">(
+    () => (sessionStorage.getItem(roleKey) === "chapter" ? "inbox" : "hero"),
+  );
   const [pageKey, setPageKey] = useState<CmsPageKey>("home");
   const [inbox, setInbox] = useState<{
     inquiries: { id: string; createdAt: string; intent: string; name: string; email: string; phone?: string; emirate?: string; message?: string }[];
     rsvps: { id: string; createdAt: string; eventTitle: string; name: string; email: string; phone?: string }[];
     donations: { id: string; createdAt: string; name: string; email: string; amountAed: number; note?: string; status: string }[];
-    members: { id: string; membershipNo: string; name: string; email: string; phone: string; emirate: string; createdAt: string }[];
+    members: { id: string; membershipNo: string; name: string; email: string; phone: string; emirate: string; createdAt: string; kind?: string }[];
+    yuva: { id: string; membershipNo: string; name: string; email: string; phone: string; emirate: string; createdAt: string }[];
   } | null>(null);
 
   const signedIn = Boolean(token);
@@ -59,17 +67,23 @@ export default function CmsPage() {
 
   async function signIn() {
     try {
-      const result = (await api("/api/cms/login", {
+      const path = desk === "chapter" ? "/api/cms/chapter-login" : "/api/cms/login";
+      const result = (await api(path, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ password }),
-      })) as { token: string };
+        body: JSON.stringify(desk === "chapter" ? { chapterId, password } : { password }),
+      })) as { token: string; role: "central" | "chapter"; chapterName?: string };
       sessionStorage.setItem(tokenKey, result.token);
+      sessionStorage.setItem(roleKey, result.role);
+      sessionStorage.setItem(chapterNameKey, result.chapterName ?? "Central desk");
       setToken(result.token);
+      setRole(result.role);
+      setChapterName(result.chapterName ?? "Central desk");
+      if (result.role === "chapter") setTab("inbox");
       const loaded = await fetch("/api/cms/content");
       if (loaded.ok) setContent((await loaded.json()) as CmsContent);
       else setContent(defaultCmsContent);
-      setStatus("Signed in. Changes save to the site content file.");
+      setStatus(result.role === "chapter" ? `Signed in to ${result.chapterName}.` : "Signed in to the central desk.");
       void loadInbox();
     } catch (error) {
       setStatus(error instanceof Error ? error.message : "Sign-in failed");
@@ -84,6 +98,13 @@ export default function CmsPage() {
       setStatus(error instanceof Error ? error.message : "Could not load inbox");
     }
   }
+
+  useEffect(() => {
+    if (!signedIn) return;
+    void api("/api/cms/inbox")
+      .then((data) => setInbox(data as NonNullable<typeof inbox>))
+      .catch((error: unknown) => setStatus(error instanceof Error ? error.message : "Could not load inbox"));
+  }, [signedIn]);
 
   async function save() {
     try {
@@ -114,14 +135,42 @@ export default function CmsPage() {
 
   if (!signedIn) {
     return (
-      <main className="min-h-screen bg-[var(--ipf-ivory)] px-4 py-16">
+      <main className="min-h-screen bg-[var(--ipf-navy)] px-4 py-16">
         <Card
-          className="mx-auto max-w-md"
+          className="mx-auto max-w-lg"
           size="lg"
           eyebrow="IPF UAE"
           title="Content desk"
-          description="Update photographs, events, news and extra page sections without changing code."
+          description="Central desk edits the public website. Chapter desks see members, IPF Yuva and inquiries for one emirate."
         >
+          <div className="mb-4 grid grid-cols-2 gap-2">
+            <Button type="button" variant={desk === "central" ? "primary" : "outline"} onClick={() => setDesk("central")}>
+              Central desk
+            </Button>
+            <Button type="button" variant={desk === "chapter" ? "primary" : "outline"} onClick={() => setDesk("chapter")}>
+              Chapter desk
+            </Button>
+          </div>
+          {desk === "chapter" ? (
+            <Field label="Chapter" htmlFor="cms-chapter" className="mb-4">
+              <SimpleSelect
+                id="cms-chapter"
+                value={chapterId}
+                onValueChange={setChapterId}
+                placeholder="Select chapter"
+                options={[
+                  { value: "abu-dhabi", label: "Abu Dhabi" },
+                  { value: "al-ain", label: "Al Ain" },
+                  { value: "dubai", label: "Dubai" },
+                  { value: "sharjah", label: "Sharjah" },
+                  { value: "ajman", label: "Ajman" },
+                  { value: "umm-al-quwain", label: "Umm Al Quwain" },
+                  { value: "ras-al-khaimah", label: "Ras Al Khaimah" },
+                  { value: "fujairah", label: "Fujairah" },
+                ]}
+              />
+            </Field>
+          ) : null}
           <Field label="Password" htmlFor="cms-password">
             <Input
               id="cms-password"
@@ -130,6 +179,11 @@ export default function CmsPage() {
               onChange={(event) => setPassword(event.target.value)}
             />
           </Field>
+          <p className="mt-3 text-xs leading-5 text-[var(--ipf-muted)]">
+            {desk === "central"
+              ? "Central password is IPF_CMS_PASSWORD, default ipfuae."
+              : "Local chapter password is ipf- plus the chapter id, for example ipf-dubai."}
+          </p>
           <div className="mt-4">
             <Button type="button" onClick={() => void signIn()}>
               Sign in
@@ -142,46 +196,68 @@ export default function CmsPage() {
   }
 
   return (
-    <main className="min-h-screen bg-[var(--ipf-ivory)]">
-      <header className="border-b border-[var(--ipf-line)] bg-[var(--ipf-paper)]">
-        <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-3 px-4 py-4">
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[var(--ipf-green)]">CMS</p>
-            <h1 className="text-xl font-bold text-[var(--ipf-navy)]">Indian People's Forum UAE</h1>
-          </div>
-          <div className="flex flex-wrap gap-2">
-            <Button type="button" onClick={() => void save()}>
+    <main className="min-h-screen bg-[var(--ipf-ivory)] lg:flex">
+      <aside className="bg-[var(--ipf-navy)] px-4 py-6 text-white lg:w-64 lg:shrink-0">
+        <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-[var(--ipf-gold)]">IPF desk</p>
+        <h1 className="mt-2 text-lg font-bold">{chapterName}</h1>
+        <p className="mt-1 text-xs text-white/70">{role === "chapter" ? "Chapter admin" : "Central admin"}</p>
+        <nav className="mt-6 grid gap-1">
+          {(role === "central"
+            ? [
+                ["hero", "Home hero"],
+                ["gallery", "Gallery"],
+                ["events", "Events"],
+                ["news", "News"],
+                ["leadership", "Leadership"],
+                ["sections", "Page sections"],
+                ["inbox", "Inbox"],
+              ]
+            : [["inbox", "Chapter inbox"]]
+          ).map(([value, label]) => (
+            <button
+              key={value}
+              type="button"
+              className={`rounded-lg px-3 py-2 text-left text-sm ${tab === value ? "bg-white/15 font-semibold" : "text-white/80 hover:bg-white/10"}`}
+              onClick={() => {
+                setTab(value as typeof tab);
+                if (value === "inbox") void loadInbox();
+              }}
+            >
+              {label}
+            </button>
+          ))}
+        </nav>
+        <div className="mt-8 space-y-2">
+          {role === "central" ? (
+            <Button type="button" variant="gold" className="w-full" onClick={() => void save()}>
               Save to website
             </Button>
-            <Button asChild variant="outline">
-              <a href="/">View site</a>
-            </Button>
-          </div>
-        </div>
-      </header>
-
-      <div className="mx-auto max-w-6xl px-4 py-6">
-        {status ? <p className="mb-4 text-sm text-[var(--ipf-muted)]">{status}</p> : null}
-        <div className="mb-6">
-          <SegmentedTabs
-            value={tab}
-            onValueChange={(value) => {
-              setTab(value);
-              if (value === "inbox") void loadInbox();
+          ) : null}
+          <Button asChild variant="secondary" className="w-full">
+            <a href="/">View site</a>
+          </Button>
+          <Button
+            type="button"
+            variant="secondary"
+            className="w-full"
+            onClick={() => {
+              sessionStorage.removeItem(tokenKey);
+              sessionStorage.removeItem(roleKey);
+              sessionStorage.removeItem(chapterNameKey);
+              setToken("");
+              setInbox(null);
+              setStatus("");
             }}
-            items={[
-              { value: "hero", label: "Home hero" },
-              { value: "gallery", label: "Gallery" },
-              { value: "events", label: "Events" },
-              { value: "news", label: "News" },
-              { value: "leadership", label: "Leadership" },
-              { value: "sections", label: "Page sections" },
-              { value: "inbox", label: "Inbox" },
-            ]}
-          />
+          >
+            Sign out
+          </Button>
         </div>
+      </aside>
 
-        {tab === "hero" ? (
+      <div className="min-w-0 flex-1 px-4 py-6 lg:px-8">
+        {status ? <p className="mb-4 text-sm text-[var(--ipf-muted)]">{status}</p> : null}
+
+        {tab === "hero" && role === "central" ? (
           <EditorList
             title="Home hero carousel"
             hint="These five major programmes rotate on the home page, as on ipf-uae.org. Add a title and caption for each photograph."
@@ -510,17 +586,40 @@ export default function CmsPage() {
 
         {tab === "inbox" ? (
           <div className="space-y-8">
-            <div className="flex items-center justify-between gap-3">
-              <p className="text-sm leading-7 text-[var(--ipf-muted)]">
-                Inquiries, RSVPs, donation pledges and member accounts recorded by the local CMS API.
-              </p>
-              <Button type="button" variant="outline" size="sm" onClick={() => void loadInbox()}>
-                Refresh
-              </Button>
+            <div>
+              <div className="flex items-center justify-between gap-3">
+                <div>
+                  <h2 className="text-2xl font-bold text-[var(--ipf-navy)]">
+                    {role === "chapter" ? `${chapterName} inbox` : "Central inbox"}
+                  </h2>
+                  <p className="mt-1 text-sm leading-7 text-[var(--ipf-muted)]">
+                    {role === "chapter"
+                      ? "Members, IPF Yuva volunteers and inquiries from this emirate."
+                      : "All chapter inquiries, RSVPs, pledges, members and Yuva volunteers."}
+                  </p>
+                </div>
+                <Button type="button" variant="outline" size="sm" onClick={() => void loadInbox()}>
+                  Refresh
+                </Button>
+              </div>
+              <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                {[
+                  ["Inquiries", inbox?.inquiries.length ?? 0],
+                  ["Members", inbox?.members.length ?? 0],
+                  ["IPF Yuva", inbox?.yuva.length ?? 0],
+                  ["RSVPs", inbox?.rsvps.length ?? 0],
+                ].map(([label, count]) => (
+                  <div key={String(label)} className="rounded-xl border border-[var(--ipf-line)] bg-[var(--ipf-paper)] px-4 py-3">
+                    <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-[var(--ipf-muted)]">{label}</p>
+                    <p className="mt-1 text-2xl font-bold text-[var(--ipf-navy)]">{count}</p>
+                  </div>
+                ))}
+              </div>
             </div>
             <InboxList
               title="Inquiries"
               empty="No inquiries yet."
+              headings={["Date", "Intent", "Name", "Email", "Message"]}
               rows={(inbox?.inquiries ?? []).map((item) => [
                 item.createdAt.slice(0, 10),
                 item.intent,
@@ -532,6 +631,7 @@ export default function CmsPage() {
             <InboxList
               title="Event RSVPs"
               empty="No RSVPs yet."
+              headings={["Date", "Event", "Name", "Email", "Phone"]}
               rows={(inbox?.rsvps ?? []).map((item) => [
                 item.createdAt.slice(0, 10),
                 item.eventTitle,
@@ -540,21 +640,37 @@ export default function CmsPage() {
                 item.phone ?? "",
               ])}
             />
-            <InboxList
-              title="Donation pledges"
-              empty="No pledges yet."
-              rows={(inbox?.donations ?? []).map((item) => [
-                item.createdAt.slice(0, 10),
-                `${item.status} · AED ${item.amountAed}`,
-                item.name,
-                item.email,
-                item.note ?? "",
-              ])}
-            />
+            {role === "central" ? (
+              <InboxList
+                title="Donation pledges"
+                empty="No pledges yet."
+                headings={["Date", "Pledge", "Name", "Email", "Note"]}
+                rows={(inbox?.donations ?? []).map((item) => [
+                  item.createdAt.slice(0, 10),
+                  `${item.status} · AED ${item.amountAed}`,
+                  item.name,
+                  item.email,
+                  item.note ?? "",
+                ])}
+              />
+            ) : null}
             <InboxList
               title="Members"
               empty="No member accounts yet."
+              headings={["Date", "Membership no.", "Name", "Email", "Chapter"]}
               rows={(inbox?.members ?? []).map((item) => [
+                item.createdAt.slice(0, 10),
+                item.membershipNo,
+                item.name,
+                item.email,
+                item.emirate,
+              ])}
+            />
+            <InboxList
+              title="IPF Yuva"
+              empty="No Yuva volunteers yet."
+              headings={["Date", "Yuva ID", "Name", "Email", "Chapter"]}
+              rows={(inbox?.yuva ?? []).map((item) => [
                 item.createdAt.slice(0, 10),
                 item.membershipNo,
                 item.name,
@@ -575,7 +691,17 @@ export default function CmsPage() {
   }
 }
 
-function InboxList({ title, empty, rows }: { title: string; empty: string; rows: string[][] }) {
+function InboxList({
+  title,
+  empty,
+  headings,
+  rows,
+}: {
+  title: string;
+  empty: string;
+  headings: string[];
+  rows: string[][];
+}) {
   return (
     <section>
       <h2 className="text-lg font-bold text-[var(--ipf-navy)]">{title}</h2>
@@ -584,11 +710,20 @@ function InboxList({ title, empty, rows }: { title: string; empty: string; rows:
       ) : (
         <div className="mt-3 overflow-x-auto rounded-xl border border-[var(--ipf-line)] bg-[var(--ipf-paper)]">
           <table className="min-w-full text-left text-sm">
+            <thead className="bg-[var(--ipf-ivory)] text-[10px] font-bold uppercase tracking-[0.14em] text-[var(--ipf-muted)]">
+              <tr>
+                {headings.map((heading) => (
+                  <th key={heading} className="px-3 py-2">
+                    {heading}
+                  </th>
+                ))}
+              </tr>
+            </thead>
             <tbody>
               {rows.map((row, index) => (
-                <tr key={`${title}-${index}`} className="border-t border-[var(--ipf-line)] first:border-0">
+                <tr key={`${title}-${index}`} className="border-t border-[var(--ipf-line)]">
                   {row.map((cell, cellIndex) => (
-                    <td key={cellIndex} className="max-w-xs px-3 py-2 align-top text-[var(--ipf-navy)]">
+                    <td key={cellIndex} className="max-w-xs px-3 py-2.5 align-top text-[var(--ipf-navy)]">
                       {cell}
                     </td>
                   ))}

@@ -3,6 +3,7 @@ import { Button } from "./ui/Button";
 import { Field } from "./ui/Field";
 import { Input } from "./ui/Input";
 import { api } from "../lib/api";
+import { useLocale } from "../i18n/LocaleProvider";
 import { downloadIcs } from "../lib/ics";
 import { site } from "../data/site";
 
@@ -16,6 +17,7 @@ type EventRsvpProps = {
 };
 
 export function EventRsvp({ eventId, title, date, location, body, month }: EventRsvpProps) {
+  const { t } = useLocale();
   const [open, setOpen] = useState(false);
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -45,29 +47,29 @@ export function EventRsvp({ eventId, title, date, location, body, month }: Event
         size="sm"
         onClick={() => downloadIcs({ title, description: body, location, date, month })}
       >
-        Add to calendar
+        {t("common.addCalendar")}
       </Button>
       {done ? (
-        <p className="self-center text-sm font-semibold text-[var(--ipf-green)]">RSVP received for {title}.</p>
+        <p className="self-center text-sm font-semibold text-[var(--ipf-green)]">{t("common.rsvpDone", { title })}</p>
       ) : (
         <Button type="button" size="sm" onClick={() => setOpen((value) => !value)}>
-          RSVP
+          {t("common.rsvp")}
         </Button>
       )}
       {open && !done ? (
         <form onSubmit={onSubmit} className="mt-3 w-full space-y-3 rounded-xl border border-[var(--ipf-line)] bg-[var(--ipf-ivory)] p-4">
-          <Field label="Full name" htmlFor={`${eventId}-name`} required>
+          <Field label={t("common.fullName")} htmlFor={`${eventId}-name`} required>
             <Input id={`${eventId}-name`} required value={name} onChange={(e) => setName(e.target.value)} />
           </Field>
-          <Field label="Email" htmlFor={`${eventId}-email`} required>
+          <Field label={t("common.email")} htmlFor={`${eventId}-email`} required>
             <Input id={`${eventId}-email`} required type="email" value={email} onChange={(e) => setEmail(e.target.value)} />
           </Field>
-          <Field label="Mobile" htmlFor={`${eventId}-phone`}>
+          <Field label={t("common.phoneUae")} htmlFor={`${eventId}-phone`}>
             <Input id={`${eventId}-phone`} type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} />
           </Field>
           {status ? <p className="text-sm text-red-700">{status}</p> : null}
           <Button type="submit" size="sm">
-            Confirm RSVP
+            {t("common.rsvp")}
           </Button>
         </form>
       ) : null}

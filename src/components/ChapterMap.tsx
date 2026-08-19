@@ -16,13 +16,28 @@ const pins: { id: string; x: number; y: number; label: string }[] = [
   { id: "fujairah", x: 738, y: 172, label: "Fujairah" },
 ];
 
+const abuDhabi = uaeMap.locations.find((item) => item.id === "abu-dhabi");
+const otherEmirates = uaeMap.locations.filter((item) => item.id !== "abu-dhabi");
+
 function openChapter(id: string) {
   document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
+function regionClass(selected: boolean) {
+  return cn(
+    "cursor-pointer stroke-white stroke-[1.5] transition",
+    selected ? "fill-[var(--ipf-navy)]" : "fill-[#9bb3c9] hover:fill-[var(--ipf-saffron)]",
+  );
 }
 
 export function ChapterMap() {
   const [active, setActive] = useState("dubai");
   const chapter = chapterById[active];
+
+  function selectChapter(id: string, scrollToCard = false) {
+    setActive(id);
+    if (scrollToCard) openChapter(id);
+  }
 
   return (
     <div className="grid overflow-hidden rounded-xl border border-[var(--ipf-line)] bg-[var(--ipf-paper)] lg:grid-cols-[minmax(0,1.2fr)_16rem] lg:items-stretch">
@@ -34,34 +49,47 @@ export function ChapterMap() {
           role="img"
           aria-label="IPF chapters across the United Arab Emirates"
         >
-          {uaeMap.locations.map((emirate) => {
-            const selected = emirate.id === active || (active === "al-ain" && emirate.id === "abu-dhabi");
-            return (
-              <path
-                key={emirate.id}
-                d={emirate.path}
-                className={cn(
-                  "cursor-pointer stroke-white stroke-[1.5] transition",
-                  selected ? "fill-[var(--ipf-navy)]" : "fill-[#9bb3c9] hover:fill-[var(--ipf-saffron)]",
-                )}
-                onClick={() => {
-                  setActive(emirate.id);
-                  openChapter(emirate.id);
-                }}
-              >
-                <title>{emirate.name}</title>
-              </path>
-            );
-          })}
-          {pins.map((pin) => (
-            <g
-              key={pin.id}
-              className="cursor-pointer"
-              onClick={() => {
-                setActive(pin.id);
-                openChapter(pin.id);
-              }}
+          <defs>
+            <clipPath id="ipf-abu-dhabi-land" clipPathUnits="userSpaceOnUse">
+              <path d={abuDhabi?.path} />
+            </clipPath>
+            <mask id="ipf-abu-dhabi-mask" maskUnits="userSpaceOnUse" x="0" y="0" width="760" height="613">
+              <rect x="0" y="0" width="760" height="613" fill="white" />
+              <path d={uaeMap.alAinClip} fill="black" />
+            </mask>
+          </defs>
+          {otherEmirates.map((emirate) => (
+            <path
+              key={emirate.id}
+              d={emirate.path}
+              className={regionClass(emirate.id === active)}
+              onClick={() => selectChapter(emirate.id)}
             >
+              <title>{emirate.name}</title>
+            </path>
+          ))}
+          {abuDhabi ? (
+            <>
+              <path
+                d={abuDhabi.path}
+                mask="url(#ipf-abu-dhabi-mask)"
+                className={regionClass(active === "abu-dhabi")}
+                onClick={() => selectChapter("abu-dhabi")}
+              >
+                <title>Abu Dhabi</title>
+              </path>
+              <path
+                d={uaeMap.alAinClip}
+                clipPath="url(#ipf-abu-dhabi-land)"
+                className={cn(regionClass(active === "al-ain"), "stroke-[2]")}
+                onClick={() => selectChapter("al-ain")}
+              >
+                <title>Al Ain</title>
+              </path>
+            </>
+          ) : null}
+          {pins.map((pin) => (
+            <g key={pin.id} className="cursor-pointer" onClick={() => selectChapter(pin.id)}>
               <circle cx={pin.x} cy={pin.y} r={active === pin.id ? 9 : 7} fill="#ff9933" stroke="#0b1f3a" strokeWidth="2" />
               <text
                 x={pin.x + 12}
@@ -89,10 +117,7 @@ export function ChapterMap() {
                   "rounded-lg px-2.5 py-1.5 text-left text-xs font-semibold sm:text-sm",
                   active === item.id ? "bg-[var(--ipf-navy)] text-white" : "bg-[var(--ipf-ivory)] text-[var(--ipf-navy)] hover:bg-[var(--ipf-navy)]/10",
                 )}
-                onClick={() => {
-                  setActive(item.id);
-                  openChapter(item.id);
-                }}
+                onClick={() => selectChapter(item.id, true)}
               >
                 {item.name}
               </button>

@@ -18,6 +18,7 @@ export const primaryNav: NavGroup[] = [
       { label: "History", to: "/history" },
       { label: "Governance", to: "/governance" },
       { label: "Support", to: "/support" },
+      { label: "IPF Yuva", to: "/yuva" },
     ],
   },
   {
@@ -44,8 +45,6 @@ export const mobileTabs: NavLinkItem[] = [
 
 export const utilityLinks: NavLinkItem[] = [
   { label: "Donate", to: "/donate" },
-  { label: "News", to: "/news" },
-  { label: "Volunteer", to: "/privileges" },
   { label: "Sign In", to: "/sign-in" },
 ];
 
@@ -66,6 +65,7 @@ export const footerGroups = [
       { label: "News", to: "/news" },
       { label: "Gallery", to: "/gallery" },
       { label: "Support", to: "/support" },
+      { label: "IPF Yuva", to: "/yuva" },
       { label: "Drishti", to: "/drishti" },
     ],
   },
@@ -73,6 +73,7 @@ export const footerGroups = [
     title: "Get involved",
     links: [
       { label: "Membership", to: "/membership" },
+      { label: "IPF Yuva", to: "/yuva" },
       { label: "Donate", to: "/donate" },
       { label: "Member portal", to: "/portal" },
       { label: "Contact", to: "/contact" },

@@ -7,8 +7,10 @@ import { Container } from "../components/ui/Container";
 import { FitImage } from "../components/ui/FitImage";
 import { Section } from "../components/ui/Section";
 import { blogPosts } from "../data/platformContent";
+import { useLocale } from "../i18n/LocaleProvider";
 
 export default function ArticlePage() {
+  const { t } = useLocale();
   const { slug = "" } = useParams();
   const { pathname } = useLocation();
   const { content } = useCms();
@@ -16,22 +18,22 @@ export default function ArticlePage() {
   const collection = kind === "news" ? content.news : blogPosts;
   const article = collection.find((item) => item.slug === slug);
   const listTo = kind === "news" ? "/news" : "/blog";
-  const listLabel = kind === "news" ? "News" : "Blog";
+  const listLabel = kind === "news" ? t("nav.news") : t("page.blog.title");
 
   if (!article) {
     return (
       <>
-        <DocumentTitle title="Article not found" />
+        <DocumentTitle title={t("page.article.missing")} />
         <PageHero
           eyebrow={listLabel}
-          title="This article is not available"
-          description="The link may be outdated. Please return to the listing page."
-          crumbs={[{ label: listLabel, to: listTo }, { label: "Not found" }]}
+          title={t("page.article.missing")}
+          description={t("page.article.missingDesc")}
+          crumbs={[{ label: listLabel, to: listTo }, { label: t("page.article.missing") }]}
         />
         <Section tone="white">
           <Container>
             <Button asChild variant="outline">
-              <Link to={listTo}>Back to {listLabel.toLowerCase()}</Link>
+              <Link to={listTo}>{t("page.article.back", { list: listLabel })}</Link>
             </Button>
           </Container>
         </Section>
@@ -54,7 +56,7 @@ export default function ArticlePage() {
           <article className="space-y-4 text-sm leading-8 text-[var(--ipf-muted)]">
             <p>{article.body}</p>
             <Button asChild variant="outline">
-              <Link to={listTo}>Back to {listLabel.toLowerCase()}</Link>
+              <Link to={listTo}>{t("page.article.back", { list: listLabel })}</Link>
             </Button>
           </article>
         </Container>

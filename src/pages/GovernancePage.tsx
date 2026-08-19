@@ -2,20 +2,22 @@ import { DocumentTitle } from "../components/layout/DocumentTitle";
 import { PageHero } from "../components/layout/PageHero";
 import { Container } from "../components/ui/Container";
 import { Section } from "../components/ui/Section";
+import { useLocale } from "../i18n/LocaleProvider";
 
 export default function GovernancePage() {
+  const { t } = useLocale();
   return (
     <>
-      <DocumentTitle title="Governance" />
+      <DocumentTitle title={t("nav.governance")} />
       <PageHero
-        eyebrow="Governance"
-        title="Bye Law, Ethics and IT Policy"
-        description="These pages replace the old broken sign-in links. Full legal documents will be published through the CMS; the public principles below are already in force as organisational practice."
-        crumbs={[{ label: "About IPF", to: "/about" }, { label: "Governance" }]}
+        eyebrow={t("page.governance.eyebrow")}
+        title={t("page.governance.title")}
+        description={t("page.governance.desc")}
+        crumbs={[{ label: t("nav.aboutIpf"), to: "/about" }, { label: t("nav.governance") }]}
       />
       <Section id="bye-law" tone="white">
         <Container className="max-w-3xl space-y-4 text-sm leading-7 text-[var(--ipf-muted)]">
-          <h2 className="text-2xl font-bold text-[var(--ipf-navy)]">Bye Law</h2>
+          <h2 className="text-2xl font-bold text-[var(--ipf-navy)]">{t("page.governance.bye")}</h2>
           <p>
             Indian People's Forum UAE is a licensed socio-cultural organisation with a registered office in Ajman. The
             Managing Committee, comprising the Central Committee and Chapter Convenors, governs the forum according to
@@ -33,7 +35,7 @@ export default function GovernancePage() {
       </Section>
       <Section id="ethics">
         <Container className="max-w-3xl space-y-4 text-sm leading-7 text-[var(--ipf-muted)]">
-          <h2 className="text-2xl font-bold text-[var(--ipf-navy)]">Code of Ethics & Conduct</h2>
+          <h2 className="text-2xl font-bold text-[var(--ipf-navy)]">{t("page.governance.ethics")}</h2>
           <p>IPF's published values are Integrity, Transparency, Professionalism and Accountability.</p>
           <ul className="space-y-2">
             <li>• Volunteers and members shall conduct themselves honourably in all community work.</li>
@@ -46,7 +48,7 @@ export default function GovernancePage() {
       </Section>
       <Section id="it-policy" tone="white">
         <Container className="max-w-3xl space-y-4 text-sm leading-7 text-[var(--ipf-muted)]">
-          <h2 className="text-2xl font-bold text-[var(--ipf-navy)]">IT & Media Policy</h2>
+          <h2 className="text-2xl font-bold text-[var(--ipf-navy)]">{t("page.governance.it")}</h2>
           <p>
             Official public information is published on this website and through IPF's recognised social channels. Media
             and IT volunteers shall not publish confidential member data, grievance case details, or unverified claims

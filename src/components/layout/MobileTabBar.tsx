@@ -1,6 +1,7 @@
 import { House, Images, CalendarDays, Users, UserPlus } from "lucide-react";
 import { NavLink } from "react-router-dom";
 import { mobileTabs } from "../../data/navigation";
+import { useLocale } from "../../i18n/LocaleProvider";
 import { cn } from "../../lib/utils";
 
 const icons = {
@@ -11,11 +12,20 @@ const icons = {
   "/membership": UserPlus,
 } as const;
 
+const tabKeys: Record<string, string> = {
+  Home: "nav.home",
+  Leaders: "nav.leadership",
+  Events: "nav.events",
+  Gallery: "nav.gallery",
+  Join: "nav.join",
+};
+
 export function MobileTabBar() {
+  const { t } = useLocale();
   return (
     <nav
       className="fixed inset-x-0 bottom-0 z-50 border-t border-[var(--ipf-line)] bg-[var(--ipf-paper)]/95 pb-[env(safe-area-inset-bottom)] backdrop-blur-md lg:hidden"
-      aria-label="Primary"
+      aria-label={t("nav.home")}
     >
       <div className="grid grid-cols-5">
         {mobileTabs.map((item) => {
@@ -27,13 +37,13 @@ export function MobileTabBar() {
               end={item.to === "/"}
               className={({ isActive }) =>
                 cn(
-                  "flex flex-col items-center gap-1 py-2.5 text-[10px] font-semibold uppercase tracking-[0.12em]",
+                  "flex flex-col items-center gap-1 px-1 py-2.5 text-[10px] font-semibold leading-tight",
                   isActive ? "text-[var(--ipf-green)]" : "text-[var(--ipf-muted)]",
                 )
               }
             >
               <Icon size={18} />
-              {item.label}
+              <span className="max-w-full truncate px-0.5">{tabKeys[item.label] ? t(tabKeys[item.label]) : item.label}</span>
             </NavLink>
           );
         })}

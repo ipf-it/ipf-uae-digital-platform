@@ -6,24 +6,26 @@ import { PersonIdentity } from "../components/ui/PersonIdentity";
 import { Section } from "../components/ui/Section";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../components/ui/Table";
 import { committeeExtended, committeeMembers, chapters } from "../data/platformContent";
+import { useLocale } from "../i18n/LocaleProvider";
 
 export default function CommitteePage() {
+  const { t } = useLocale();
   return (
     <>
-      <DocumentTitle title="Committee" />
+      <DocumentTitle title={t("nav.committee")} />
       <PageHero
-        eyebrow="Organisation"
-        title="IPF Committee"
-        description="Central Committee office-bearers, extended members, the Managing Committee, and eight UAE chapters — as published by Indian People's Forum UAE."
-        crumbs={[{ label: "About IPF", to: "/about" }, { label: "Committee" }]}
+        eyebrow={t("page.leadership.eyebrow")}
+        title={t("page.committee.title")}
+        description={t("page.committee.desc")}
+        crumbs={[{ label: t("nav.aboutIpf"), to: "/about" }, { label: t("nav.committee") }]}
       />
       <Section id="centralCommittee" tone="white">
         <Container>
           <h2 id="central" className="text-2xl font-bold text-[var(--ipf-navy)]">
-            Central Committee
+            {t("page.leadership.central")}
           </h2>
             <p className="mt-3 max-w-3xl text-sm leading-7 text-[var(--ipf-muted)]">
-              Office-bearers who lead operations, culture, sports, communications, finance and chapter coordination.
+              {t("page.leadership.committeeBody")}
             </p>
             <CardGrid columns={2} className="mt-8">
               {committeeMembers.map((member) => (
@@ -41,16 +43,16 @@ export default function CommitteePage() {
       </Section>
       <Section>
         <Container>
-          <h2 className="text-2xl font-bold text-[var(--ipf-navy)]">Central Committee members</h2>
+          <h2 className="text-2xl font-bold text-[var(--ipf-navy)]">{t("page.committee.membersTitle")}</h2>
           <p className="mt-3 max-w-3xl text-sm leading-7 text-[var(--ipf-muted)]">
-            Full published roll, including Business Council, CSR, Legal Cell, Drishti and IT & Media.
+            {t("page.committee.membersBody")}
           </p>
           <div className="mt-6">
             <Table>
               <TableHead>
                 <tr>
-                  <TableHeader>Role</TableHeader>
-                  <TableHeader>Member</TableHeader>
+                  <TableHeader>{t("page.leadership.role")}</TableHeader>
+                  <TableHeader>{t("page.leadership.member")}</TableHeader>
                 </tr>
               </TableHead>
               <TableBody>
@@ -74,19 +76,18 @@ export default function CommitteePage() {
       <Section id="managingCommittee" tone="white">
         <Container className="max-w-3xl">
           <h2 id="managing" className="text-2xl font-bold text-[var(--ipf-navy)]">
-            Managing Committee
+            {t("page.committee.managing")}
           </h2>
           <p className="mt-4 text-sm leading-7 text-[var(--ipf-muted)]">
-            The Managing Committee is the governing committee of IPF, nominated in the manner prescribed by the rules.
-            It includes the full Central Committee and all Chapter and Council Convenors.
+            {t("page.committee.managingBody")}
           </p>
         </Container>
       </Section>
       <Section id="chapters">
         <Container>
-          <h2 className="text-2xl font-bold text-[var(--ipf-navy)]">Chapters</h2>
+          <h2 className="text-2xl font-bold text-[var(--ipf-navy)]">{t("nav.chapters")}</h2>
           <p className="mt-3 max-w-3xl text-sm leading-7 text-[var(--ipf-muted)]">
-            A chapter is an IPF sub-body assigned to a city or emirate. IPF has eight chapters across the UAE.
+            {t("page.committee.chaptersBody")}
           </p>
           <CardGrid columns={4} className="mt-6">
             {chapters.map((chapter) => (

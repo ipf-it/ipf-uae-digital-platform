@@ -26,6 +26,7 @@ const RegisterPage = lazy(() => import("./pages/RegisterPage"));
 const SignInPage = lazy(() => import("./pages/SignInPage"));
 const DonatePage = lazy(() => import("./pages/DonatePage"));
 const PortalPage = lazy(() => import("./pages/PortalPage"));
+const YuvaPage = lazy(() => import("./pages/YuvaPage"));
 const JobsPage = lazy(() => import("./pages/JobsPage"));
 const CmsPage = lazy(() => import("./pages/CmsPage"));
 const NotFoundPage = lazy(() => import("./pages/NotFoundPage"));
@@ -68,6 +69,7 @@ function App() {
           <Route path="donation" element={<Navigate to="/donate" replace />} />
           <Route path="donations" element={<Navigate to="/donate" replace />} />
           <Route path="portal" element={<PortalPage />} />
+          <Route path="yuva" element={<YuvaPage />} />
           <Route path="jobs" element={<JobsPage />} />
           <Route path="join" element={<Navigate to="/membership" replace />} />
           <Route path="about-ipf" element={<Navigate to="/about" replace />} />

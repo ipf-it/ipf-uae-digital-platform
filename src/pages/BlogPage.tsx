@@ -4,16 +4,18 @@ import { Card, CardGrid } from "../components/ui/Card";
 import { Container } from "../components/ui/Container";
 import { Section } from "../components/ui/Section";
 import { blogPosts } from "../data/platformContent";
+import { useLocale } from "../i18n/LocaleProvider";
 
 export default function BlogPage() {
+  const { t } = useLocale();
   return (
     <>
-      <DocumentTitle title="Blog" />
+      <DocumentTitle title={t("page.blog.title")} />
       <PageHero
-        eyebrow="Resources"
-        title="Blog"
-        description="Community notes, festival greetings and public commentary published for IPF members and the wider Indian community in the UAE."
-        crumbs={[{ label: "Resources", to: "/news" }, { label: "Blog" }]}
+        eyebrow={t("page.events.eyebrow")}
+        title={t("page.blog.title")}
+        description={t("page.blog.desc")}
+        crumbs={[{ label: t("page.events.eyebrow"), to: "/news" }, { label: t("page.blog.title") }]}
       />
       <Section tone="white">
         <Container>

@@ -5,16 +5,18 @@ import { Card, CardGrid } from "../components/ui/Card";
 import { Container } from "../components/ui/Container";
 import { Section } from "../components/ui/Section";
 import { chapters } from "../data/platformContent";
+import { useLocale } from "../i18n/LocaleProvider";
 
 export default function ChaptersPage() {
+  const { t } = useLocale();
   return (
     <>
-      <DocumentTitle title="IPF Chapters" />
+      <DocumentTitle title={t("nav.chapters")} />
       <PageHero
-        eyebrow="UAE presence"
-        title="Chapters across the Emirates"
-        description="IPF chapters are local teams of volunteers. Each chapter supports welfare, counselling and cultural programmes in its emirate."
-        crumbs={[{ label: "Chapters" }]}
+        eyebrow={t("page.chapters.eyebrow")}
+        title={t("page.chapters.title")}
+        description={t("page.chapters.desc")}
+        crumbs={[{ label: t("nav.chapters") }]}
       />
       <Section tone="white">
         <Container className="space-y-10">
@@ -29,7 +31,7 @@ export default function ChaptersPage() {
                     </a>
                   ) : null}
                   <a className="font-semibold text-[var(--ipf-green)]" href={chapter.facebook} target="_blank" rel="noreferrer">
-                    Chapter Facebook
+                    {t("common.facebook")}
                   </a>
                 </div>
               </Card>

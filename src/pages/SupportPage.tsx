@@ -6,16 +6,20 @@ import { Container } from "../components/ui/Container";
 import { FitImage } from "../components/ui/FitImage";
 import { Section } from "../components/ui/Section";
 import { site } from "../data/site";
+import { useLocale } from "../i18n/LocaleProvider";
 
 export default function SupportPage() {
+  const { t } = useLocale();
+  const write = t("page.support.write", { email: "EMAIL" });
+  const [before, after] = write.split("EMAIL");
   return (
     <>
-      <DocumentTitle title="Support Activity" />
+      <DocumentTitle title={t("page.support.title")} />
       <PageHero
-        eyebrow="Resources"
-        title="Support Activity"
-        description="Grievances, counselling and community support for Indians living in the UAE — coordinated by chapter volunteers and professional members."
-        crumbs={[{ label: "Resources", to: "/news" }, { label: "Support Activity" }]}
+        eyebrow={t("page.support.eyebrow")}
+        title={t("page.support.title")}
+        description={t("page.support.desc")}
+        crumbs={[{ label: t("page.events.eyebrow"), to: "/news" }, { label: t("page.support.title") }]}
       />
       <Section id="grievances" tone="white">
         <span id="grievence-counseling" className="sr-only">
@@ -23,28 +27,23 @@ export default function SupportPage() {
         </span>
         <Container className="grid gap-8 lg:grid-cols-2 lg:items-start">
           <div>
-            <h2 className="text-2xl font-bold text-[var(--ipf-navy)]">Grievances & Counselling</h2>
+            <h2 className="text-2xl font-bold text-[var(--ipf-navy)]">{t("page.support.grievTitle")}</h2>
             <div className="mt-4 space-y-4 text-sm leading-7 text-[var(--ipf-muted)]">
               <p>
-                <strong className="text-[var(--ipf-navy)]">Cultural challenges.</strong> IPF counselling volunteers can
-                guide new Indian residents to overcome cultural challenges and to adopt the UAE as home, with respect
-                for local laws and customs.
+                <strong className="text-[var(--ipf-navy)]">{t("page.support.cultural")}</strong> {t("page.support.culturalBody")}
               </p>
               <p>
-                <strong className="text-[var(--ipf-navy)]">Blue-collared workers.</strong> IPF remains at the forefront
-                of counselling and mentoring to reduce hardship. During COVID-19, volunteers arranged chartered
-                flights, food, shelter, clothing, bedding, masks, sanitizers and financial support.
+                <strong className="text-[var(--ipf-navy)]">{t("page.support.workers")}</strong> {t("page.support.workersBody")}
               </p>
               <p>
-                <strong className="text-[var(--ipf-navy)]">Local services.</strong> The programme also facilitates
-                information forums on employment, medical and social services that can assist community members.
+                <strong className="text-[var(--ipf-navy)]">{t("page.support.local")}</strong> {t("page.support.localBody")}
               </p>
               <p>
-                Write to{" "}
+                {before}
                 <a className="font-semibold text-[var(--ipf-navy)]" href={`mailto:${site.grievanceEmail}`}>
                   {site.grievanceEmail}
-                </a>{" "}
-                for grievance support.
+                </a>
+                {after}
               </p>
             </div>
           </div>
@@ -57,12 +56,8 @@ export default function SupportPage() {
         </span>
         <Container className="grid gap-8 lg:grid-cols-2 lg:items-start">
           <div>
-            <h2 className="text-2xl font-bold text-[var(--ipf-navy)]">Community Support</h2>
-            <p className="mt-4 text-sm leading-7 text-[var(--ipf-muted)]">
-              IPF provides a forum for cultural, educational, recreational and philosophical activities. Dedicated
-              volunteers include senior professionals in medicine, law, business, engineering and other fields, with
-              diverse linguistic and regional representation in each chapter.
-            </p>
+            <h2 className="text-2xl font-bold text-[var(--ipf-navy)]">{t("page.support.communityTitle")}</h2>
+            <p className="mt-4 text-sm leading-7 text-[var(--ipf-muted)]">{t("page.support.communityBody")}</p>
           </div>
           <FitImage className="lg:order-first" src="/legacy-assets/images/community-support.png" alt="IPF community support" />
         </Container>
