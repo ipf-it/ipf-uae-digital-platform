@@ -50,7 +50,7 @@ export function Header({ logoSrc }: HeaderProps) {
               <img
                 src={logoSrc}
                 alt={`${site.name} emblem`}
-                className="h-9 w-auto max-w-[min(200px,58vw)] bg-white object-contain p-1 sm:h-12 sm:max-w-[240px]"
+                className="h-9 w-auto max-w-[min(148px,38vw)] bg-white object-contain p-1 sm:h-12 sm:max-w-[240px]"
               />
             ) : (
               <span className="font-bold text-[var(--ipf-navy)]">{site.shortName}</span>
@@ -122,7 +122,7 @@ export function Header({ logoSrc }: HeaderProps) {
           </nav>
 
           <div className="flex shrink-0 items-center gap-2">
-            <Button asChild size="sm" className="hidden px-4 uppercase sm:inline-flex">
+            <Button asChild size="sm" className="px-3 uppercase sm:px-4">
               <Link to="/membership">{site.joinCta}</Link>
             </Button>
             <Button

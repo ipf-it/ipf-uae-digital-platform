@@ -1,5 +1,8 @@
+import { useCallback, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { BrandLoader } from "../components/BrandLoader";
+import { BrandMark } from "../components/BrandMark";
+import { MobileIntro } from "../components/MobileIntro";
 import { DocumentTitle } from "../components/layout/DocumentTitle";
 import { Badge } from "../components/ui/Badge";
 import { Button } from "../components/ui/Button";
@@ -13,6 +16,7 @@ import { Section } from "../components/ui/Section";
 import { SectionTitle } from "../components/ui/SectionTitle";
 import { StatPill } from "../components/ui/StatPill";
 import { CalendarDays, HeartHandshake, Landmark, Newspaper, Users } from "lucide-react";
+import { cn } from "../lib/utils";
 import {
   chapterList,
   featuredInitiatives,
@@ -25,6 +29,7 @@ import {
   upcomingEvents,
 } from "../data/platformContent";
 import { img, site } from "../data/site";
+import { markMobileIntroPlayed, shouldPlayMobileIntro } from "../lib/mobileIntro";
 
 const quickLinks = [
   { to: "/membership", label: "Membership", icon: Users },
@@ -35,17 +40,31 @@ const quickLinks = [
 
 export default function HomePage() {
   const { content } = useCms();
+  const markRef = useRef<HTMLDivElement>(null);
+  const [introReady, setIntroReady] = useState(() => !shouldPlayMobileIntro());
+  const finishIntro = useCallback(() => {
+    markMobileIntroPlayed();
+    setIntroReady(true);
+  }, []);
+
   return (
     <>
       <DocumentTitle title="Official Community Website" />
 
       <div className="lg:hidden">
+        {!introReady ? <MobileIntro anchorRef={markRef} onDone={finishIntro} /> : null}
         <section className="bg-[var(--ipf-navy)] text-white">
           <Container className="flex flex-col items-center py-12 text-center">
-            <BrandLoader size={110} label="Official emblem of Indian People's Forum UAE" />
-            <p className="mt-4 text-[11px] font-semibold uppercase tracking-[0.16em] text-[var(--ipf-gold)]">
-              Official emblem
-            </p>
+            <div ref={markRef} className={cn("flex flex-col items-center", !introReady && "invisible")}>
+              <BrandLoader size={110} label={`${site.brandMark} emblem`} />
+              <BrandMark className="mt-4" />
+            </div>
+            <div
+              className={cn(
+                "flex w-full flex-col items-center transition-opacity duration-500",
+                introReady ? "opacity-100" : "opacity-0",
+              )}
+            >
             <div className="mt-5">
               <Badge>Official community organisation</Badge>
             </div>
@@ -70,14 +89,15 @@ export default function HomePage() {
                 <StatPill key={stat.label} label={stat.label} value={stat.value} tone="dark" />
               ))}
             </div>
+            </div>
           </Container>
         </section>
         <ImageCarousel
           framed={false}
-          fit="cover"
-          positionClass="object-[center_62%]"
+          fit="contain"
+          positionClass="object-center"
           slides={content.heroSlides}
-          heightClass="aspect-video h-auto max-h-[70vh] w-full"
+          heightClass="aspect-[4/3] h-auto max-h-[62vh] w-full"
         />
       </div>
 
@@ -107,10 +127,10 @@ export default function HomePage() {
               </div>
             </div>
             <div className="mt-8 flex max-w-xl flex-col items-start gap-4 rounded-xl border border-white/15 bg-[var(--ipf-navy)]/55 px-4 py-4 sm:flex-row sm:items-center sm:gap-5 sm:px-5">
-              <BrandLoader size={96} label="Official emblem of Indian People's Forum UAE" />
+              <BrandLoader size={96} label={`${site.brandMark} emblem`} />
               <div className="min-w-0">
                 <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[var(--ipf-gold)]">
-                  Official emblem
+                  {site.emblemLabel}
                 </p>
                 <p className="mt-1 text-sm leading-6 text-white/85">
                   Vasudhaiva Kutumbakam — one family, one team, serving Indians in the UAE.
@@ -270,8 +290,8 @@ export default function HomePage() {
       <Section tone="white">
         <Container>
           <Card tone="navy" flush className="h-auto overflow-hidden">
-            <div className="flex min-h-[18rem] flex-row items-stretch sm:min-h-[22rem]">
-              <div className="flex min-w-0 flex-1 flex-col justify-center px-5 py-7 sm:px-10 sm:py-9">
+            <div className="flex flex-col lg:min-h-[22rem] lg:flex-row lg:items-stretch">
+              <div className="order-2 flex min-w-0 flex-1 flex-col justify-center px-5 py-7 sm:px-10 sm:py-9 lg:order-1">
                 <p className="text-xs font-bold uppercase tracking-[0.16em] text-[var(--ipf-gold)]">
                   President's message
                 </p>
@@ -284,13 +304,14 @@ export default function HomePage() {
                   </Button>
                 </div>
               </div>
-              <div className="relative w-[42%] min-w-[8.5rem] max-w-[24rem] shrink-0 bg-[var(--ipf-navy)]">
+              <div className="relative order-1 h-72 w-full shrink-0 bg-[var(--ipf-navy)] sm:h-80 lg:order-2 lg:h-auto lg:w-[42%] lg:min-w-[8.5rem] lg:max-w-[24rem]">
                 <img
                   src={img.president}
                   alt={`${site.president}, ${site.presidentRole}`}
-                  className="absolute inset-0 h-full w-full object-cover object-[center_22%]"
+                  className="h-full w-full object-contain object-[center_22%] lg:absolute lg:inset-0 lg:object-cover"
                 />
-                <div className="pointer-events-none absolute inset-y-0 left-0 w-8 bg-gradient-to-r from-[var(--ipf-navy)] to-transparent sm:w-10" />
+                <div className="pointer-events-none absolute inset-x-0 bottom-0 h-14 bg-gradient-to-t from-[var(--ipf-navy)] to-transparent lg:hidden" />
+                <div className="pointer-events-none absolute inset-y-0 left-0 hidden w-8 bg-gradient-to-r from-[var(--ipf-navy)] to-transparent sm:w-10 lg:block" />
               </div>
             </div>
           </Card>

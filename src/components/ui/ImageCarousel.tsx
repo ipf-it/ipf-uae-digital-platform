@@ -203,7 +203,9 @@ export function ImageCarousel({
         alt={slide.alt}
         className={cn(
           "absolute inset-0 h-full w-full max-w-none",
-          fit === "contain" ? "object-contain object-center" : cn("object-cover", positionClass),
+          fit === "contain"
+            ? "object-contain object-center"
+            : cn("object-contain object-center ipf-photo-cover-desktop", positionClass),
         )}
       />
       <Controls

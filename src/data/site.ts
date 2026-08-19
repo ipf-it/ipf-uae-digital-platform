@@ -1,9 +1,11 @@
 export const site = {
   name: "Indian People's Forum UAE",
   shortName: "IPF UAE",
+  brandMark: "IPF",
   titleLine: "Indian People's Forum",
   tagline: "UAE • Community Welfare & Culture",
   joinCta: "Join IPF",
+  emblemLabel: "Official emblem",
   utilityBar: "Registered socio-cultural organisation • Ajman, United Arab Emirates",
   email: "info@ipf-uae.org",
   grievanceEmail: "ipfuae@ipf-uae.org",

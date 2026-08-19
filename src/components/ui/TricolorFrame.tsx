@@ -46,7 +46,9 @@ export function FramedPhoto({
         loading={loading}
         className={cn(
           "block h-full w-full max-w-none",
-          fit === "contain" ? "object-contain object-center" : "object-cover object-top",
+          fit === "contain"
+            ? "bg-[var(--ipf-navy)] object-contain object-center"
+            : "bg-[var(--ipf-navy)] object-contain object-center ipf-photo-cover-desktop md:object-top",
           imgClassName,
         )}
       />

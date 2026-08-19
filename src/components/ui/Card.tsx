@@ -55,8 +55,8 @@ export function Card({
             imageFit === "contain"
               ? "h-52 bg-[var(--ipf-navy)]"
               : size === "sm"
-                ? "aspect-[16/10] h-auto object-top"
-                : "aspect-[4/3] h-auto object-top",
+                ? "aspect-[16/10] h-auto min-h-[9rem] object-top"
+                : "aspect-[4/3] h-auto min-h-[13rem] object-top",
             imageClassName,
           )}
         />

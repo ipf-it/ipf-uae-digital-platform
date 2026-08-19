@@ -24,7 +24,7 @@ export default function PresidentPage() {
             <FramedPhoto
               src={img.president}
               alt="Shri Jitendra Vaidya, President IPF UAE"
-              imgClassName="h-72 object-top"
+              imgClassName="h-72 w-full bg-[var(--ipf-navy)] object-top"
             />
             <figcaption className="mt-4">
               <p className="text-lg font-bold text-[var(--ipf-navy)]">Shri Jitendra Vaidya</p>

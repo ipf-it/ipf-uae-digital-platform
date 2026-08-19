@@ -58,7 +58,7 @@ export default function GalleryPage() {
                   alt={item.alt}
                   fit="contain"
                   loading="lazy"
-                  imgClassName="h-56 w-full bg-[var(--ipf-navy)]"
+                  imgClassName="h-64 w-full bg-[var(--ipf-navy)] sm:h-56"
                 />
                 <figcaption className="px-3 py-3 text-xs text-[var(--ipf-muted)]">{item.alt}</figcaption>
               </figure>

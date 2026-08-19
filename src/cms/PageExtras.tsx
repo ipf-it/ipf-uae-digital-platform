@@ -44,7 +44,13 @@ export function PageExtras({ page, tone = "ivory" }: { page: CmsPageKey; tone?: 
                   {section.type === "photoGrid" && section.slides?.length ? (
                     <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                       {section.slides.map((slide) => (
-                        <FramedPhoto key={slide.src} src={slide.src} alt={slide.alt} imgClassName="h-56" />
+                        <FramedPhoto
+                          key={slide.src}
+                          src={slide.src}
+                          alt={slide.alt}
+                          fit="contain"
+                          imgClassName="h-56 w-full bg-[var(--ipf-navy)] sm:h-64"
+                        />
                       ))}
                     </div>
                   ) : null}
