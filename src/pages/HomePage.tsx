@@ -2,7 +2,6 @@ import { useCallback, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { ChevronDown } from "lucide-react";
 import { BrandLoader } from "../components/BrandLoader";
-import { BrandMark } from "../components/BrandMark";
 import { CommunityStats } from "../components/CommunityStats";
 import { MobileIntro } from "../components/MobileIntro";
 import { DocumentTitle } from "../components/layout/DocumentTitle";
@@ -41,11 +40,10 @@ export default function HomePage() {
 
       <div className="lg:hidden">
         {!introReady ? <MobileIntro anchorRef={markRef} onDone={finishIntro} /> : null}
-        <section className="flex h-[calc(100svh-var(--ipf-header-h,4.85rem))] flex-col overflow-hidden bg-[var(--ipf-navy)] text-white">
-          <Container className="flex shrink-0 flex-col items-center pb-3 pt-5 text-center">
+        <section className="flex h-[calc(100svh-var(--ipf-header-h,4.85rem)-var(--ipf-tabbar-h,4.75rem))] flex-col overflow-hidden bg-[var(--ipf-navy)] text-white">
+          <Container className="flex shrink-0 flex-col items-center pb-2 pt-3 text-center">
             <div ref={markRef} className={cn("flex flex-col items-center", !introReady && "invisible")}>
-              <BrandLoader size={96} label={`${site.brandMark} emblem`} />
-              <BrandMark className="mt-3" />
+              <BrandLoader size={72} label={`${site.brandMark} emblem`} />
             </div>
             <div
               className={cn(
@@ -53,15 +51,15 @@ export default function HomePage() {
                 introReady ? "opacity-100" : "opacity-0",
               )}
             >
-              <div className="mt-3">
+              <div className="mt-2">
                 <Badge>{t("home.badge")}</Badge>
               </div>
-              <h1 className="mt-3 text-balance text-[1.7rem] font-bold leading-[1.15] text-white">
+              <h1 className="mt-2 text-balance text-[1.55rem] font-bold leading-[1.15] text-white">
                 {t("home.title")}
-                <span className="mt-1.5 block text-lg font-semibold text-[var(--ipf-gold)]">{t("home.uae")}</span>
+                <span className="mt-1 block text-base font-semibold text-[var(--ipf-gold)]">{t("home.uae")}</span>
               </h1>
-              <p className="mt-3 max-w-md text-pretty text-sm leading-6 text-white/85 line-clamp-3">{t("home.intro")}</p>
-              <div className="mt-4 flex flex-wrap justify-center gap-2.5">
+              <p className="mt-2 max-w-md text-pretty text-sm leading-5 text-white/85 line-clamp-2">{t("home.intro")}</p>
+              <div className="mt-3 flex flex-wrap justify-center gap-2.5">
                 <Button asChild variant="gold" className="min-h-10 px-3 text-xs">
                   <Link to="/membership">{t("nav.join")}</Link>
                 </Button>
@@ -71,19 +69,20 @@ export default function HomePage() {
               </div>
             </div>
           </Container>
-          <div className="relative min-h-0 flex-1">
+          <div className="flex min-h-0 flex-1 flex-col px-2">
             <ImageCarousel
               framed={false}
               fit="contain"
+              chrome="below"
               positionClass="object-center"
               slides={content.heroSlides}
-              className="h-full"
-              heightClass="h-full w-full"
+              className="flex h-full min-h-0 flex-col"
+              heightClass="min-h-0 w-full flex-1"
             />
           </div>
           <a
             href="#community-stats"
-            className="flex shrink-0 flex-col items-center gap-0.5 pb-3 pt-1 text-[11px] font-semibold tracking-wide text-white/90"
+            className="flex shrink-0 flex-col items-center gap-0.5 pb-2 pt-1 text-[11px] font-semibold tracking-wide text-white/90"
           >
             {t("home.scroll")}
             <ChevronDown className="size-4 animate-bounce" />

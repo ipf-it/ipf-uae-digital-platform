@@ -19,6 +19,7 @@ type ImageCarouselProps = {
   framed?: boolean;
   fit?: "cover" | "contain";
   positionClass?: string;
+  chrome?: "overlay" | "below";
 };
 
 function uniqueSlides(slides: CarouselSlide[]) {
@@ -69,6 +70,7 @@ function Controls({
   caption,
   compact = false,
   heroFill = false,
+  arrowsOnly = false,
 }: {
   count: number;
   index: number;
@@ -79,6 +81,7 @@ function Controls({
   caption?: string;
   compact?: boolean;
   heroFill?: boolean;
+  arrowsOnly?: boolean;
 }) {
   if (count < 2 && !caption) return null;
   const showDots = count > 1 && count <= 6;
@@ -111,7 +114,7 @@ function Controls({
           </button>
         </>
       ) : null}
-      {compact ? (
+      {arrowsOnly ? null : compact ? (
         count > 1 ? (
           <div
             className={cn(
@@ -179,17 +182,20 @@ export function ImageCarousel({
   framed = true,
   fit = "cover",
   positionClass = "object-top",
+  chrome = "overlay",
 }: ImageCarouselProps) {
   const items = uniqueSlides(slides);
   const startX = useRef(0);
   const { index, setIndex, go, hover } = useCarousel(items.length, interval, autoPlay);
   const slide = items[index];
+  const caption = slide?.title || slide?.caption;
+  const below = chrome === "below";
 
   if (!slide) return null;
 
   const viewport = (
     <div
-      className={cn("relative overflow-hidden bg-[var(--ipf-navy)]", heightClass)}
+      className={cn("relative min-h-0 overflow-hidden bg-[var(--ipf-navy)]", heightClass)}
       onMouseEnter={() => {
         hover.current = true;
       }}
@@ -221,14 +227,42 @@ export function ImageCarousel({
         onPrev={() => go(-1)}
         onNext={() => go(1)}
         onSelect={setIndex}
-        caption={slide.title || slide.caption}
+        arrowsOnly={below}
+        caption={below ? undefined : caption}
       />
     </div>
   );
 
   return (
-    <figure className={cn("min-w-0 overflow-hidden", className)} aria-roledescription="carousel">
+    <figure
+      className={cn("min-w-0 overflow-hidden", below && "flex min-h-0 flex-col", className)}
+      aria-roledescription="carousel"
+    >
       {framed ? <TricolorFrame>{viewport}</TricolorFrame> : viewport}
+      {below && (caption || items.length > 1) ? (
+        <figcaption className="shrink-0 px-4 pb-1 pt-2 text-center">
+          {caption ? (
+            <p className="text-xs font-semibold leading-5 text-white sm:text-sm">{caption}</p>
+          ) : null}
+          {items.length > 1 && items.length <= 6 ? (
+            <div className={cn("flex justify-center gap-1.5", caption ? "mt-2" : "")}>
+              {items.map((_, itemIndex) => (
+                <button
+                  key={itemIndex}
+                  type="button"
+                  aria-label={`Slide ${itemIndex + 1}`}
+                  aria-current={itemIndex === index}
+                  className={cn(
+                    "h-2 rounded-full transition",
+                    itemIndex === index ? "w-5 bg-white" : "w-2 bg-white/45 hover:bg-white/70",
+                  )}
+                  onClick={() => setIndex(itemIndex)}
+                />
+              ))}
+            </div>
+          ) : null}
+        </figcaption>
+      ) : null}
     </figure>
   );
 }

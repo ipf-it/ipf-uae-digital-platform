@@ -1,3 +1,4 @@
+import { useEffect, useRef } from "react";
 import { House, Images, CalendarDays, Users, UserPlus } from "lucide-react";
 import { NavLink } from "react-router-dom";
 import { mobileTabs } from "../../data/navigation";
@@ -22,8 +23,23 @@ const tabKeys: Record<string, string> = {
 
 export function MobileTabBar() {
   const { t } = useLocale();
+  const navRef = useRef<HTMLElement>(null);
+
+  useEffect(() => {
+    const el = navRef.current;
+    if (!el) return;
+    const sync = () => {
+      document.documentElement.style.setProperty("--ipf-tabbar-h", `${el.offsetHeight}px`);
+    };
+    sync();
+    const observer = new ResizeObserver(sync);
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
+
   return (
     <nav
+      ref={navRef}
       className="fixed inset-x-0 bottom-0 z-50 border-t border-[var(--ipf-line)] bg-[var(--ipf-paper)]/95 pb-[env(safe-area-inset-bottom)] backdrop-blur-md lg:hidden"
       aria-label={t("nav.home")}
     >
