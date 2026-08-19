@@ -9,6 +9,7 @@ const LeadershipPage = lazy(() => import("./pages/LeadershipPage"));
 const GovernancePage = lazy(() => import("./pages/GovernancePage"));
 const HistoryPage = lazy(() => import("./pages/HistoryPage"));
 const ChaptersPage = lazy(() => import("./pages/ChaptersPage"));
+const ChapterPage = lazy(() => import("./pages/ChapterPage"));
 const CouncilsPage = lazy(() => import("./pages/CouncilsPage"));
 const CouncilPage = lazy(() => import("./pages/CouncilPage"));
 const GalleryPage = lazy(() => import("./pages/GalleryPage"));
@@ -53,6 +54,7 @@ function App() {
           <Route path="governance" element={<GovernancePage />} />
           <Route path="history" element={<HistoryPage />} />
           <Route path="chapters" element={<ChaptersPage />} />
+          <Route path="chapters/:chapterId" element={<ChapterPage />} />
           <Route path="councils" element={<CouncilsPage />} />
           <Route path="councils/:councilId" element={<CouncilPage />} />
           <Route path="gallery" element={<GalleryPage />} />

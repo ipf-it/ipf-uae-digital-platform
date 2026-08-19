@@ -34,10 +34,29 @@ export const emirateChapterOrder = [
   "al-ain",
 ] as const;
 
+export function chapterPath(id: string) {
+  return `/chapters/${id}`;
+}
+
+export function getChapter(id: string) {
+  return chapters.find((chapter) => chapter.id === id);
+}
+
+export const chapterImages: Record<string, string> = {
+  "abu-dhabi": "/legacy-assets/images/india-uae.jpg",
+  dubai: "/legacy-assets/images/dsf.jpg",
+  sharjah: "/legacy-assets/images/covid-check-point-sharjah.jpg",
+  ajman: "/legacy-assets/images/news1.jpg",
+  "al-ain": "/legacy-assets/images/community-support.png",
+  "umm-al-quwain": "/legacy-assets/images/glimpse.jpg",
+  "ras-al-khaimah": "/legacy-assets/images/glimses2.jpg",
+  fujairah: "/legacy-assets/images/gallery3.jpg",
+};
+
 export const emirateNavItems: OrgNavLink[] = emirateChapterOrder.map((id) => ({
   id,
   name: chapterById[id]?.name ?? id,
-  to: `/chapters#${id}`,
+  to: chapterPath(id),
   bullet: "saffron",
 }));
 

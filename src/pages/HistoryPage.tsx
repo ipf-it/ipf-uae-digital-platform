@@ -20,9 +20,18 @@ export default function HistoryPage() {
       <Section tone="white">
         <Container>
           <CardGrid columns={2}>
-            {historyMilestones.map((mile) => (
-              <Card key={mile.title} tone="ivory" eyebrow={mile.year} title={mile.title} description={mile.detail} />
-            ))}
+            {historyMilestones.map((mile, index) => {
+              const n = index + 1;
+              return (
+                <Card
+                  key={mile.year}
+                  tone="ivory"
+                  eyebrow={index === 3 ? t("page.history.ongoing") : mile.year}
+                  title={t(`page.history.m${n}Title`)}
+                  description={t(`page.history.m${n}Detail`)}
+                />
+              );
+            })}
           </CardGrid>
         </Container>
       </Section>

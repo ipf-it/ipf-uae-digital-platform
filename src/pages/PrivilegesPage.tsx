@@ -5,8 +5,9 @@ import { Button } from "../components/ui/Button";
 import { Card } from "../components/ui/Card";
 import { Container } from "../components/ui/Container";
 import { Section } from "../components/ui/Section";
-import { privilegeBenefits } from "../data/platformContent";
 import { useLocale } from "../i18n/LocaleProvider";
+
+const privilegeKeys = ["b1", "b2", "b3", "b4", "b5", "b6", "b7", "b8"] as const;
 
 export default function PrivilegesPage() {
   const { t } = useLocale();
@@ -23,8 +24,8 @@ export default function PrivilegesPage() {
         <Container>
           <h2 className="text-2xl font-bold text-[var(--ipf-navy)]">{t("common.whyJoin")}</h2>
           <div className="mt-5 grid gap-4 md:grid-cols-2">
-            {privilegeBenefits.map((item) => (
-              <Card key={item} size="sm" description={item} />
+            {privilegeKeys.map((key) => (
+              <Card key={key} size="sm" description={t(`page.privileges.${key}`)} />
             ))}
           </div>
           <div className="mt-8 flex flex-wrap gap-3">

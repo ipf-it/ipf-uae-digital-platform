@@ -24,9 +24,9 @@ export function FaqAssistant() {
           <p className="mt-1 text-sm text-[var(--ipf-muted)]">{t("common.helpBlurb")}</p>
           <ul className="mt-3 max-h-72 space-y-2 overflow-y-auto">
             {faqs.map((item) => (
-              <li key={item.q} className="rounded-lg bg-[var(--ipf-ivory)] p-3">
-                <p className="text-sm font-semibold text-[var(--ipf-navy)]">{item.q}</p>
-                <p className="mt-1 text-xs leading-5 text-[var(--ipf-muted)]">{item.a}</p>
+              <li key={item.id} className="rounded-lg bg-[var(--ipf-ivory)] p-3">
+                <p className="text-sm font-semibold text-[var(--ipf-navy)]">{t(`faq.${item.id}.q`)}</p>
+                <p className="mt-1 text-xs leading-5 text-[var(--ipf-muted)]">{t(`faq.${item.id}.a`)}</p>
                 <Link className="mt-2 inline-block text-xs font-semibold text-[var(--ipf-green)]" to={item.href} onClick={() => setOpen(false)}>
                   {t("common.openPage")}
                 </Link>

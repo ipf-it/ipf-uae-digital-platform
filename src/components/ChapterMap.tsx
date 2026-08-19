@@ -1,6 +1,9 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { chapterPath } from "../data/orgNav";
 import { chapters } from "../data/platformContent";
 import uaeMap from "../data/uaeMap.json";
+import { useLocale } from "../i18n/LocaleProvider";
 import { cn } from "../lib/utils";
 
 const chapterById = Object.fromEntries(chapters.map((chapter) => [chapter.id, chapter]));
@@ -19,10 +22,6 @@ const pins: { id: string; x: number; y: number; label: string }[] = [
 const abuDhabi = uaeMap.locations.find((item) => item.id === "abu-dhabi");
 const otherEmirates = uaeMap.locations.filter((item) => item.id !== "abu-dhabi");
 
-function openChapter(id: string) {
-  document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" });
-}
-
 function regionClass(selected: boolean) {
   return cn(
     "cursor-pointer stroke-white stroke-[1.5] transition",
@@ -31,12 +30,14 @@ function regionClass(selected: boolean) {
 }
 
 export function ChapterMap() {
+  const { t } = useLocale();
+  const navigate = useNavigate();
   const [active, setActive] = useState("dubai");
   const chapter = chapterById[active];
 
-  function selectChapter(id: string, scrollToCard = false) {
+  function selectChapter(id: string) {
     setActive(id);
-    if (scrollToCard) openChapter(id);
+    navigate(chapterPath(id));
   }
 
   return (
@@ -47,7 +48,7 @@ export function ChapterMap() {
           preserveAspectRatio="xMidYMid meet"
           className="h-full w-full max-h-full max-w-full"
           role="img"
-          aria-label="IPF chapters across the United Arab Emirates"
+          aria-label={t("page.chapters.mapAria")}
         >
           <defs>
             <clipPath id="ipf-abu-dhabi-land" clipPathUnits="userSpaceOnUse">
@@ -107,7 +108,7 @@ export function ChapterMap() {
         </svg>
       </div>
       <div className="flex flex-col border-t border-[var(--ipf-line)] p-3 sm:p-4 lg:h-[320px] lg:border-l lg:border-t-0">
-        <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-[var(--ipf-green)]">IPF chapters</p>
+        <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-[var(--ipf-green)]">{t("nav.chapters")}</p>
         <ul className="mt-2 flex flex-wrap gap-1.5 lg:flex-1 lg:flex-col lg:flex-nowrap lg:gap-1 lg:overflow-y-auto">
           {chapters.map((item) => (
             <li key={item.id} className="lg:w-full">
@@ -117,7 +118,7 @@ export function ChapterMap() {
                   "rounded-lg px-2.5 py-1.5 text-left text-xs font-semibold sm:text-sm",
                   active === item.id ? "bg-[var(--ipf-navy)] text-white" : "bg-[var(--ipf-ivory)] text-[var(--ipf-navy)] hover:bg-[var(--ipf-navy)]/10",
                 )}
-                onClick={() => selectChapter(item.id, true)}
+                onClick={() => selectChapter(item.id)}
               >
                 {item.name}
               </button>
@@ -126,7 +127,7 @@ export function ChapterMap() {
         </ul>
         {chapter ? (
           <p className="mt-3 hidden text-xs leading-5 text-[var(--ipf-muted)] lg:block">
-            {chapter.note}
+            {t(`page.chapter.note.${chapter.id}`)}
           </p>
         ) : null}
       </div>

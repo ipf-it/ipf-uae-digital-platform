@@ -17,13 +17,17 @@ export default function TestimonialsPage() {
         description={t("page.testimonials.desc")}
         crumbs={[{ label: t("page.testimonials.title") }]}
       />
-      {testimonials.map((group, index) => (
-        <Section key={group.group} tone={index % 2 === 0 ? "white" : "ivory"}>
+      {testimonials.map((group, groupIndex) => (
+        <Section key={group.group} tone={groupIndex % 2 === 0 ? "white" : "ivory"}>
           <Container>
-            <h2 className="text-2xl font-bold text-[var(--ipf-navy)]">{group.group}</h2>
+            <h2 className="text-2xl font-bold text-[var(--ipf-navy)]">{t(`page.testimonials.g${groupIndex + 1}`)}</h2>
             <div className="mt-8">
               <ImageCarousel
-                slides={group.items.map((item) => ({ src: item.image, alt: item.title, caption: item.title }))}
+                slides={group.items.map((item, itemIndex) => ({
+                  src: item.image,
+                  alt: t(`page.testimonials.g${groupIndex + 1}i${itemIndex + 1}`),
+                  caption: t(`page.testimonials.g${groupIndex + 1}i${itemIndex + 1}`),
+                }))}
                 heightClass="aspect-[4/3] h-auto max-h-[70vh] w-full"
               />
             </div>

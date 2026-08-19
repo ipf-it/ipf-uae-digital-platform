@@ -8,9 +8,12 @@ import { useCms } from "../cms/ContentProvider";
 import { Section } from "../components/ui/Section";
 import { PillNav } from "../components/ui/Tabs";
 import { galleryNavItems } from "../data/galleryNav";
-import { chapterList, uaeHighlights } from "../data/platformContent";
+import { chapterPath } from "../data/orgNav";
+import { chapters } from "../data/platformContent";
 import { img } from "../data/site";
 import { useLocale } from "../i18n/LocaleProvider";
+
+const highlightKeys = ["h1", "h2", "h3"] as const;
 
 export default function ExploreUaePage() {
   const { t } = useLocale();
@@ -32,14 +35,14 @@ export default function ExploreUaePage() {
           </div>
           <div className="grid items-stretch gap-8 lg:grid-cols-[1.1fr,0.9fr]">
           <div className="grid gap-5">
-            {uaeHighlights.map((item) => (
-              <Card key={item.title} tone="ivory" title={item.title} description={item.description} />
+            {highlightKeys.map((key) => (
+              <Card key={key} tone="ivory" title={t(`page.explore.${key}Title`)} description={t(`page.explore.${key}Desc`)} />
             ))}
           </div>
           {slides.length > 0 ? (
             <ImageCarousel slides={slides} heightClass="aspect-[4/3] h-auto w-full" />
           ) : (
-            <FitImage src={img.slider} alt="Community life in the UAE" />
+            <FitImage src={img.slider} alt={t("page.explore.photoAlt")} />
           )}
           </div>
         </Container>
@@ -48,8 +51,8 @@ export default function ExploreUaePage() {
         <Container>
           <h2 className="text-2xl font-bold text-[var(--ipf-navy)]">{t("page.explore.across")}</h2>
           <CardGrid columns={4} className="mt-6">
-            {chapterList.map((chapter) => (
-              <Card key={chapter} to="/chapters" size="sm" align="center" title={chapter} />
+            {chapters.map((chapter) => (
+              <Card key={chapter.id} to={chapterPath(chapter.id)} size="sm" align="center" title={chapter.name} />
             ))}
           </CardGrid>
         </Container>

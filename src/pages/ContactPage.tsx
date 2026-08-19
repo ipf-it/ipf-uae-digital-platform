@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import { InquiryForm } from "../components/forms/InquiryForm";
 import { DocumentTitle } from "../components/layout/DocumentTitle";
 import { PageHero } from "../components/layout/PageHero";
@@ -24,7 +25,7 @@ export default function ContactPage() {
           <aside className="space-y-5">
             <Card tone="ivory" title={t("page.contact.office")} description={site.office}>
               <p className="text-sm leading-7 text-[var(--ipf-muted)]">
-                Email:{" "}
+                {t("common.email")}:{" "}
                 <a className="break-all font-semibold text-[var(--ipf-navy)]" href={`mailto:${site.email}`}>
                   {site.email}
                 </a>
@@ -33,13 +34,19 @@ export default function ContactPage() {
             <Card tone="ivory" title={t("page.contact.desks")}>
               <ul className="space-y-2 text-sm leading-7 text-[var(--ipf-muted)]">
                 <li>
-                  Abu Dhabi:{" "}
+                  <Link className="font-semibold text-[var(--ipf-navy)]" to="/chapters/abu-dhabi">
+                    {t("page.contact.abuDhabi")}
+                  </Link>
+                  :{" "}
                   <a className="break-all font-semibold text-[var(--ipf-navy)]" href={`mailto:${site.abuDhabiEmail}`}>
                     {site.abuDhabiEmail}
                   </a>
                 </li>
                 <li>
-                  {t("page.contact.business")}:{" "}
+                  <Link className="font-semibold text-[var(--ipf-navy)]" to="/councils/business">
+                    {t("page.contact.business")}
+                  </Link>
+                  :{" "}
                   <a className="break-all font-semibold text-[var(--ipf-navy)]" href={`mailto:${site.businessEmail}`}>
                     {site.businessEmail}
                   </a>

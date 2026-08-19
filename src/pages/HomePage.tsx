@@ -204,7 +204,7 @@ export default function HomePage() {
           </div>
           <FramedPhoto
             src={img.indiaUae}
-            alt="India and UAE partnership"
+            alt={t("page.discover.photoAlt")}
             fit="contain"
             imgClassName="aspect-[4/3] h-auto w-full bg-[var(--ipf-navy)]"
           />

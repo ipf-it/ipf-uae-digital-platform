@@ -23,7 +23,7 @@ export default function SupportPage() {
       />
       <Section id="grievances" tone="white">
         <span id="grievence-counseling" className="sr-only">
-          Grievances and counselling
+          {t("page.support.grievTitle")}
         </span>
         <Container className="grid gap-8 lg:grid-cols-2 lg:items-start">
           <div>
@@ -52,7 +52,7 @@ export default function SupportPage() {
       </Section>
       <Section id="community">
         <span id="community-supprt" className="sr-only">
-          Community support
+          {t("page.support.communityTitle")}
         </span>
         <Container className="grid gap-8 lg:grid-cols-2 lg:items-start">
           <div>

@@ -23,17 +23,17 @@ export function SearchDialog() {
       ...catalogSeedEvents.map((item) => ({ title: item.title, to: `/events/${item.id}`, kind: "Event" })),
       ...content.leadership.map((item) => ({ title: `${item.name} — ${item.role}`, to: "/leadership", kind: "Leadership" })),
       ...content.galleryImages.map((item) => ({ title: item.alt, to: "/gallery", kind: "Gallery" })),
-      ...chapters.map((item) => ({ title: `${item.name} chapter`, to: `/chapters#${item.id}`, kind: "Chapter" })),
-      ...stateCouncils.map((item) => ({ title: item.name, to: item.to, kind: "Council" })),
-      ...specialCouncils.map((item) => ({ title: item.name, to: item.to, kind: "Council" })),
-      { title: "Councils", to: "/councils", kind: "Council" },
-      { title: "IPF Yuva", to: "/yuva", kind: "Programme" },
-      { title: "Resources", to: "/resources", kind: "Programme" },
-      { title: "IPF Cares", to: "/support#community", kind: "Support" },
-      { title: "Membership", to: "/membership", kind: "Join" },
+      ...chapters.map((item) => ({ title: `${item.name} ${t("nav.chapters")}`, to: `/chapters/${item.id}`, kind: t("nav.chapters") })),
+      ...stateCouncils.map((item) => ({ title: item.name, to: item.to, kind: t("nav.councils") })),
+      ...specialCouncils.map((item) => ({ title: item.name, to: item.to, kind: t("nav.councils") })),
+      { title: t("nav.councils"), to: "/councils", kind: t("nav.councils") },
+      { title: t("nav.yuva"), to: "/yuva", kind: t("nav.yuva") },
+      { title: t("nav.resources"), to: "/resources", kind: t("nav.resources") },
+      { title: t("nav.ipfCares"), to: "/support#community", kind: t("nav.support") },
+      { title: t("nav.membership"), to: "/membership", kind: t("nav.join") },
     ];
     return items.filter((item) => item.title.toLowerCase().includes(query)).slice(0, 8);
-  }, [content, q]);
+  }, [content, q, t]);
 
   return (
     <>

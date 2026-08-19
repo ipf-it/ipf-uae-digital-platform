@@ -91,7 +91,7 @@ export default function CommitteePage() {
           </p>
           <CardGrid columns={4} className="mt-6">
             {chapters.map((chapter) => (
-              <Card key={chapter.id} to={`/chapters#${chapter.id}`} size="sm" align="center" title={chapter.name} />
+              <Card key={chapter.id} to={`/chapters/${chapter.id}`} size="sm" align="center" title={chapter.name} />
             ))}
           </CardGrid>
         </Container>

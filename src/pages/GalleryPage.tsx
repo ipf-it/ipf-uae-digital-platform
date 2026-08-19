@@ -38,19 +38,22 @@ export default function GalleryPage() {
             heightClass="h-[260px] sm:h-[400px] lg:h-[480px]"
           />
           <CardGrid className="mb-10 mt-10">
-            {glimpseStories.map((story) => (
-              <Card
-                key={story.title}
-                to={story.to}
-                tone="ivory"
-                eyebrow={story.date}
-                title={story.title}
-                description={story.text}
-                image={story.image}
-                imageAlt={story.title}
-                imageFit="contain"
-              />
-            ))}
+            {glimpseStories.map((story, index) => {
+              const n = index + 1;
+              return (
+                <Card
+                  key={story.to + n}
+                  to={story.to}
+                  tone="ivory"
+                  eyebrow={story.date}
+                  title={t(`page.gallery.s${n}Title`)}
+                  description={t(`page.gallery.s${n}Text`)}
+                  image={story.image}
+                  imageAlt={t(`page.gallery.s${n}Title`)}
+                  imageFit="contain"
+                />
+              );
+            })}
           </CardGrid>
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {content.galleryImages.map((item) => (
