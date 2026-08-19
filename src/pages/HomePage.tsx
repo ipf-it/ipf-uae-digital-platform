@@ -80,14 +80,14 @@ export default function HomePage() {
               className="h-full"
               heightClass="h-full w-full"
             />
-            <a
-              href="#community-stats"
-              className="absolute bottom-3 left-1/2 z-20 inline-flex -translate-x-1/2 flex-col items-center gap-0.5 text-[11px] font-semibold tracking-wide text-white/90"
-            >
-              {t("home.scroll")}
-              <ChevronDown className="size-4 animate-bounce" />
-            </a>
           </div>
+          <a
+            href="#community-stats"
+            className="flex shrink-0 flex-col items-center gap-0.5 pb-3 pt-1 text-[11px] font-semibold tracking-wide text-white/90"
+          >
+            {t("home.scroll")}
+            <ChevronDown className="size-4 animate-bounce" />
+          </a>
         </section>
       </div>
 
