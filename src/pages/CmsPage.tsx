@@ -7,26 +7,7 @@ import { SimpleSelect } from "../components/ui/Select";
 import { Textarea } from "../components/ui/Textarea";
 import { defaultCmsContent } from "../cms/defaults";
 import { cmsPageKeys, type CmsContent, type CmsPageKey, type CmsSection } from "../cms/types";
-
-const tokenKey = "ipf-cms-token";
-const roleKey = "ipf-cms-role";
-const chapterNameKey = "ipf-cms-chapter-name";
-
-async function api(path: string, init?: RequestInit) {
-  const token = sessionStorage.getItem(tokenKey);
-  const response = await fetch(path, {
-    ...init,
-    headers: {
-      ...(init?.headers ?? {}),
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
-    },
-  });
-  if (!response.ok) {
-    const body = (await response.json().catch(() => ({}))) as { error?: string };
-    throw new Error(body.error ?? "Request failed");
-  }
-  return response.json();
-}
+import { api } from "../lib/api";
 
 function newId() {
   return `section-${Date.now()}`;
@@ -36,24 +17,22 @@ export default function CmsPage() {
   const [password, setPassword] = useState("");
   const [desk, setDesk] = useState<"central" | "chapter">("central");
   const [chapterId, setChapterId] = useState("dubai");
-  const [token, setToken] = useState(() => sessionStorage.getItem(tokenKey) ?? "");
-  const [role, setRole] = useState<"central" | "chapter">(() => (sessionStorage.getItem(roleKey) === "chapter" ? "chapter" : "central"));
-  const [chapterName, setChapterName] = useState(() => sessionStorage.getItem(chapterNameKey) ?? "Central desk");
+  const [signedIn, setSignedIn] = useState(false);
+  const [role, setRole] = useState<"central" | "chapter">("central");
+  const [chapterName, setChapterName] = useState("Central desk");
   const [content, setContent] = useState<CmsContent>(defaultCmsContent);
   const [status, setStatus] = useState("");
-  const [tab, setTab] = useState<"hero" | "gallery" | "events" | "news" | "leadership" | "sections" | "inbox">(
-    () => (sessionStorage.getItem(roleKey) === "chapter" ? "inbox" : "hero"),
-  );
+  const [tab, setTab] = useState<"hero" | "gallery" | "events" | "news" | "leadership" | "sections" | "inbox">("hero");
   const [pageKey, setPageKey] = useState<CmsPageKey>("home");
   const [inbox, setInbox] = useState<{
     inquiries: { id: string; createdAt: string; intent: string; name: string; email: string; phone?: string; emirate?: string; message?: string }[];
-    rsvps: { id: string; createdAt: string; eventTitle: string; name: string; email: string; phone?: string }[];
+    rsvps: { id: string; createdAt: string; eventTitle: string; name: string; email: string; phone?: string; registrationNo?: string }[];
+    volunteers: { id: string; createdAt: string; eventTitle: string; name: string; email: string; membershipNo: string; status: string }[];
     donations: { id: string; createdAt: string; name: string; email: string; amountAed: number; note?: string; status: string }[];
     members: { id: string; membershipNo: string; name: string; email: string; phone: string; emirate: string; createdAt: string; kind?: string }[];
     yuva: { id: string; membershipNo: string; name: string; email: string; phone: string; emirate: string; createdAt: string }[];
   } | null>(null);
 
-  const signedIn = Boolean(token);
   const extras = content.extras[pageKey] ?? [];
 
   const mediaOptions = useMemo(() => {
@@ -72,11 +51,8 @@ export default function CmsPage() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(desk === "chapter" ? { chapterId, password } : { password }),
-      })) as { token: string; role: "central" | "chapter"; chapterName?: string };
-      sessionStorage.setItem(tokenKey, result.token);
-      sessionStorage.setItem(roleKey, result.role);
-      sessionStorage.setItem(chapterNameKey, result.chapterName ?? "Central desk");
-      setToken(result.token);
+      })) as { role: "central" | "chapter"; chapterName?: string };
+      setSignedIn(true);
       setRole(result.role);
       setChapterName(result.chapterName ?? "Central desk");
       if (result.role === "chapter") setTab("inbox");
@@ -98,6 +74,23 @@ export default function CmsPage() {
       setStatus(error instanceof Error ? error.message : "Could not load inbox");
     }
   }
+
+  useEffect(() => {
+    void api<{ role: "central" | "chapter"; chapterName?: string }>("/api/cms/session")
+      .then(async (data) => {
+        setSignedIn(true);
+        setRole(data.role);
+        setChapterName(data.chapterName ?? "Central desk");
+        if (data.role === "chapter") setTab("inbox");
+        try {
+          const loaded = await api<CmsContent>("/api/cms/content");
+          setContent({ ...defaultCmsContent, ...loaded, extras: { ...defaultCmsContent.extras, ...(loaded.extras ?? {}) } });
+        } catch {
+          setContent(defaultCmsContent);
+        }
+      })
+      .catch(() => undefined);
+  }, []);
 
   useEffect(() => {
     if (!signedIn) return;
@@ -241,10 +234,8 @@ export default function CmsPage() {
             variant="secondary"
             className="w-full"
             onClick={() => {
-              sessionStorage.removeItem(tokenKey);
-              sessionStorage.removeItem(roleKey);
-              sessionStorage.removeItem(chapterNameKey);
-              setToken("");
+              void api("/api/cms/logout", { method: "POST" }).catch(() => undefined);
+              setSignedIn(false);
               setInbox(null);
               setStatus("");
             }}
@@ -292,7 +283,7 @@ export default function CmsPage() {
         {tab === "events" ? (
           <div className="space-y-6">
             <p className="text-sm leading-7 text-[var(--ipf-muted)]">
-              Add a dated event with a photograph carousel. These appear on the Events page above the annual calendar.
+              Dated programmes are stored in the events table. Upcoming / past, category, emirate and free filters on the public Events page read from that table.
             </p>
             {content.eventHighlights.map((event, eventIndex) => (
               <Card key={event.id} size="sm">
@@ -313,9 +304,69 @@ export default function CmsPage() {
                       eventHighlights[eventIndex] = { ...event, date: e.target.value };
                       setContent({ ...content, eventHighlights });
                     }}
-                    placeholder="Date"
+                    placeholder="Display date"
+                  />
+                  <Input
+                    value={event.startsAt ?? ""}
+                    onChange={(e) => {
+                      const eventHighlights = [...content.eventHighlights];
+                      eventHighlights[eventIndex] = { ...event, startsAt: e.target.value };
+                      setContent({ ...content, eventHighlights });
+                    }}
+                    placeholder="ISO start (2026-09-05T18:00)"
+                  />
+                  <Input
+                    value={event.location ?? ""}
+                    onChange={(e) => {
+                      const eventHighlights = [...content.eventHighlights];
+                      eventHighlights[eventIndex] = { ...event, location: e.target.value };
+                      setContent({ ...content, eventHighlights });
+                    }}
+                    placeholder="Location"
+                  />
+                  <SimpleSelect
+                    value={event.category ?? "Community"}
+                    onValueChange={(category) => {
+                      const eventHighlights = [...content.eventHighlights];
+                      eventHighlights[eventIndex] = { ...event, category };
+                      setContent({ ...content, eventHighlights });
+                    }}
+                    placeholder="Category"
+                    options={["Community", "Cultural", "Welfare", "Sports", "Youth", "Religious", "National"]}
+                  />
+                  <SimpleSelect
+                    value={event.emirate ?? "uae"}
+                    onValueChange={(emirate) => {
+                      const eventHighlights = [...content.eventHighlights];
+                      eventHighlights[eventIndex] = { ...event, emirate };
+                      setContent({ ...content, eventHighlights });
+                    }}
+                    placeholder="Emirate"
+                    options={[
+                      { value: "uae", label: "UAE-wide" },
+                      { value: "dubai", label: "Dubai" },
+                      { value: "abu-dhabi", label: "Abu Dhabi" },
+                      { value: "sharjah", label: "Sharjah" },
+                      { value: "ajman", label: "Ajman" },
+                      { value: "al-ain", label: "Al Ain" },
+                      { value: "ras-al-khaimah", label: "RAK" },
+                      { value: "fujairah", label: "Fujairah" },
+                      { value: "umm-al-quwain", label: "UAQ" },
+                    ]}
                   />
                 </div>
+                <label className="mt-3 flex items-center gap-2 text-sm text-[var(--ipf-navy)]">
+                  <input
+                    type="checkbox"
+                    checked={event.isFree !== false}
+                    onChange={(e) => {
+                      const eventHighlights = [...content.eventHighlights];
+                      eventHighlights[eventIndex] = { ...event, isFree: e.target.checked };
+                      setContent({ ...content, eventHighlights });
+                    }}
+                  />
+                  Free admission
+                </label>
                 <Textarea
                   className="mt-3 min-h-24"
                   value={event.body ?? ""}
@@ -358,7 +409,7 @@ export default function CmsPage() {
                   ...content,
                   eventHighlights: [
                     ...content.eventHighlights,
-                    { id: newId(), title: "New IPF event", date: "", location: "", body: "", slides: [] },
+                    { id: newId(), title: "New IPF event", date: "", location: "", body: "", slides: [], category: "Community", emirate: "uae", startsAt: "", isFree: true },
                   ],
                 })
               }
@@ -594,20 +645,21 @@ export default function CmsPage() {
                   </h2>
                   <p className="mt-1 text-sm leading-7 text-[var(--ipf-muted)]">
                     {role === "chapter"
-                      ? "Members, IPF Yuva volunteers and inquiries from this emirate."
-                      : "All chapter inquiries, RSVPs, pledges, members and Yuva volunteers."}
+                      ? "Members, IPF Yuva and event duty from this emirate."
+                      : "Members, Yuva, event registrations, volunteer duty, inquiries and pledges."}
                   </p>
                 </div>
                 <Button type="button" variant="outline" size="sm" onClick={() => void loadInbox()}>
                   Refresh
                 </Button>
               </div>
-              <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+              <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                 {[
                   ["Inquiries", inbox?.inquiries.length ?? 0],
                   ["Members", inbox?.members.length ?? 0],
                   ["IPF Yuva", inbox?.yuva.length ?? 0],
-                  ["RSVPs", inbox?.rsvps.length ?? 0],
+                  ["Registrations", inbox?.rsvps.length ?? 0],
+                  ["Yuva duty", inbox?.volunteers.length ?? 0],
                 ].map(([label, count]) => (
                   <div key={String(label)} className="rounded-xl border border-[var(--ipf-line)] bg-[var(--ipf-paper)] px-4 py-3">
                     <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-[var(--ipf-muted)]">{label}</p>
@@ -629,15 +681,28 @@ export default function CmsPage() {
               ])}
             />
             <InboxList
-              title="Event RSVPs"
-              empty="No RSVPs yet."
-              headings={["Date", "Event", "Name", "Email", "Phone"]}
+              title="Event registrations"
+              empty="No event registrations yet."
+              headings={["Date", "Event", "ID", "Name", "Email"]}
               rows={(inbox?.rsvps ?? []).map((item) => [
                 item.createdAt.slice(0, 10),
                 item.eventTitle,
+                item.registrationNo ?? "",
                 item.name,
                 item.email,
-                item.phone ?? "",
+              ])}
+            />
+            <InboxList
+              title="Yuva volunteers on events"
+              empty="No Yuva volunteers assigned to events yet."
+              headings={["Date", "Event", "Yuva ID", "Name", "Email", "Status"]}
+              rows={(inbox?.volunteers ?? []).map((item) => [
+                item.createdAt.slice(0, 10),
+                item.eventTitle,
+                item.membershipNo,
+                item.name,
+                item.email,
+                item.status,
               ])}
             />
             {role === "central" ? (

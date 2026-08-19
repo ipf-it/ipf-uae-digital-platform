@@ -1,8 +1,6 @@
 import { createContext, useContext, useEffect, useMemo, useState, type PropsWithChildren } from "react";
 import { api } from "../lib/api";
 
-const tokenKey = "ipf-member-token";
-
 export type Member = {
   id: string;
   kind: "member" | "yuva";
@@ -16,8 +14,30 @@ export type Member = {
   volunteerHours: { id: string; date: string; hours: number; activity: string }[];
 };
 
+export type EventRegistration = {
+  eventId: string;
+  eventTitle: string;
+  registrationNo: string;
+  createdAt: string;
+};
+
+export type VolunteerShift = {
+  eventId: string;
+  eventTitle: string;
+  status: string;
+  createdAt: string;
+};
+
+type MeResponse = {
+  member: Member;
+  registrations?: EventRegistration[];
+  volunteerShifts?: VolunteerShift[];
+};
+
 type MemberContextValue = {
   member: Member | null;
+  registrations: EventRegistration[];
+  volunteerShifts: VolunteerShift[];
   ready: boolean;
   signIn: (email: string, password: string) => Promise<void>;
   register: (payload: {
@@ -28,40 +48,39 @@ type MemberContextValue = {
     password: string;
     kind: "member" | "yuva";
   }) => Promise<void>;
-  signOut: () => void;
+  signOut: () => Promise<void>;
   refresh: () => Promise<void>;
   addHours: (payload: { date: string; hours: number; activity: string }) => Promise<void>;
 };
 
 const MemberContext = createContext<MemberContextValue>({
   member: null,
+  registrations: [],
+  volunteerShifts: [],
   ready: false,
   signIn: async () => undefined,
   register: async () => undefined,
-  signOut: () => undefined,
+  signOut: async () => undefined,
   refresh: async () => undefined,
   addHours: async () => undefined,
 });
 
 export function MemberProvider({ children }: PropsWithChildren) {
   const [member, setMember] = useState<Member | null>(null);
+  const [registrations, setRegistrations] = useState<EventRegistration[]>([]);
+  const [volunteerShifts, setVolunteerShifts] = useState<VolunteerShift[]>([]);
   const [ready, setReady] = useState(false);
 
   async function refresh() {
-    const token = sessionStorage.getItem(tokenKey);
-    if (!token) {
-      setMember(null);
-      setReady(true);
-      return;
-    }
     try {
-      const result = await api<{ member: Member }>("/api/members/me", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const result = await api<MeResponse>("/api/members/me");
       setMember(result.member);
+      setRegistrations(result.registrations ?? []);
+      setVolunteerShifts(result.volunteerShifts ?? []);
     } catch {
-      sessionStorage.removeItem(tokenKey);
       setMember(null);
+      setRegistrations([]);
+      setVolunteerShifts([]);
     }
     setReady(true);
   }
@@ -73,39 +92,41 @@ export function MemberProvider({ children }: PropsWithChildren) {
   const value = useMemo<MemberContextValue>(
     () => ({
       member,
+      registrations,
+      volunteerShifts,
       ready,
       async signIn(email, password) {
-        const result = await api<{ token: string; member: Member }>("/api/members/login", {
+        const result = await api<{ member: Member }>("/api/members/login", {
           method: "POST",
           body: JSON.stringify({ email, password }),
         });
-        sessionStorage.setItem(tokenKey, result.token);
         setMember(result.member);
+        await refresh();
       },
       async register(payload) {
-        const result = await api<{ token: string; member: Member }>("/api/members/register", {
+        const result = await api<{ member: Member }>("/api/members/register", {
           method: "POST",
           body: JSON.stringify(payload),
         });
-        sessionStorage.setItem(tokenKey, result.token);
         setMember(result.member);
+        await refresh();
       },
-      signOut() {
-        sessionStorage.removeItem(tokenKey);
+      async signOut() {
+        await api("/api/members/logout", { method: "POST" }).catch(() => undefined);
         setMember(null);
+        setRegistrations([]);
+        setVolunteerShifts([]);
       },
       refresh,
       async addHours(payload) {
-        const token = sessionStorage.getItem(tokenKey);
         const result = await api<{ member: Member }>("/api/members/hours", {
           method: "POST",
-          headers: { Authorization: `Bearer ${token}` },
           body: JSON.stringify(payload),
         });
         setMember(result.member);
       },
     }),
-    [member, ready],
+    [member, ready, registrations, volunteerShifts],
   );
 
   return <MemberContext.Provider value={value}>{children}</MemberContext.Provider>;

@@ -23,6 +23,10 @@ export type CmsEvent = {
   location?: string;
   body?: string;
   slides: CmsSlide[];
+  category?: string;
+  emirate?: string;
+  startsAt?: string;
+  isFree?: boolean;
 };
 
 export type CmsNews = {

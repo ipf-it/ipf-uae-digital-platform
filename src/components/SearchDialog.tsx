@@ -4,6 +4,8 @@ import { Search } from "lucide-react";
 import { useCms } from "../cms/ContentProvider";
 import { useLocale } from "../i18n/LocaleProvider";
 import { chapters } from "../data/platformContent";
+import { catalogSeedEvents } from "../data/eventCatalog";
+import { specialCouncils, stateCouncils } from "../data/orgNav";
 import { cn } from "../lib/utils";
 
 export function SearchDialog() {
@@ -17,11 +19,17 @@ export function SearchDialog() {
     if (query.length < 2) return [];
     const items = [
       ...content.news.map((item) => ({ title: item.title, to: `/news/${item.slug}`, kind: "News" })),
-      ...content.eventHighlights.map((item) => ({ title: item.title, to: "/events", kind: "Event" })),
+      ...content.eventHighlights.map((item) => ({ title: item.title, to: `/events/${item.id}`, kind: "Event" })),
+      ...catalogSeedEvents.map((item) => ({ title: item.title, to: `/events/${item.id}`, kind: "Event" })),
       ...content.leadership.map((item) => ({ title: `${item.name} — ${item.role}`, to: "/leadership", kind: "Leadership" })),
       ...content.galleryImages.map((item) => ({ title: item.alt, to: "/gallery", kind: "Gallery" })),
       ...chapters.map((item) => ({ title: `${item.name} chapter`, to: `/chapters#${item.id}`, kind: "Chapter" })),
+      ...stateCouncils.map((item) => ({ title: item.name, to: item.to, kind: "Council" })),
+      ...specialCouncils.map((item) => ({ title: item.name, to: item.to, kind: "Council" })),
+      { title: "Councils", to: "/councils", kind: "Council" },
       { title: "IPF Yuva", to: "/yuva", kind: "Programme" },
+      { title: "Resources", to: "/resources", kind: "Programme" },
+      { title: "IPF Cares", to: "/support#community", kind: "Support" },
       { title: "Membership", to: "/membership", kind: "Join" },
     ];
     return items.filter((item) => item.title.toLowerCase().includes(query)).slice(0, 8);

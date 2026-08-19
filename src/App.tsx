@@ -9,11 +9,16 @@ const LeadershipPage = lazy(() => import("./pages/LeadershipPage"));
 const GovernancePage = lazy(() => import("./pages/GovernancePage"));
 const HistoryPage = lazy(() => import("./pages/HistoryPage"));
 const ChaptersPage = lazy(() => import("./pages/ChaptersPage"));
+const CouncilsPage = lazy(() => import("./pages/CouncilsPage"));
+const CouncilPage = lazy(() => import("./pages/CouncilPage"));
 const GalleryPage = lazy(() => import("./pages/GalleryPage"));
 const DiscoverIndiaPage = lazy(() => import("./pages/DiscoverIndiaPage"));
 const ExploreUaePage = lazy(() => import("./pages/ExploreUaePage"));
 const DrishtiPage = lazy(() => import("./pages/DrishtiPage"));
 const EventsPage = lazy(() => import("./pages/EventsPage"));
+const EventDetailPage = lazy(() => import("./pages/EventDetailPage"));
+const ResourcesPage = lazy(() => import("./pages/ResourcesPage"));
+const PortalCardPage = lazy(() => import("./pages/PortalCardPage"));
 const SupportPage = lazy(() => import("./pages/SupportPage"));
 const BlogPage = lazy(() => import("./pages/BlogPage"));
 const NewsPage = lazy(() => import("./pages/NewsPage"));
@@ -48,13 +53,18 @@ function App() {
           <Route path="governance" element={<GovernancePage />} />
           <Route path="history" element={<HistoryPage />} />
           <Route path="chapters" element={<ChaptersPage />} />
+          <Route path="councils" element={<CouncilsPage />} />
+          <Route path="councils/:councilId" element={<CouncilPage />} />
           <Route path="gallery" element={<GalleryPage />} />
           <Route path="glimpses" element={<GalleryPage />} />
           <Route path="discover-india" element={<DiscoverIndiaPage />} />
           <Route path="explore-uae" element={<ExploreUaePage />} />
           <Route path="drishti" element={<DrishtiPage />} />
+          <Route path="resources" element={<ResourcesPage />} />
           <Route path="events" element={<EventsPage />} />
+          <Route path="events/:eventId" element={<EventDetailPage />} />
           <Route path="support" element={<SupportPage />} />
+          <Route path="ipf-cares" element={<Navigate to="/support#community" replace />} />
           <Route path="blog" element={<BlogPage />} />
           <Route path="blog/:slug" element={<ArticlePage />} />
           <Route path="news" element={<NewsPage />} />
@@ -69,6 +79,8 @@ function App() {
           <Route path="donation" element={<Navigate to="/donate" replace />} />
           <Route path="donations" element={<Navigate to="/donate" replace />} />
           <Route path="portal" element={<PortalPage />} />
+          <Route path="portal/card" element={<PortalCardPage />} />
+          <Route path="portal/dashboard" element={<Navigate to="/portal" replace />} />
           <Route path="yuva" element={<YuvaPage />} />
           <Route path="jobs" element={<JobsPage />} />
           <Route path="join" element={<Navigate to="/membership" replace />} />

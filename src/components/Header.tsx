@@ -6,10 +6,12 @@ import { LanguageToggle } from "./LanguageToggle";
 import { primaryNav, utilityLinks } from "../data/navigation";
 import { site } from "../data/site";
 import { cn } from "../lib/utils";
+import { ChaptersMegaMenu, ChaptersMobileList, CouncilsMegaMenu, CouncilsMobileList, MegaColumn, MegaLink } from "./OrgMegaMenu";
 import { SearchDialog } from "./SearchDialog";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "./ui/Accordion";
 import { Button } from "./ui/Button";
 import { Container } from "./ui/Container";
+import { useCms } from "../cms/ContentProvider";
 import { useLocale } from "../i18n/LocaleProvider";
 
 type HeaderProps = {
@@ -27,6 +29,7 @@ const navKeys: Record<string, string> = {
   "President's Message": "nav.president",
   Committee: "nav.committee",
   Chapters: "nav.chapters",
+  Councils: "nav.councils",
   Events: "nav.events",
   Gallery: "nav.gallery",
   News: "nav.news",
@@ -53,8 +56,11 @@ export function Header({ logoSrc }: HeaderProps) {
   const { pathname } = useLocation();
   const { member } = useMember();
   const { t } = useLocale();
+  const { content } = useCms();
+  const headlines = content.news.map((item) => item.title).filter(Boolean);
   const navLabel = (label: string) => t(navKeys[label] ?? label);
   const [open, setOpen] = useState(false);
+  const [mega, setMega] = useState<null | "chapters" | "councils">(null);
   const links = utilityLinks.map((item) => {
     if (item.to === "/sign-in" && member) return { label: t("nav.portal"), to: "/portal" };
     if (item.to === "/sign-in") return { ...item, label: t("nav.signIn") };
@@ -76,11 +82,31 @@ export function Header({ logoSrc }: HeaderProps) {
     return () => observer.disconnect();
   }, []);
 
+  useEffect(() => {
+    setOpen(false);
+    setMega(null);
+  }, [pathname]);
+
   return (
     <header ref={headerRef} className="sticky top-0 z-40">
       <div className="hidden border-b border-white/10 bg-[var(--ipf-navy)] text-xs text-white/80 md:block">
         <Container className="flex items-center justify-between gap-x-4 py-1.5">
-          <p className="min-w-0 truncate pr-2">{t("header.utility")}</p>
+          <p className="min-w-0 flex-1 overflow-hidden pr-2">
+            {headlines.length > 0 ? (
+              <Link to="/news" className="flex items-center gap-2 text-white/90 hover:text-white">
+                <span className="shrink-0 rounded bg-[var(--ipf-saffron)] px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-[0.14em] text-[var(--ipf-navy)]">
+                  {t("nav.latest")}
+                </span>
+                <span className="ipf-ticker min-w-0">
+                  <span className="ipf-ticker-track">
+                    {`${headlines.join("  •  ")}  •  ${headlines.join("  •  ")}`}
+                  </span>
+                </span>
+              </Link>
+            ) : (
+              <span className="block truncate">{t("header.utility")}</span>
+            )}
+          </p>
           <div className="flex shrink-0 items-center gap-3">
             {links.map((item) => (
               <Link key={item.to} className="rounded-md px-1 py-0.5 transition hover:bg-white/10 hover:text-white" to={item.to}>
@@ -94,7 +120,10 @@ export function Header({ logoSrc }: HeaderProps) {
           </div>
         </Container>
       </div>
-      <div className="border-b border-[var(--ipf-line)] bg-[var(--ipf-paper)]/95 backdrop-blur-md">
+      <div
+        className="relative border-b border-[var(--ipf-line)] bg-[var(--ipf-paper)]/95 backdrop-blur-md"
+        onMouseLeave={() => setMega(null)}
+      >
         <Container className="flex items-center justify-between gap-3 py-2.5 sm:py-3">
           <Link to="/" className="flex min-w-0 shrink-0 items-center gap-3" onClick={() => setOpen(false)}>
             {logoSrc ? (
@@ -114,8 +143,8 @@ export function Header({ logoSrc }: HeaderProps) {
             </span>
           </Link>
 
-          <nav className="hidden min-w-0 flex-1 items-center justify-end gap-0.5 overflow-x-auto text-[12.5px] font-medium text-[var(--ipf-navy)] xl:flex">
-            <NavLink to="/" end className={({ isActive }) => linkClass(isActive)}>
+          <nav className="hidden min-w-0 flex-1 items-center justify-end gap-0.5 overflow-visible text-[12px] font-medium text-[var(--ipf-navy)] xl:flex">
+            <NavLink to="/" end className={({ isActive }) => linkClass(isActive)} onMouseEnter={() => setMega(null)}>
               {t("nav.home")}
             </NavLink>
             {primaryNav.map((group) => {
@@ -125,37 +154,65 @@ export function Header({ logoSrc }: HeaderProps) {
                 group.to,
                 children.map((child) => child.to),
               );
+              if (group.mega === "chapters" || group.mega === "councils") {
+                const megaActive = pathname === group.to || pathname.startsWith(`${group.to}/`);
+                return (
+                  <div key={group.label} onMouseEnter={() => setMega(group.mega ?? null)}>
+                    <Link
+                      to={group.to}
+                      className={cn("inline-flex items-center gap-1", linkClass(megaActive))}
+                      aria-expanded={mega === group.mega}
+                      aria-haspopup="true"
+                    >
+                      {navLabel(group.label)}
+                      <ChevronDown className="size-3.5 opacity-60" />
+                    </Link>
+                  </div>
+                );
+              }
               if (children.length === 0) {
                 return (
-                  <NavLink key={group.label} to={group.to} className={() => linkClass(active)}>
+                  <NavLink
+                    key={group.label}
+                    to={group.to}
+                    className={() => linkClass(active)}
+                    onMouseEnter={() => setMega(null)}
+                  >
                     {navLabel(group.label)}
                   </NavLink>
                 );
               }
               return (
-                <div key={group.label} className="group relative">
+                <div key={group.label} className="group relative" onMouseEnter={() => setMega(null)}>
                   <Link to={group.to} className={cn("inline-flex items-center gap-1", linkClass(active))}>
                     {navLabel(group.label)}
                     <ChevronDown className="size-3.5 opacity-60" />
                   </Link>
-                  <div className="invisible absolute left-0 top-full z-50 min-w-52 rounded-xl border border-[var(--ipf-line)] bg-[var(--ipf-paper)] py-2 opacity-0 shadow-[0_16px_40px_rgba(11,31,58,0.12)] transition group-hover:visible group-hover:opacity-100 group-focus-within:visible group-focus-within:opacity-100">
-                    {children.map((child) => (
-                      <Link
-                        key={child.to + child.label}
-                        to={child.to}
-                        className="mx-1 block rounded-lg px-3 py-2 text-sm text-[var(--ipf-navy)] hover:bg-[var(--ipf-ivory)] hover:text-[var(--ipf-green)]"
+                  <div className="invisible absolute left-0 top-full z-50 min-w-56 pt-1.5 opacity-0 transition group-hover:visible group-hover:opacity-100 group-focus-within:visible group-focus-within:opacity-100">
+                    <div className="overflow-hidden rounded-xl border border-[var(--ipf-line)] bg-[var(--ipf-paper)] shadow-[0_16px_40px_rgba(11,31,58,0.12)]">
+                      <MegaColumn
+                        title={navLabel(group.label)}
+                        titleClass="text-[var(--ipf-navy)]"
+                        barClass="bg-[var(--ipf-navy)]"
                       >
-                        {navLabel(child.label)}
-                      </Link>
-                    ))}
+                        {children.map((child) => (
+                          <MegaLink
+                            key={child.to + child.label}
+                            to={child.to}
+                            label={navLabel(child.label)}
+                            bullet="navy"
+                          />
+                        ))}
+                      </MegaColumn>
+                    </div>
                   </div>
                 </div>
               );
             })}
-            <NavLink to="/yuva" className={({ isActive }) => linkClass(isActive)}>
+            <NavLink to="/yuva" className={({ isActive }) => linkClass(isActive)} onMouseEnter={() => setMega(null)}>
               {t("nav.yuva")}
             </NavLink>
-            <NavLink to="/contact" className={({ isActive }) => linkClass(isActive)}>
+            <NavLink to="/contact" className={({ isActive }) => linkClass(isActive)} onMouseEnter={() => setMega(null)}>
               {t("nav.contact")}
             </NavLink>
           </nav>
@@ -179,6 +236,17 @@ export function Header({ logoSrc }: HeaderProps) {
             </Button>
           </div>
         </Container>
+        {mega ? (
+          <div className="absolute inset-x-0 top-full z-50 hidden border-t border-[var(--ipf-line)] bg-[var(--ipf-paper)] shadow-[0_24px_48px_rgba(11,31,58,0.14)] xl:block">
+            <Container>
+              {mega === "chapters" ? (
+                <ChaptersMegaMenu onNavigate={() => setMega(null)} />
+              ) : (
+                <CouncilsMegaMenu onNavigate={() => setMega(null)} />
+              )}
+            </Container>
+          </div>
+        ) : null}
         {open ? (
           <div className="border-t border-[var(--ipf-line)] bg-[var(--ipf-paper)] xl:hidden">
             <Container className="max-h-[70vh] overflow-y-auto py-4">
@@ -218,9 +286,21 @@ export function Header({ logoSrc }: HeaderProps) {
                       </AccordionContent>
                     </AccordionItem>
                   ))}
+                <AccordionItem value="Chapters">
+                  <AccordionTrigger>{t("nav.chapters")}</AccordionTrigger>
+                  <AccordionContent>
+                    <ChaptersMobileList onNavigate={() => setOpen(false)} />
+                  </AccordionContent>
+                </AccordionItem>
+                <AccordionItem value="Councils">
+                  <AccordionTrigger>{t("nav.councils")}</AccordionTrigger>
+                  <AccordionContent>
+                    <CouncilsMobileList onNavigate={() => setOpen(false)} />
+                  </AccordionContent>
+                </AccordionItem>
               </Accordion>
               {primaryNav
-                .filter((group) => !group.children?.length)
+                .filter((group) => !group.children?.length && !group.mega)
                 .map((group) => (
                   <Link
                     key={group.label}
@@ -240,6 +320,9 @@ export function Header({ logoSrc }: HeaderProps) {
               </Link>
               <Link className="block py-3 text-sm font-semibold text-[var(--ipf-navy)]" to="/contact" onClick={() => setOpen(false)}>
                 {t("nav.contact")}
+              </Link>
+              <Link className="block py-3 text-sm font-semibold text-[var(--ipf-navy)]" to="/resources" onClick={() => setOpen(false)}>
+                {t("nav.resources")}
               </Link>
             </Container>
           </div>

@@ -14,7 +14,7 @@ import { useLocale } from "../i18n/LocaleProvider";
 
 export default function PortalPage() {
   const { t } = useLocale();
-  const { member, ready, signOut, addHours } = useMember();
+  const { member, ready, signOut, addHours, registrations, volunteerShifts } = useMember();
   const [date, setDate] = useState(() => new Date().toISOString().slice(0, 10));
   const [hours, setHours] = useState("2");
   const [activity, setActivity] = useState("");
@@ -61,9 +61,12 @@ export default function PortalPage() {
                   <Link to="/events">{t("page.portal.rsvpEvents")}</Link>
                 </Button>
                 <Button asChild variant="outline" size="sm">
+                  <Link to="/portal/card">{t("nav.membershipCard")}</Link>
+                </Button>
+                <Button asChild variant="outline" size="sm">
                   <Link to="/donate">{t("page.portal.supportWelfare")}</Link>
                 </Button>
-                <Button type="button" variant="ghost" size="sm" onClick={signOut}>
+                <Button type="button" variant="ghost" size="sm" onClick={() => void signOut()}>
                   {t("common.signOut")}
                 </Button>
               </div>
@@ -92,6 +95,41 @@ export default function PortalPage() {
           </div>
         </Container>
       </Section>
+      {registrations.length > 0 ? (
+        <Section>
+          <Container>
+            <Card title={t("page.portal.myEvents")}>
+              <ul className="space-y-3 text-sm">
+                {registrations.map((item) => (
+                  <li key={`${item.eventId}-${item.registrationNo}`} className="flex justify-between gap-4 border-b border-[var(--ipf-line)] pb-3 last:border-0">
+                    <span>
+                      <span className="font-semibold text-[var(--ipf-navy)]">{item.eventTitle}</span>
+                      <span className="mt-0.5 block text-xs text-[var(--ipf-muted)]">{item.createdAt.slice(0, 10)}</span>
+                    </span>
+                    <span className="font-semibold text-[var(--ipf-green)]">{item.registrationNo}</span>
+                  </li>
+                ))}
+              </ul>
+            </Card>
+          </Container>
+        </Section>
+      ) : null}
+      {volunteerShifts.length > 0 ? (
+        <Section>
+          <Container>
+            <Card title={t("page.portal.myShifts")}>
+              <ul className="space-y-3 text-sm">
+                {volunteerShifts.map((item) => (
+                  <li key={`${item.eventId}-${item.status}`} className="flex justify-between gap-4 border-b border-[var(--ipf-line)] pb-3 last:border-0">
+                    <span className="font-semibold text-[var(--ipf-navy)]">{item.eventTitle}</span>
+                    <span className="font-semibold text-[var(--ipf-green)]">{item.status}</span>
+                  </li>
+                ))}
+              </ul>
+            </Card>
+          </Container>
+        </Section>
+      ) : null}
       {member.volunteerHours.length > 0 ? (
         <Section>
           <Container>

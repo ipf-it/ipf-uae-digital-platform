@@ -1,89 +1,124 @@
-import { PageExtras } from "../cms/PageExtras";
-import { useCms } from "../cms/ContentProvider";
-import { EventRsvp } from "../components/EventRsvp";
+import { Link, useSearchParams } from "react-router-dom";
+import { CalendarDays, Clock } from "lucide-react";
+import { EventCard } from "../components/EventCard";
 import { DocumentTitle } from "../components/layout/DocumentTitle";
 import { PageHero } from "../components/layout/PageHero";
-import { Button } from "../components/ui/Button";
 import { Container } from "../components/ui/Container";
-import { ImageCarousel } from "../components/ui/ImageCarousel";
 import { Section } from "../components/ui/Section";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../components/ui/Table";
-import { eventCalendar } from "../data/platformContent";
+import { eventCategories, eventEmirates } from "../data/eventCatalog";
+import { usePublicEvents } from "../hooks/usePublicEvents";
 import { useLocale } from "../i18n/LocaleProvider";
-import { downloadIcs } from "../lib/ics";
+import { cn } from "../lib/utils";
 
 export default function EventsPage() {
   const { t } = useLocale();
-  const { content } = useCms();
+  const [params, setParams] = useSearchParams();
+  const tab = params.get("tab") === "past" ? "past" : "upcoming";
+  const category = params.get("category") || "All";
+  const emirate = params.get("emirate") || "";
+  const free = params.get("free") === "1";
+  const { events, ready } = usePublicEvents({ tab, category, emirate, free });
+
+  function setFilter(next: Record<string, string | null>) {
+    const copy = new URLSearchParams(params);
+    for (const [key, value] of Object.entries(next)) {
+      if (!value) copy.delete(key);
+      else copy.set(key, value);
+    }
+    setParams(copy, { replace: true });
+  }
 
   return (
     <>
       <DocumentTitle title={t("page.events.title")} />
       <PageHero
-        eyebrow={t("page.events.eyebrow")}
+        eyebrow={t("page.events.calendar")}
         title={t("page.events.title")}
         description={t("page.events.desc")}
-        crumbs={[{ label: t("page.events.eyebrow"), to: "/news" }, { label: t("page.events.title") }]}
+        crumbs={[{ label: t("page.events.title") }]}
+        image="/legacy-assets/images/gallery-7.jpg"
+        actions={
+          <>
+            <Link
+              to="/events?tab=upcoming"
+              className={cn(
+                "inline-flex items-center gap-2 rounded-lg px-4 py-2.5 text-sm font-semibold",
+                tab === "upcoming" ? "bg-white text-[var(--ipf-navy)]" : "border border-white/40 bg-white/10 text-white",
+              )}
+            >
+              <CalendarDays className="size-4" />
+              {t("page.events.upcoming")}
+            </Link>
+            <Link
+              to="/events?tab=past"
+              className={cn(
+                "inline-flex items-center gap-2 rounded-lg px-4 py-2.5 text-sm font-semibold",
+                tab === "past" ? "bg-white text-[var(--ipf-navy)]" : "border border-white/40 bg-white/10 text-white",
+              )}
+            >
+              <Clock className="size-4" />
+              {t("page.events.past")}
+            </Link>
+          </>
+        }
       />
-      {content.eventHighlights.map((event) => (
-        <Section key={event.id} tone="white">
-          <Container className="grid gap-8 lg:grid-cols-[1.1fr,0.9fr] lg:items-start">
-            <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[var(--ipf-green)]">{event.date}</p>
-              <h2 className="mt-2 text-2xl font-bold text-[var(--ipf-navy)]">{event.title}</h2>
-              {event.location ? <p className="mt-2 text-sm text-[var(--ipf-muted)]">{event.location}</p> : null}
-              {event.body ? <p className="mt-4 text-sm leading-7 text-[var(--ipf-muted)]">{event.body}</p> : null}
-              <EventRsvp
-                eventId={event.id}
-                title={event.title}
-                date={event.date}
-                location={event.location}
-                body={event.body}
-              />
-            </div>
-            {event.slides.length > 0 ? (
-              <ImageCarousel slides={event.slides} heightClass="aspect-[4/3] h-auto w-full" />
-            ) : null}
-          </Container>
-        </Section>
-      ))}
-      <Section>
+      <Section tone="white" className="py-8 sm:py-10">
         <Container>
-          <p className="mb-6 max-w-3xl text-sm leading-7 text-[var(--ipf-muted)]">{t("page.events.standing")}</p>
-          <Table>
-            <TableHead>
-              <tr>
-                <TableHeader>{t("page.events.month")}</TableHeader>
-                <TableHeader>{t("page.events.programme")}</TableHeader>
-                <TableHeader>{t("page.events.level")}</TableHeader>
-                <TableHeader>{t("page.events.committeeCol")}</TableHeader>
-                <TableHeader>{t("common.addCalendar")}</TableHeader>
-              </tr>
-            </TableHead>
-            <TableBody>
-              {eventCalendar.map((event) => (
-                <TableRow key={`${event.month}-${event.title}`}>
-                  <TableCell className="font-medium text-[var(--ipf-navy)]">{event.month}</TableCell>
-                  <TableCell>{event.title}</TableCell>
-                  <TableCell>{event.level}</TableCell>
-                  <TableCell>{event.committee}</TableCell>
-                  <TableCell>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      onClick={() => downloadIcs({ title: event.title, month: event.month })}
-                    >
-                      {t("common.addCalendar")}
-                    </Button>
-                  </TableCell>
-                </TableRow>
+          <div className="flex flex-wrap gap-2">
+            {["All", ...eventCategories].map((item) => (
+              <button
+                key={item}
+                type="button"
+                onClick={() => setFilter({ category: item === "All" ? null : item })}
+                className={cn(
+                  "rounded-full border px-3.5 py-1.5 text-sm font-semibold",
+                  category === item
+                    ? "border-[var(--ipf-navy)] bg-[var(--ipf-navy)] text-white"
+                    : "border-[var(--ipf-line)] bg-white text-[var(--ipf-navy)] hover:border-[var(--ipf-navy)]",
+                )}
+              >
+                {item === "All" ? t("page.events.all") : item}
+              </button>
+            ))}
+          </div>
+          <div className="mt-4 flex flex-wrap items-center gap-3">
+            <select
+              value={emirate}
+              onChange={(event) => setFilter({ emirate: event.target.value || null })}
+              className="h-11 rounded-lg border border-[var(--ipf-line)] bg-white px-3 text-sm text-[var(--ipf-navy)]"
+              aria-label={t("page.events.emirate")}
+            >
+              {eventEmirates.map((item) => (
+                <option key={item.id || "all"} value={item.id}>
+                  {item.label}
+                </option>
               ))}
-            </TableBody>
-          </Table>
+            </select>
+            <button
+              type="button"
+              onClick={() => setFilter({ free: free ? null : "1" })}
+              className={cn(
+                "rounded-full border px-3.5 py-1.5 text-sm font-semibold",
+                free
+                  ? "border-[var(--ipf-green)] bg-[var(--ipf-green)] text-white"
+                  : "border-[var(--ipf-line)] bg-white text-[var(--ipf-navy)]",
+              )}
+            >
+              {t("page.events.free")}
+            </button>
+          </div>
+          <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+            {events.map((event) => (
+              <EventCard key={event.id} event={event} />
+            ))}
+          </div>
+          {ready && events.length === 0 ? (
+            <p className="mt-10 text-sm text-[var(--ipf-muted)]">
+              {tab === "past" ? t("page.events.emptyPast") : t("page.events.emptyUpcoming")}
+            </p>
+          ) : null}
         </Container>
       </Section>
-      <PageExtras page="events" />
     </>
   );
 }

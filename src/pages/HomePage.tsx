@@ -20,6 +20,7 @@ import { FramedPhoto } from "../components/ui/TricolorFrame";
 import { cn } from "../lib/utils";
 import { img, site } from "../data/site";
 import { useLocale } from "../i18n/LocaleProvider";
+import { usePublicEvents } from "../hooks/usePublicEvents";
 import { markMobileIntroPlayed, shouldPlayMobileIntro } from "../lib/mobileIntro";
 
 export default function HomePage() {
@@ -33,7 +34,8 @@ export default function HomePage() {
   }, []);
   const leaders = content.leadership;
   const galleryPreview = content.galleryImages.slice(0, 6);
-  const eventsPreview = content.eventHighlights.slice(0, 3);
+  const { events: upcomingEvents } = usePublicEvents({ tab: "upcoming" });
+  const eventsPreview = upcomingEvents.slice(0, 3);
 
   return (
     <>
@@ -238,16 +240,19 @@ export default function HomePage() {
             {eventsPreview.map((event) => (
               <Card
                 key={event.id}
-                to="/events"
+                to={`/events/${event.id}`}
                 eyebrow={event.date}
                 title={event.title}
                 description={event.body}
-                image={event.slides[0]?.src}
+                image={event.image || event.slides[0]?.src}
                 imageAlt={event.slides[0]?.alt ?? event.title}
                 imageFit="contain"
               />
             ))}
           </CardGrid>
+          {eventsPreview.length === 0 ? (
+            <p className="mt-6 text-sm text-[var(--ipf-muted)]">{t("page.events.emptyUpcoming")}</p>
+          ) : null}
           <div className="mt-6">
             <Button asChild variant="outline">
               <Link to="/events">{t("home.allEvents")}</Link>

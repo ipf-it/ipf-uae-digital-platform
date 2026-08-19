@@ -11,7 +11,6 @@ import { Input } from "../components/ui/Input";
 import { Section } from "../components/ui/Section";
 import { SimpleSelect } from "../components/ui/Select";
 import { emirates } from "../data/forms";
-import { site } from "../data/site";
 import { useLocale } from "../i18n/LocaleProvider";
 import { cn } from "../lib/utils";
 
@@ -42,11 +41,7 @@ export default function RegisterPage() {
       await register({ name, email, phone, emirate, password, kind });
       navigate("/portal");
     } catch (error) {
-      setStatus(
-        error instanceof Error
-          ? `${error.message} If this public host has no member API, write to ${site.email}.`
-          : "Could not create the account",
-      );
+      setStatus(error instanceof Error ? error.message : "Could not create the account");
     }
   }
 

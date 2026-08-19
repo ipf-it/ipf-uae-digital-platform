@@ -19,5 +19,5 @@
     "erasableSyntaxOnly": true,
     "noFallthroughCasesInSwitch": true
   },
-  "include": ["vite.config.ts", "cms/vitePlugin.ts"]
+  "include": ["vite.config.ts", "cms/**/*.ts", "server/**/*.ts", "api/**/*.ts"]
 }

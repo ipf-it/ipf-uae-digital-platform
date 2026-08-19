@@ -7,6 +7,7 @@ export type NavGroup = {
   label: string;
   to: string;
   children?: NavLinkItem[];
+  mega?: "chapters" | "councils";
 };
 
 export const primaryNav: NavGroup[] = [
@@ -18,7 +19,6 @@ export const primaryNav: NavGroup[] = [
       { label: "History", to: "/history" },
       { label: "Governance", to: "/governance" },
       { label: "Support", to: "/support" },
-      { label: "IPF Yuva", to: "/yuva" },
     ],
   },
   {
@@ -29,7 +29,8 @@ export const primaryNav: NavGroup[] = [
       { label: "Committee", to: "/leadership#committee" },
     ],
   },
-  { label: "Chapters", to: "/chapters" },
+  { label: "Chapters", to: "/chapters", mega: "chapters" },
+  { label: "Councils", to: "/councils", mega: "councils" },
   { label: "Events", to: "/events" },
   { label: "Gallery", to: "/gallery" },
   { label: "News", to: "/news" },
@@ -55,6 +56,7 @@ export const footerGroups = [
       { label: "About IPF", to: "/about" },
       { label: "Leadership", to: "/leadership" },
       { label: "Chapters", to: "/chapters" },
+      { label: "Councils", to: "/councils" },
       { label: "Governance", to: "/governance" },
     ],
   },
@@ -67,6 +69,7 @@ export const footerGroups = [
       { label: "Support", to: "/support" },
       { label: "IPF Yuva", to: "/yuva" },
       { label: "Drishti", to: "/drishti" },
+      { label: "Resources", to: "/resources" },
     ],
   },
   {

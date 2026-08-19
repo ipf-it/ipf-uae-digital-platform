@@ -104,6 +104,23 @@ html:not([lang="en"]) thead th {
   background: linear-gradient(90deg, var(--ipf-saffron) 0 33.33%, #fff 33.33% 66.66%, var(--ipf-green) 66.66% 100%);
 }
 
+.ipf-ticker {
+  display: block;
+  overflow: hidden;
+  mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
+}
+
+.ipf-ticker-track {
+  display: inline-block;
+  white-space: nowrap;
+  animation: ipf-ticker 42s linear infinite;
+}
+
+@keyframes ipf-ticker {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+
 .ipf-cloth {
   position: fixed;
   top: 0;

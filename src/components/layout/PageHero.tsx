@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import { ChevronRight } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useLocale } from "../../i18n/LocaleProvider";
@@ -13,13 +14,24 @@ type PageHeroProps = {
   title: string;
   description: string;
   crumbs?: Crumb[];
+  image?: string;
+  actions?: ReactNode;
 };
 
-export function PageHero({ eyebrow, title, description, crumbs = [] }: PageHeroProps) {
+export function PageHero({ eyebrow, title, description, crumbs = [], image, actions }: PageHeroProps) {
   const { t } = useLocale();
   return (
     <section className="relative overflow-hidden bg-[var(--ipf-navy)] text-white">
-      <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(11,31,58,1)_0%,rgba(11,31,58,0.92)_70%,rgba(19,136,8,0.18)_100%)]" />
+      {image ? (
+        <img src={image} alt="" className="absolute inset-0 h-full w-full object-cover object-center opacity-35" />
+      ) : null}
+      <div
+        className={
+          image
+            ? "absolute inset-0 bg-[linear-gradient(90deg,rgba(11,31,58,0.88)_0%,rgba(11,31,58,0.72)_70%,rgba(19,136,8,0.18)_100%)]"
+            : "absolute inset-0 bg-[linear-gradient(90deg,rgba(11,31,58,1)_0%,rgba(11,31,58,0.92)_70%,rgba(19,136,8,0.18)_100%)]"
+        }
+      />
       <Container className="relative py-10 sm:py-16">
         {crumbs.length > 0 ? (
           <nav aria-label="Breadcrumb" className="mb-5 text-xs text-white/70">
@@ -48,6 +60,7 @@ export function PageHero({ eyebrow, title, description, crumbs = [] }: PageHeroP
         <h1 className="mt-3 max-w-3xl text-balance text-2xl font-bold leading-snug break-words text-white sm:text-4xl">{title}</h1>
         <div className="mt-4 h-1 w-20 bg-[linear-gradient(90deg,var(--ipf-saffron),#fff,var(--ipf-green))]" />
         <p className="mt-4 max-w-3xl text-pretty text-sm leading-7 text-white/80 sm:text-base">{description}</p>
+        {actions ? <div className="mt-6 flex flex-wrap gap-3">{actions}</div> : null}
       </Container>
     </section>
   );
