@@ -74,6 +74,23 @@ export const stateCouncilRecords: Council[] = [
   { id: "rajasthan", name: "Rajasthan Council", kind: "state", region: "Rajasthan", bullet: "green", image: stateImage, email: site.email },
   { id: "uttar-pradesh", name: "Uttar Pradesh Council", kind: "state", region: "Uttar Pradesh", bullet: "green", image: stateImage, email: site.email },
   { id: "bihar", name: "Bihar Council", kind: "state", region: "Bihar", bullet: "green", image: stateImage, email: site.email },
+  { id: "assam", name: "Assam Council", kind: "state", region: "Assam", bullet: "green", image: stateImage, email: site.email },
+  { id: "odisha", name: "Odisha Council", kind: "state", region: "Odisha", bullet: "green", image: stateImage, email: site.email },
+  { id: "west-bengal", name: "West Bengal Council", kind: "state", region: "West Bengal", bullet: "green", image: stateImage, email: site.email },
+  { id: "madhya-pradesh", name: "Madhya Pradesh Council", kind: "state", region: "Madhya Pradesh", bullet: "green", image: stateImage, email: site.email },
+  { id: "haryana", name: "Haryana Council", kind: "state", region: "Haryana", bullet: "green", image: stateImage, email: site.email },
+  { id: "jharkhand", name: "Jharkhand Council", kind: "state", region: "Jharkhand", bullet: "green", image: stateImage, email: site.email },
+  { id: "chhattisgarh", name: "Chhattisgarh Council", kind: "state", region: "Chhattisgarh", bullet: "green", image: stateImage, email: site.email },
+  { id: "uttarakhand", name: "Uttarakhand Council", kind: "state", region: "Uttarakhand", bullet: "green", image: stateImage, email: site.email },
+  { id: "himachal-pradesh", name: "Himachal Pradesh Council", kind: "state", region: "Himachal Pradesh", bullet: "green", image: stateImage, email: site.email },
+  { id: "goa", name: "Goa Council", kind: "state", region: "Goa", bullet: "green", image: stateImage, email: site.email },
+  { id: "arunachal-pradesh", name: "Arunachal Pradesh Council", kind: "state", region: "Arunachal Pradesh", bullet: "green", image: stateImage, email: site.email },
+  { id: "manipur", name: "Manipur Council", kind: "state", region: "Manipur", bullet: "green", image: stateImage, email: site.email },
+  { id: "meghalaya", name: "Meghalaya Council", kind: "state", region: "Meghalaya", bullet: "green", image: stateImage, email: site.email },
+  { id: "mizoram", name: "Mizoram Council", kind: "state", region: "Mizoram", bullet: "green", image: stateImage, email: site.email },
+  { id: "nagaland", name: "Nagaland Council", kind: "state", region: "Nagaland", bullet: "green", image: stateImage, email: site.email },
+  { id: "sikkim", name: "Sikkim Council", kind: "state", region: "Sikkim", bullet: "green", image: stateImage, email: site.email },
+  { id: "tripura", name: "Tripura Council", kind: "state", region: "Tripura", bullet: "green", image: stateImage, email: site.email },
 ];
 
 export const specialCouncilRecords: Council[] = [

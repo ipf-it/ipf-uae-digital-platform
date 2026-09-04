@@ -1,6 +1,6 @@
 import { Link, useParams } from "react-router-dom";
 import { DocumentTitle } from "../components/layout/DocumentTitle";
-import { PageHero } from "../components/layout/PageHero";
+import { CommunityLandingHero } from "../components/CommunityLandingHero";
 import { Button } from "../components/ui/Button";
 import { Card, CardGrid } from "../components/ui/Card";
 import { Container } from "../components/ui/Container";
@@ -9,6 +9,9 @@ import { getCouncil, publishedCouncilPeople, specialCouncilRecords, stateCouncil
 import { site } from "../data/site";
 import { useLocale } from "../i18n/LocaleProvider";
 import NotFoundPage from "./NotFoundPage";
+import { councilTheme } from "../data/orgThemes";
+import { CouncilJourneyHero } from "../components/CouncilJourneyHero";
+import type { CSSProperties } from "react";
 
 export default function CouncilPage() {
   const { t } = useLocale();
@@ -17,6 +20,7 @@ export default function CouncilPage() {
   if (!council) return <NotFoundPage />;
 
   const people = publishedCouncilPeople(council.id);
+  const theme = councilTheme(council.id, council.region);
   const peers = council.kind === "state" ? stateCouncilRecords : specialCouncilRecords;
   const noteKey = `page.council.note.${council.id}`;
   const note = t(noteKey);
@@ -26,18 +30,16 @@ export default function CouncilPage() {
       : note !== noteKey
         ? note
         : t("page.councils.specialBody");
+  const heroIntro = council.kind === "state"
+    ? "Connecting our community through culture and service across the UAE."
+    : "Focused community programmes connecting people across the UAE.";
 
+  const pageStyle = { "--org-primary": theme.primary, "--org-secondary": theme.secondary, "--org-accent": theme.accent } as CSSProperties;
   return (
-    <>
+    <div className={`council-journey-page state-council-${council.id} council-motion-${theme.motion}`} data-state-council={council.kind === "state" ? council.id : undefined} data-cultural-motif={theme.motif} style={pageStyle}>
       <DocumentTitle title={council.name} />
-      <PageHero
-        eyebrow={council.kind === "state" ? t("nav.stateCouncils") : t("nav.specialCouncils")}
-        title={council.name}
-        description={intro}
-        crumbs={[{ label: t("nav.councils"), to: "/councils" }, { label: council.name }]}
-        image={council.image}
-      />
-      <Section tone="white">
+      {council.kind === "state" ? <CouncilJourneyHero id={council.id} title={council.name} region={council.region} description={heroIntro} theme={theme} /> : <CommunityLandingHero id={council.id} eyebrow={t("nav.specialCouncils")} title={council.name} description={heroIntro} theme={theme} backTo="/councils" backLabel={t("nav.councils")} />}
+      <Section tone="white" className="council-theme-section council-theme-section--story">
         <Container className="grid gap-10 lg:grid-cols-[1.15fr,0.85fr] lg:items-start">
           <div className="space-y-5 text-sm leading-7 text-[var(--ipf-muted)]">
             <p>{intro}</p>
@@ -106,7 +108,7 @@ export default function CouncilPage() {
           </aside>
         </Container>
       </Section>
-      <Section>
+      <Section className="council-theme-section council-theme-section--network">
         <Container className="space-y-4">
           <h2 className="text-2xl font-bold text-[var(--ipf-navy)]">{t("page.council.other")}</h2>
           <CardGrid columns={3}>
@@ -123,6 +125,6 @@ export default function CouncilPage() {
           </p>
         </Container>
       </Section>
-    </>
+    </div>
   );
 }

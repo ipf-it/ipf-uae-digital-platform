@@ -25,14 +25,14 @@ export function newToken() {
   return randomBytes(32).toString("hex");
 }
 
-export function membershipNo() {
-  const year = new Date().getFullYear();
-  const suffix = randomBytes(2).toString("hex").toUpperCase();
-  return `IPF-UAE-${year}-${suffix}`;
+export function membershipNo(sequence?: number) {
+  if (sequence) return `IPFM-${String(sequence).padStart(4, "0")}`;
+  return `IPFM-${randomBytes(3).readUIntBE(0, 3).toString().padStart(7, "0")}`;
 }
 
-export function yuvaId() {
-  return `YUVA-UAE-${randomBytes(3).toString("hex").toUpperCase()}`;
+export function yuvaId(sequence?: number) {
+  if (sequence) return `IPFY-${String(sequence).padStart(4, "0")}`;
+  return `IPFY-${randomBytes(3).readUIntBE(0, 3).toString().padStart(7, "0")}`;
 }
 
 export function eventRegistrationNo() {

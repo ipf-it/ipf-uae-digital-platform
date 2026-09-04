@@ -16,22 +16,33 @@ import { PageLoader } from "./PageLoader";
 function LayoutShell() {
   const { pathname } = useLocation();
   const { t } = useLocale();
+  const routeTheme = pathname.startsWith("/chapters") || pathname.startsWith("/explore-uae")
+    ? "uae"
+    : pathname.startsWith("/councils") || pathname.startsWith("/discover-india")
+      ? "heritage"
+      : /^\/(events|support|ipf-cares|yuva|jobs|donate)/.test(pathname)
+        ? "service"
+        : /^\/(membership|register|sign-in|portal|privileges|testimonials)/.test(pathname)
+          ? "community"
+          : "institutional";
 
   useEffect(() => {
     if (pathname !== "/") markMobileIntroPlayed();
   }, [pathname]);
 
   return (
-    <div className="relative min-h-screen bg-[var(--ipf-ivory)] pb-20 lg:pb-0">
+    <div className={`site-theme-shell site-theme-${routeTheme} relative min-h-screen bg-[var(--ipf-ivory)] pb-20 lg:pb-0`} data-route-theme={routeTheme}>
       <a className="ipf-skip" href="#main">
         {t("common.skip")}
       </a>
       <TricolorWaves />
       <ScrollToTop />
       <Header logoSrc={img.logo} />
-      <main id="main" className="relative z-10">
+      <main id="main" className="site-theme-body relative z-10">
+        <div className="site-theme-ambient site-theme-ambient--one" aria-hidden="true" />
+        <div className="site-theme-ambient site-theme-ambient--two" aria-hidden="true" />
         <Suspense fallback={<PageLoader />}>
-          <Outlet />
+          <div className="site-route-content"><Outlet /></div>
         </Suspense>
       </main>
       <Footer />

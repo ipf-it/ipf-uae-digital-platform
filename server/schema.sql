@@ -3,6 +3,22 @@
 
 create extension if not exists pgcrypto;
 
+create sequence if not exists ipf_member_number_seq start 1;
+create sequence if not exists ipf_yuva_number_seq start 1;
+
+create or replace function next_ipf_number(account_kind text)
+returns bigint
+language plpgsql
+security definer
+as $$
+begin
+  if account_kind = 'yuva' then
+    return nextval('ipf_yuva_number_seq');
+  end if;
+  return nextval('ipf_member_number_seq');
+end;
+$$;
+
 create table if not exists people (
   id uuid primary key default gen_random_uuid(),
   kind text not null check (kind in ('member', 'yuva')),
@@ -61,10 +77,58 @@ create table if not exists event_registrations (
   name text not null,
   email text not null,
   phone text not null default '',
+  participation_as text not null default 'member' check (participation_as in ('member', 'volunteer')),
   status text not null default 'registered' check (status in ('registered', 'cancelled', 'attended')),
   created_at timestamptz not null default now(),
   unique (event_id, email)
 );
+
+alter table event_registrations add column if not exists participation_as text not null default 'member';
+create index if not exists people_phone_idx on people (phone);
+
+create table if not exists admin_users (
+  id uuid primary key default gen_random_uuid(),
+  email text not null unique,
+  display_name text not null,
+  role text not null check (role in ('super_admin', 'central_content_admin', 'chapter_admin', 'council_admin', 'editor')),
+  scope_type text not null default 'global' check (scope_type in ('global', 'chapter', 'council')),
+  scope_id text,
+  active boolean not null default true,
+  mfa_required boolean not null default true,
+  password_hash text not null default '',
+  last_login_at timestamptz,
+  created_at timestamptz not null default now()
+);
+alter table admin_users add column if not exists password_hash text not null default '';
+alter table admin_users add column if not exists last_login_at timestamptz;
+
+create table if not exists approval_requests (
+  id uuid primary key default gen_random_uuid(),
+  entity_type text not null,
+  entity_id text not null,
+  scope_type text not null default 'global',
+  scope_id text,
+  status text not null default 'draft' check (status in ('draft','submitted','under_review','changes_requested','rejected','approved','scheduled','published')),
+  submitted_by uuid references admin_users(id) on delete set null,
+  reviewed_by uuid references admin_users(id) on delete set null,
+  review_note text not null default '',
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
+create table if not exists audit_logs (
+  id bigint generated always as identity primary key,
+  actor_id uuid references admin_users(id) on delete set null,
+  action text not null,
+  entity_type text not null,
+  entity_id text not null,
+  old_value jsonb,
+  new_value jsonb,
+  request_id text,
+  created_at timestamptz not null default now()
+);
+
+alter table sessions add column if not exists admin_user_id uuid references admin_users(id) on delete cascade;
 
 create index if not exists event_registrations_event_idx on event_registrations (event_id, created_at desc);
 
@@ -136,7 +200,9 @@ alter table donations enable row level security;
 alter table sessions enable row level security;
 alter table chapter_admins enable row level security;
 alter table site_content enable row level security;
+alter table admin_users enable row level security;
+alter table approval_requests enable row level security;
+alter table audit_logs enable row level security;
 
 create policy "public read published events" on events for select using (published = true);
 create policy "public read site content" on site_content for select using (true);
-

@@ -5,6 +5,7 @@ import { chapters } from "../data/platformContent";
 import uaeMap from "../data/uaeMap.json";
 import { useLocale } from "../i18n/LocaleProvider";
 import { cn } from "../lib/utils";
+import { motion, useReducedMotion } from "motion/react";
 
 const chapterById = Object.fromEntries(chapters.map((chapter) => [chapter.id, chapter]));
 
@@ -33,6 +34,7 @@ export function ChapterMap() {
   const { t } = useLocale();
   const navigate = useNavigate();
   const [active, setActive] = useState("dubai");
+  const reduce = useReducedMotion();
   const chapter = chapterById[active];
 
   function selectChapter(id: string) {
@@ -41,8 +43,9 @@ export function ChapterMap() {
   }
 
   return (
-    <div className="grid overflow-hidden rounded-xl border border-[var(--ipf-line)] bg-[var(--ipf-paper)] lg:grid-cols-[minmax(0,1.2fr)_16rem] lg:items-stretch">
-      <div className="flex h-[min(38vh,240px)] items-center justify-center bg-[#eef3f8] p-2 sm:h-[min(42vh,300px)] sm:p-3 lg:h-[320px]">
+    <div className="chapter-directory-map grid overflow-hidden rounded-[1.5rem] border border-white/15 lg:grid-cols-[minmax(0,1.2fr)_18rem] lg:items-stretch">
+      <div className="relative flex h-[min(48vh,330px)] items-center justify-center p-3 sm:h-[min(52vh,420px)] sm:p-5 lg:h-[460px]">
+        <div className="chapter-directory-orbit" aria-hidden="true" />
         <svg
           viewBox={uaeMap.viewBox}
           preserveAspectRatio="xMidYMid meet"
@@ -60,14 +63,16 @@ export function ChapterMap() {
             </mask>
           </defs>
           {otherEmirates.map((emirate) => (
-            <path
+            <motion.path
               key={emirate.id}
               d={emirate.path}
               className={regionClass(emirate.id === active)}
               onClick={() => selectChapter(emirate.id)}
+              animate={emirate.id === active && !reduce ? { opacity:[1,.64,1] } : undefined}
+              transition={{ duration:2.6, repeat:Infinity }}
             >
               <title>{emirate.name}</title>
-            </path>
+            </motion.path>
           ))}
           {abuDhabi ? (
             <>
@@ -107,8 +112,8 @@ export function ChapterMap() {
           ))}
         </svg>
       </div>
-      <div className="flex flex-col border-t border-[var(--ipf-line)] p-3 sm:p-4 lg:h-[320px] lg:border-l lg:border-t-0">
-        <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-[var(--ipf-green)]">{t("nav.chapters")}</p>
+      <div className="flex flex-col border-t border-white/10 bg-[#071a31]/72 p-4 text-white backdrop-blur-xl sm:p-5 lg:h-[460px] lg:border-l lg:border-t-0">
+        <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-[var(--ipf-gold)]">Choose your chapter</p>
         <ul className="mt-2 flex flex-wrap gap-1.5 lg:flex-1 lg:flex-col lg:flex-nowrap lg:gap-1 lg:overflow-y-auto">
           {chapters.map((item) => (
             <li key={item.id} className="lg:w-full">
@@ -116,7 +121,7 @@ export function ChapterMap() {
                 type="button"
                 className={cn(
                   "rounded-lg px-2.5 py-1.5 text-left text-xs font-semibold sm:text-sm",
-                  active === item.id ? "bg-[var(--ipf-navy)] text-white" : "bg-[var(--ipf-ivory)] text-[var(--ipf-navy)] hover:bg-[var(--ipf-navy)]/10",
+                  active === item.id ? "bg-[var(--ipf-saffron)] text-[var(--ipf-navy)]" : "bg-white/8 text-white hover:bg-white/15",
                 )}
                 onClick={() => selectChapter(item.id)}
               >
@@ -126,7 +131,7 @@ export function ChapterMap() {
           ))}
         </ul>
         {chapter ? (
-          <p className="mt-3 hidden text-xs leading-5 text-[var(--ipf-muted)] lg:block">
+          <p className="mt-4 hidden border-t border-white/10 pt-4 text-xs leading-6 text-white/65 lg:block">
             {t(`page.chapter.note.${chapter.id}`)}
           </p>
         ) : null}

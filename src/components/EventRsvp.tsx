@@ -8,6 +8,7 @@ import { isUpcomingEvent } from "../data/eventCatalog";
 import { api } from "../lib/api";
 import { useLocale } from "../i18n/LocaleProvider";
 import { downloadIcs } from "../lib/ics";
+import { SimpleSelect } from "./ui/Select";
 
 type EventRsvpProps = {
   eventId: string;
@@ -30,6 +31,8 @@ export function EventRsvp({ eventId, title, date, startsAt, location, body, mont
   const [status, setStatus] = useState("");
   const [registrationNo, setRegistrationNo] = useState("");
   const [volunteering, setVolunteering] = useState(false);
+  const [identifier, setIdentifier] = useState(member?.membershipNo ?? member?.phone ?? "");
+  const [participationAs, setParticipationAs] = useState<"member" | "volunteer">("member");
 
   useEffect(() => {
     void api<{ registration: { registrationNo: string } | null; volunteer: { status: string } | null }>(
@@ -47,6 +50,7 @@ export function EventRsvp({ eventId, title, date, startsAt, location, body, mont
     setName((current) => current || member.name);
     setEmail((current) => current || member.email);
     setPhone((current) => current || member.phone);
+    setIdentifier((current) => current || member.membershipNo || member.phone);
   }, [member]);
 
   async function onSubmit(event: FormEvent) {
@@ -56,7 +60,7 @@ export function EventRsvp({ eventId, title, date, startsAt, location, body, mont
     try {
       const result = await api<{ registrationNo: string }>(`/api/events/${encodeURIComponent(eventId)}/register`, {
         method: "POST",
-        body: JSON.stringify({ name, email, phone, eventTitle: title, date, location, eventBody: body }),
+        body: JSON.stringify({ identifier, participationAs, name, email, phone, eventTitle: title, date, location, eventBody: body }),
       });
       setRegistrationNo(result.registrationNo);
       setFormOpen(false);
@@ -114,6 +118,15 @@ export function EventRsvp({ eventId, title, date, startsAt, location, body, mont
       </div>
       {open && formOpen && !registrationNo ? (
         <form onSubmit={onSubmit} className="w-full space-y-3 rounded-xl border border-[var(--ipf-line)] bg-[var(--ipf-ivory)] p-4">
+          <div className="grid gap-3 sm:grid-cols-2">
+            <Field label="Registered mobile or IPF ID" htmlFor={`${eventId}-identifier`}>
+              <Input id={`${eventId}-identifier`} value={identifier} onChange={(e) => setIdentifier(e.target.value)} placeholder="IPFM-0001 / IPFY-0001" />
+            </Field>
+            <Field label="Attend this event as" htmlFor={`${eventId}-participation`}>
+              <SimpleSelect id={`${eventId}-participation`} value={participationAs} onValueChange={(value) => setParticipationAs(value as "member" | "volunteer")} placeholder="Choose participation" options={[{ value: "member", label: "Member / attendee" }, { value: "volunteer", label: "IPF Yuva volunteer" }]} />
+            </Field>
+          </div>
+          <p className="text-xs leading-5 text-[var(--ipf-muted)]">Yuva members can choose whether this participation counts as normal attendance or volunteer service.</p>
           <Field label={t("common.fullName")} htmlFor={`${eventId}-name`} required>
             <Input id={`${eventId}-name`} required value={name} onChange={(e) => setName(e.target.value)} />
           </Field>

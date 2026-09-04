@@ -32,7 +32,7 @@ const footerLinkKeys: Record<string, string> = {
 export function Footer() {
   const { t } = useLocale();
   return (
-    <footer className="relative z-10 bg-[var(--ipf-navy)] text-white/80">
+    <footer className="site-footer relative z-10 overflow-hidden bg-[var(--ipf-navy)] text-white/80">
       <div className="ipf-tricolor" />
       <Container className="grid gap-10 py-12 md:grid-cols-2 lg:grid-cols-4">
         <div>

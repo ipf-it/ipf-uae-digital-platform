@@ -22,7 +22,7 @@ export default function CmsPage() {
   const [chapterName, setChapterName] = useState("Central desk");
   const [content, setContent] = useState<CmsContent>(defaultCmsContent);
   const [status, setStatus] = useState("");
-  const [tab, setTab] = useState<"hero" | "gallery" | "events" | "news" | "leadership" | "sections" | "inbox">("hero");
+  const [tab, setTab] = useState<"overview" | "hero" | "gallery" | "events" | "news" | "leadership" | "sections" | "inbox">("overview");
   const [pageKey, setPageKey] = useState<CmsPageKey>("home");
   const [inbox, setInbox] = useState<{
     inquiries: { id: string; createdAt: string; intent: string; name: string; email: string; phone?: string; emirate?: string; message?: string }[];
@@ -197,6 +197,7 @@ export default function CmsPage() {
         <nav className="mt-6 grid gap-1">
           {(role === "central"
             ? [
+                ["overview", "Command centre"],
                 ["hero", "Home hero"],
                 ["gallery", "Gallery"],
                 ["events", "Events"],
@@ -247,6 +248,40 @@ export default function CmsPage() {
 
       <div className="min-w-0 flex-1 px-4 py-6 lg:px-8">
         {status ? <p className="mb-4 text-sm text-[var(--ipf-muted)]">{status}</p> : null}
+
+        {tab === "overview" && role === "central" ? (
+          <div className="space-y-8">
+            <div>
+              <p className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--ipf-green)]">Central oversight</p>
+              <h2 className="mt-2 text-3xl font-bold text-[var(--ipf-navy)]">Organisation command centre</h2>
+              <p className="mt-2 max-w-3xl text-sm leading-7 text-[var(--ipf-muted)]">One view for membership, Yuva, event participation and content awaiting central action. Chapter and council teams create within their assigned scope; publication remains centrally governed.</p>
+            </div>
+            <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+              {[
+                ["Members", inbox?.members.length ?? 0, "Lifetime registrations"],
+                ["IPF Yuva", inbox?.yuva.length ?? 0, "Volunteer identities"],
+                ["Event registrations", inbox?.rsvps.length ?? 0, "All tracked entries"],
+                ["Volunteer assignments", inbox?.volunteers.length ?? 0, "Service participation"],
+              ].map(([label, value, note]) => <Card key={String(label)} size="sm" eyebrow={String(note)} title={String(value)}><p className="text-sm font-semibold text-[var(--ipf-muted)]">{String(label)}</p></Card>)}
+            </div>
+            <Card title="Approval pipeline" description="Reusable governance for events, activities, news and social posts.">
+              <div className="grid gap-2 sm:grid-cols-4 xl:grid-cols-8">
+                {["Draft", "Submitted", "Under review", "Changes", "Approved", "Scheduled", "Published", "Rejected"].map((state, index) => <div key={state} className={`rounded-lg border p-3 text-center text-xs font-semibold ${index === 1 || index === 2 ? "border-[var(--ipf-saffron)] bg-orange-50 text-[var(--ipf-navy)]" : "border-[var(--ipf-line)] bg-[var(--ipf-ivory)] text-[var(--ipf-muted)]"}`}>{state}</div>)}
+              </div>
+            </Card>
+            <Card title="Role & scope model" description="Permissions are evaluated by both role and organisational scope.">
+              <div className="grid gap-3 md:grid-cols-5">
+                {[
+                  ["Super admin", "Global · settings, roles, audit"],
+                  ["Content admin", "Global · review & publish"],
+                  ["Chapter admin", "Assigned emirate only"],
+                  ["Council admin", "Assigned council only"],
+                  ["Editor", "Assigned drafts only"],
+                ].map(([name, scope]) => <div key={name} className="rounded-xl bg-[var(--ipf-ivory)] p-4"><p className="text-sm font-bold text-[var(--ipf-navy)]">{name}</p><p className="mt-2 text-xs leading-5 text-[var(--ipf-muted)]">{scope}</p></div>)}
+              </div>
+            </Card>
+          </div>
+        ) : null}
 
         {tab === "hero" && role === "central" ? (
           <EditorList

@@ -1,15 +1,17 @@
 import { Link, useParams } from "react-router-dom";
 import { DocumentTitle } from "../components/layout/DocumentTitle";
-import { PageHero } from "../components/layout/PageHero";
+import { ChapterJourneyHero } from "../components/ChapterJourneyHero";
 import { Button } from "../components/ui/Button";
 import { Card, CardGrid } from "../components/ui/Card";
 import { Container } from "../components/ui/Container";
 import { Section } from "../components/ui/Section";
-import { chapterImages, chapterPath, emirateChapterOrder, getChapter } from "../data/orgNav";
+import { chapterPath, emirateChapterOrder, getChapter } from "../data/orgNav";
 import { chapters } from "../data/platformContent";
 import { site } from "../data/site";
 import { useLocale } from "../i18n/LocaleProvider";
 import NotFoundPage from "./NotFoundPage";
+import { chapterTheme } from "../data/orgThemes";
+import type { CSSProperties } from "react";
 
 export default function ChapterPage() {
   const { t } = useLocale();
@@ -18,22 +20,23 @@ export default function ChapterPage() {
   if (!chapter) return <NotFoundPage />;
 
   const email = chapter.email ?? site.email;
+  const theme = chapterTheme(chapter.id);
+  const pageStyle = { "--org-primary": theme.primary, "--org-secondary": theme.secondary, "--org-accent": theme.accent } as CSSProperties;
   const note = t(`page.chapter.note.${chapter.id}`);
   const peers = emirateChapterOrder
     .map((id) => chapters.find((item) => item.id === id))
     .filter((item): item is (typeof chapters)[number] => Boolean(item && item.id !== chapter.id));
 
   return (
-    <>
+    <div className={`chapter-theme-page org-motion-${theme.motion}`} style={pageStyle}>
       <DocumentTitle title={chapter.name} />
-      <PageHero
-        eyebrow={t("nav.emiratesChapters")}
+      <ChapterJourneyHero
+        id={chapter.id}
         title={chapter.name}
-        description={t("page.chapter.intro", { name: chapter.name })}
-        crumbs={[{ label: t("nav.chapters"), to: "/chapters" }, { label: chapter.name }]}
-        image={chapterImages[chapter.id]}
+        description="Connecting the local community through welfare, culture and service."
+        theme={theme}
       />
-      <Section tone="white">
+      <Section tone="white" className="chapter-theme-section chapter-theme-section--story">
         <Container className="grid gap-10 lg:grid-cols-[1.15fr,0.85fr] lg:items-start">
           <div className="space-y-5 text-sm leading-7 text-[var(--ipf-muted)]">
             <p>{t("page.chapter.intro", { name: chapter.name })}</p>
@@ -87,7 +90,7 @@ export default function ChapterPage() {
           </aside>
         </Container>
       </Section>
-      <Section>
+      <Section className="chapter-theme-section chapter-theme-section--network">
         <Container className="space-y-4">
           <h2 className="text-2xl font-bold text-[var(--ipf-navy)]">{t("page.chapter.other")}</h2>
           <CardGrid columns={4}>
@@ -102,6 +105,6 @@ export default function ChapterPage() {
           </p>
         </Container>
       </Section>
-    </>
+    </div>
   );
 }

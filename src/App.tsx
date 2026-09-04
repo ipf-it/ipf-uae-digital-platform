@@ -87,7 +87,6 @@ function App() {
           <Route path="jobs" element={<JobsPage />} />
           <Route path="join" element={<Navigate to="/membership" replace />} />
           <Route path="about-ipf" element={<Navigate to="/about" replace />} />
-          <Route path="blog" element={<Navigate to="/news" replace />} />
           <Route path="drishti-e-magazine" element={<Navigate to="/drishti" replace />} />
           <Route path="event-calendar" element={<Navigate to="/events" replace />} />
           <Route path="support-activity" element={<Navigate to="/support" replace />} />

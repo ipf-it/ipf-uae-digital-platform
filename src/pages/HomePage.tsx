@@ -11,7 +11,7 @@ import { Button } from "../components/ui/Button";
 import { Card, CardGrid } from "../components/ui/Card";
 import { Container } from "../components/ui/Container";
 import { Quote } from "../components/ui/Quote";
-import { HeroSlideshow, ImageCarousel } from "../components/ui/ImageCarousel";
+import { ImageCarousel } from "../components/ui/ImageCarousel";
 import { useCms } from "../cms/ContentProvider";
 import { Section } from "../components/ui/Section";
 import { SectionTitle } from "../components/ui/SectionTitle";
@@ -38,12 +38,12 @@ export default function HomePage() {
   const eventsPreview = upcomingEvents.slice(0, 3);
 
   return (
-    <>
+    <div className="home-theme-page">
       <DocumentTitle title={t("home.documentTitle")} />
 
       <div className="lg:hidden">
         {!introReady ? <MobileIntro anchorRef={markRef} onDone={finishIntro} /> : null}
-        <section className="flex min-h-[calc(100svh-var(--ipf-header-h,4.85rem)-var(--ipf-tabbar-h,4.75rem))] flex-col bg-[var(--ipf-navy)] text-white">
+        <section className="ipf-home-hero flex min-h-[calc(100svh-var(--ipf-header-h,4.85rem)-var(--ipf-tabbar-h,4.75rem))] flex-col overflow-hidden text-white"><div className="ipf-theme-mandala" aria-hidden="true"/><div className="ipf-theme-ribbon" aria-hidden="true"/>
           <Container className="flex flex-col items-center py-10 text-center">
             <div ref={markRef} className={cn("flex flex-col items-center", !introReady && "invisible")}>
               <BrandLoader size={110} label={`${site.brandMark} emblem`} />
@@ -58,7 +58,7 @@ export default function HomePage() {
               <div className="mt-5">
                 <Badge>{t("home.badge")}</Badge>
               </div>
-              <h1 className="mt-4 text-balance text-[1.85rem] font-bold leading-[1.15] text-white">
+              <h1 className="home-hero-title-mobile mt-4 font-bold leading-[1.15] text-white">
                 {t("home.title")}
                 <span className="mt-2 block text-xl font-semibold text-[var(--ipf-gold)]">{t("home.uae")}</span>
               </h1>
@@ -94,15 +94,16 @@ export default function HomePage() {
       </div>
 
       <div className="hidden lg:block">
-        <HeroSlideshow slides={content.heroSlides} fillViewport>
+        <section className="ipf-home-hero relative flex min-h-[calc(100svh-var(--ipf-header-h,6rem))] overflow-hidden text-white"><div className="ipf-theme-mandala" aria-hidden="true"/><div className="ipf-theme-ribbon" aria-hidden="true"/><div className="ipf-theme-weave" aria-hidden="true"/>
           <Container className="relative flex min-h-0 flex-1 flex-col justify-center py-10 pb-28 text-left">
-            <div className="max-w-xl">
-              <Badge>{t("home.badge")}</Badge>
-              <h1 className="mt-4 text-balance text-5xl font-bold leading-[1.15] text-white">
+            <div className="max-w-5xl">
+              <p className="text-xs font-bold uppercase tracking-[0.28em] text-[var(--ipf-gold)]">सेवा · संस्कृति · समुदाय</p>
+              <h1 className="home-hero-title-desktop mt-5 font-bold leading-[1.04] text-white">
                 {t("home.title")}
-                <span className="mt-2 block text-2xl font-semibold text-[var(--ipf-gold)]">{t("home.uae")}</span>
+                <span className="mt-3 block text-2xl font-semibold tracking-wide text-[var(--ipf-gold)]">{t("home.uae")}</span>
               </h1>
-              <p className="mt-4 text-pretty text-[15px] leading-7 text-white/85">{t("home.intro")}</p>
+              <div className="mt-5 h-1 w-28 bg-[linear-gradient(90deg,var(--ipf-saffron)_0_33%,#fff_33%_66%,var(--ipf-green)_66%)]" />
+              <p className="mt-5 max-w-lg text-pretty text-base leading-8 text-white/85">{t("home.intro")}</p>
               <div className="mt-6 flex flex-wrap gap-3">
                 <Button asChild variant="gold">
                   <Link to="/membership">{t("nav.joinLong")}</Link>
@@ -123,7 +124,7 @@ export default function HomePage() {
               <ChevronDown className="size-4 animate-bounce" />
             </a>
           </Container>
-        </HeroSlideshow>
+        </section>
       </div>
 
       <div id="community-stats">
@@ -281,6 +282,6 @@ export default function HomePage() {
           </Card>
         </Container>
       </Section>
-    </>
+    </div>
   );
 }

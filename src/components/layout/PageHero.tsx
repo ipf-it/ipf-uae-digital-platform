@@ -21,7 +21,9 @@ type PageHeroProps = {
 export function PageHero({ eyebrow, title, description, crumbs = [], image, actions }: PageHeroProps) {
   const { t } = useLocale();
   return (
-    <section className="relative overflow-hidden bg-[var(--ipf-navy)] text-white">
+    <section className="page-hero-themed relative overflow-hidden bg-[var(--ipf-navy)] text-white">
+      <div className="page-hero-mandala" aria-hidden="true" />
+      <div className="page-hero-weave" aria-hidden="true" />
       {image ? (
         <img src={image} alt="" className="absolute inset-0 h-full w-full object-cover object-center opacity-35" />
       ) : null}

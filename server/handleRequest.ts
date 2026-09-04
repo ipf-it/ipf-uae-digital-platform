@@ -39,7 +39,11 @@ type SessionRow = {
   person_id: string | null;
   chapter_id: string | null;
   expires_at: string;
+  admin_user_id?: string | null;
 };
+
+type AdminRole = "super_admin" | "central_content_admin" | "chapter_admin" | "council_admin" | "editor";
+type AdminRow = { id: string; email: string; display_name: string; role: AdminRole; scope_type: "global" | "chapter" | "council"; scope_id: string | null; active: boolean; mfa_required: boolean; password_hash: string };
 
 const SESSION_MS = 30 * 24 * 60 * 60 * 1000;
 const cmsPassword = () => process.env.IPF_CMS_PASSWORD ?? "";
@@ -72,7 +76,7 @@ function clearCookie(name: string): AppCookie {
   return { name, value: "", clear: true };
 }
 
-async function createSession(kind: SessionRow["kind"], personId?: string, chapterId?: string) {
+async function createSession(kind: SessionRow["kind"], personId?: string, chapterId?: string, adminUserId?: string) {
   const token = newToken();
   const expires = new Date(Date.now() + SESSION_MS).toISOString();
   const { error } = await getSupabase().from("sessions").insert({
@@ -80,6 +84,7 @@ async function createSession(kind: SessionRow["kind"], personId?: string, chapte
     kind,
     person_id: personId ?? null,
     chapter_id: chapterId ?? null,
+    admin_user_id: adminUserId ?? null,
     expires_at: expires,
   });
   if (error) throw error;
@@ -90,7 +95,7 @@ async function loadSession(token: string | undefined) {
   if (!token) return null;
   const { data, error } = await getSupabase()
     .from("sessions")
-    .select("id, token_hash, kind, person_id, chapter_id, expires_at")
+    .select("id, token_hash, kind, person_id, chapter_id, admin_user_id, expires_at")
     .eq("token_hash", hashToken(token))
     .maybeSingle();
   if (error || !data) return null;
@@ -100,6 +105,26 @@ async function loadSession(token: string | undefined) {
     return null;
   }
   return row;
+}
+
+async function ensureAdminSeed() {
+  const email = process.env.IPF_ADMIN_EMAIL?.trim().toLowerCase();
+  const password = process.env.IPF_ADMIN_PASSWORD;
+  if (!email || !password || password.length < 12) return;
+  const supabase = getSupabase();
+  const { data } = await supabase.from("admin_users").select("id").eq("email", email).maybeSingle();
+  if (!data) await supabase.from("admin_users").insert({ email, display_name: "IPF Super Admin", role: "super_admin", scope_type: "global", active: true, mfa_required: true, password_hash: hashPassword(password) });
+}
+
+async function adminFromRequest(req: AppRequest) {
+  const session = await loadSession(req.cookies[CMS_COOKIE]);
+  if (!session?.admin_user_id) return null;
+  const { data } = await getSupabase().from("admin_users").select("*").eq("id", session.admin_user_id).eq("active", true).maybeSingle();
+  return (data as AdminRow | null) ?? null;
+}
+
+function publicAdmin(admin: AdminRow) {
+  return { id: admin.id, email: admin.email, name: admin.display_name, role: admin.role, scopeType: admin.scope_type, scopeId: admin.scope_id, mfaRequired: admin.mfa_required };
 }
 
 async function personFromRequest(req: AppRequest) {
@@ -242,6 +267,7 @@ export async function handleRequest(req: AppRequest): Promise<AppResponse> {
   try {
     await ensureDatabase();
     await seedStandingEvents();
+    await ensureAdminSeed();
     const supabase = getSupabase();
 
     if (method === "GET" && path === "/api/health") {
@@ -253,6 +279,47 @@ export async function handleRequest(req: AppRequest): Promise<AppResponse> {
       if (!cmsPassword() || body.password !== cmsPassword()) return json(401, { error: "Invalid password" });
       const token = await createSession("cms_central");
       return json(200, { ok: true, role: "central", chapterId: "", chapterName: "Central desk" }, [setSession(CMS_COOKIE, token)]);
+    }
+
+    if (method === "POST" && path === "/api/admin/login") {
+      const body = await readJson<{ email?: string; password?: string }>(req);
+      const email = body.email?.trim().toLowerCase() ?? "";
+      const { data } = await supabase.from("admin_users").select("*").eq("email", email).eq("active", true).maybeSingle();
+      const admin = data as AdminRow | null;
+      if (!admin || !body.password || !verifyPassword(body.password, admin.password_hash)) return json(401, { error: "Email or password is incorrect" });
+      const token = await createSession("cms_central", undefined, admin.scope_id ?? undefined, admin.id);
+      await Promise.all([
+        supabase.from("admin_users").update({ last_login_at: new Date().toISOString() }).eq("id", admin.id),
+        supabase.from("audit_logs").insert({ actor_id: admin.id, action: "admin.login", entity_type: "admin_user", entity_id: admin.id, request_id: header(req, "x-request-id") || randomUUID() }),
+      ]);
+      return json(200, { admin: publicAdmin(admin) }, [setSession(CMS_COOKIE, token)]);
+    }
+
+    if (method === "GET" && path === "/api/admin/session") {
+      const admin = await adminFromRequest(req);
+      if (!admin) return json(401, { error: "Administrator sign-in required" });
+      return json(200, { admin: publicAdmin(admin) });
+    }
+
+    if (method === "GET" && path === "/api/admin/dashboard") {
+      const admin = await adminFromRequest(req);
+      if (!admin) return json(401, { error: "Administrator sign-in required" });
+      const scope = admin.scope_id;
+      let eventsQuery = supabase.from("events").select("*", { count: "exact", head: true });
+      let peopleQuery = supabase.from("people").select("*", { count: "exact", head: true });
+      let approvalsQuery = supabase.from("approval_requests").select("*", { count: "exact", head: true });
+      if (scope && admin.scope_type === "chapter") {
+        eventsQuery = eventsQuery.eq("emirate", scope);
+        peopleQuery = peopleQuery.or(`emirate.eq.${scope},chapter.eq.${scope}`);
+        approvalsQuery = approvalsQuery.eq("scope_type", "chapter").eq("scope_id", scope);
+      } else if (scope && admin.scope_type === "council") {
+        approvalsQuery = approvalsQuery.eq("scope_type", "council").eq("scope_id", scope);
+      }
+      const [eventsCount, peopleCount, approvalsCount, pending] = await Promise.all([
+        eventsQuery, peopleQuery, approvalsQuery,
+        supabase.from("approval_requests").select("id,entity_type,entity_id,status,scope_type,scope_id,created_at").in("status", ["submitted","under_review","changes_requested"]).order("created_at", { ascending: false }).limit(20),
+      ]);
+      return json(200, { counts: { events: eventsCount.count ?? 0, people: peopleCount.count ?? 0, approvals: approvalsCount.count ?? 0 }, pending: pending.data ?? [], admin: publicAdmin(admin) });
     }
 
     if (method === "POST" && path === "/api/cms/chapter-login") {
@@ -503,11 +570,13 @@ export async function handleRequest(req: AppRequest): Promise<AppResponse> {
       }
       const email = body.email.trim().toLowerCase();
       const kind: AccountKind = body.kind === "yuva" ? "yuva" : "member";
+      const { data: nextNumber } = await supabase.rpc("next_ipf_number", { account_kind: kind });
+      const permanentId = kind === "yuva" ? yuvaId(Number(nextNumber) || undefined) : membershipNo(Number(nextNumber) || undefined);
       const { data, error } = await supabase
         .from("people")
         .insert({
           kind,
-          membership_no: kind === "yuva" ? yuvaId() : membershipNo(),
+          membership_no: permanentId,
           name: body.name.trim(),
           email,
           phone: body.phone ?? "",
@@ -590,8 +659,17 @@ export async function handleRequest(req: AppRequest): Promise<AppResponse> {
       if (!isUpcomingEvent({ startsAt: known?.startsAt ?? null })) {
         return json(400, { error: "Registration is closed for this event" });
       }
-      const body = await readJson<{ name?: string; email?: string; phone?: string; eventTitle?: string; date?: string; location?: string; eventBody?: string }>(req);
-      const person = await personFromRequest(req);
+      const body = await readJson<{ identifier?: string; participationAs?: "member" | "volunteer"; name?: string; email?: string; phone?: string; eventTitle?: string; date?: string; location?: string; eventBody?: string }>(req);
+      let person = await personFromRequest(req);
+      const identifier = body.identifier?.trim();
+      if (!person && identifier) {
+        const column = /^IPF[MY]-/i.test(identifier) ? "membership_no" : "phone";
+        const { data: matched } = await supabase.from("people").select("*").eq(column, identifier).maybeSingle();
+        person = (matched as PersonRow | null) ?? null;
+      }
+      if (body.participationAs === "volunteer" && person?.kind !== "yuva") {
+        return json(403, { error: "A valid IPF Yuva ID or registered mobile number is required to join as a volunteer" });
+      }
       const name = body.name?.trim() || person?.name;
       const email = (body.email?.trim() || person?.email || "").toLowerCase();
       const phone = body.phone?.trim() || person?.phone || "";
@@ -615,6 +693,7 @@ export async function handleRequest(req: AppRequest): Promise<AppResponse> {
           name,
           email,
           phone,
+          participation_as: body.participationAs === "volunteer" ? "volunteer" : "member",
         })
         .select("registration_no")
         .single();
