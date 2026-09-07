@@ -57,6 +57,10 @@ create table if not exists events (
   starts_at timestamptz,
   ends_at timestamptz,
   is_free boolean not null default true,
+  scope_type text not null default 'global' check (scope_type in ('global', 'chapter', 'council')),
+  scope_id text,
+  workflow_status text not null default 'published' check (workflow_status in ('draft', 'submitted', 'changes_requested', 'rejected', 'approved', 'published')),
+  created_by uuid,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );
@@ -130,6 +134,14 @@ create table if not exists audit_logs (
   request_id text,
   created_at timestamptz not null default now()
 );
+
+do $$ begin
+  if not exists (select 1 from pg_constraint where conname = 'events_created_by_fkey') then
+    alter table events add constraint events_created_by_fkey foreign key (created_by) references admin_users(id) on delete set null;
+  end if;
+end $$;
+create index if not exists events_scope_idx on events (scope_type, scope_id, updated_at desc);
+create unique index if not exists approval_entity_unique_idx on approval_requests (entity_type, entity_id);
 
 create index if not exists event_registrations_event_idx on event_registrations (event_id, created_at desc);
 

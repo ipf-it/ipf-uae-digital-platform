@@ -76,26 +76,31 @@ export function ChapterMap() {
           ))}
           {abuDhabi ? (
             <>
-              <path
+              <motion.path
                 d={abuDhabi.path}
                 mask="url(#ipf-abu-dhabi-mask)"
                 className={regionClass(active === "abu-dhabi")}
                 onClick={() => selectChapter("abu-dhabi")}
+                animate={active === "abu-dhabi" && !reduce ? { opacity: [1, .64, 1] } : undefined}
+                transition={{ duration: 2.6, repeat: Infinity }}
               >
                 <title>Abu Dhabi</title>
-              </path>
-              <path
+              </motion.path>
+              <motion.path
                 d={uaeMap.alAinClip}
                 clipPath="url(#ipf-abu-dhabi-land)"
                 className={cn(regionClass(active === "al-ain"), "stroke-[2]")}
                 onClick={() => selectChapter("al-ain")}
+                animate={active === "al-ain" && !reduce ? { opacity: [1, .64, 1] } : undefined}
+                transition={{ duration: 2.6, repeat: Infinity }}
               >
                 <title>Al Ain</title>
-              </path>
+              </motion.path>
             </>
           ) : null}
           {pins.map((pin) => (
             <g key={pin.id} className="cursor-pointer" onClick={() => selectChapter(pin.id)}>
+              <circle cx={pin.x} cy={pin.y} r="24" fill="transparent" className="pointer-events-auto" />
               <circle cx={pin.x} cy={pin.y} r={active === pin.id ? 9 : 7} fill="#ff9933" stroke="#0b1f3a" strokeWidth="2" />
               <text
                 x={pin.x + 12}
@@ -120,7 +125,7 @@ export function ChapterMap() {
               <button
                 type="button"
                 className={cn(
-                  "rounded-lg px-2.5 py-1.5 text-left text-xs font-semibold sm:text-sm",
+                  "min-h-11 rounded-lg px-3 py-2 text-left text-xs font-semibold sm:text-sm",
                   active === item.id ? "bg-[var(--ipf-saffron)] text-[var(--ipf-navy)]" : "bg-white/8 text-white hover:bg-white/15",
                 )}
                 onClick={() => selectChapter(item.id)}

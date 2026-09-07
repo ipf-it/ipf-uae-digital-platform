@@ -71,7 +71,7 @@ for (const account of accounts) {
   let authUser = existing.find((user) => user.email?.toLowerCase() === account.email);
   if (authUser) {
     const { data, error } = await supabase.auth.admin.updateUserById(authUser.id, {
-      user_metadata: { ...(authUser.user_metadata ?? {}), admin_account: true, must_change_password: true },
+      user_metadata: { ...(authUser.user_metadata ?? {}), admin_account: true, must_change_password: authUser.user_metadata?.must_change_password ?? true },
     });
     if (error) throw error;
     authUser = data.user;

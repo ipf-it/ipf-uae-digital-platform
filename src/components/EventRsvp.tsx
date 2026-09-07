@@ -28,7 +28,8 @@ export function EventRsvp({ eventId, title, date, startsAt, location, body, mont
   const [name, setName] = useState(member?.name ?? "");
   const [email, setEmail] = useState(member?.email ?? "");
   const [phone, setPhone] = useState(member?.phone ?? "");
-  const [status, setStatus] = useState("");
+  const [registrationStatus, setRegistrationStatus] = useState("");
+  const [volunteerStatus, setVolunteerStatus] = useState("");
   const [registrationNo, setRegistrationNo] = useState("");
   const [volunteering, setVolunteering] = useState(false);
   const [identifier, setIdentifier] = useState(member?.membershipNo ?? member?.phone ?? "");
@@ -56,7 +57,7 @@ export function EventRsvp({ eventId, title, date, startsAt, location, body, mont
   async function onSubmit(event: FormEvent) {
     event.preventDefault();
     if (!open) return;
-    setStatus("");
+    setRegistrationStatus("");
     try {
       const result = await api<{ registrationNo: string }>(`/api/events/${encodeURIComponent(eventId)}/register`, {
         method: "POST",
@@ -65,13 +66,13 @@ export function EventRsvp({ eventId, title, date, startsAt, location, body, mont
       setRegistrationNo(result.registrationNo);
       setFormOpen(false);
     } catch (error) {
-      setStatus(error instanceof Error ? error.message : "Could not complete registration");
+      setRegistrationStatus(error instanceof Error ? error.message : "Could not complete registration");
     }
   }
 
   async function volunteer() {
     if (!open) return;
-    setStatus("");
+    setVolunteerStatus("");
     try {
       await api(`/api/events/${encodeURIComponent(eventId)}/volunteer`, {
         method: "POST",
@@ -79,7 +80,7 @@ export function EventRsvp({ eventId, title, date, startsAt, location, body, mont
       });
       setVolunteering(true);
     } catch (error) {
-      setStatus(error instanceof Error ? error.message : "Could not assign volunteer");
+      setVolunteerStatus(error instanceof Error ? error.message : "Could not assign volunteer");
     }
   }
 
@@ -147,13 +148,13 @@ export function EventRsvp({ eventId, title, date, startsAt, location, body, mont
               </Link>
             </p>
           ) : null}
-          {status ? <p className="text-sm text-red-700">{status}</p> : null}
+          {registrationStatus ? <p className="text-sm text-red-700">{registrationStatus}</p> : null}
           <Button type="submit" size="sm">
             {t("common.registerEvent")}
           </Button>
         </form>
       ) : null}
-      {status && (registrationNo || volunteering || !formOpen) ? <p className="text-sm text-red-700">{status}</p> : null}
+      {volunteerStatus ? <p className="text-sm text-red-700">{volunteerStatus}</p> : null}
     </div>
   );
 }

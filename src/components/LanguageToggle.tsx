@@ -20,7 +20,9 @@ export function LanguageToggle({ className, tone = "light" }: LanguageToggleProp
       if (!rootRef.current?.contains(event.target as Node)) setOpen(false);
     }
     document.addEventListener("mousedown", onPointer);
-    return () => document.removeEventListener("mousedown", onPointer);
+    function onKey(event: KeyboardEvent) { if (event.key === "Escape") setOpen(false); }
+    document.addEventListener("keydown", onKey);
+    return () => { document.removeEventListener("mousedown", onPointer); document.removeEventListener("keydown", onKey); };
   }, []);
 
   return (
@@ -28,10 +30,10 @@ export function LanguageToggle({ className, tone = "light" }: LanguageToggleProp
       <button
         type="button"
         className={cn(
-          "inline-flex items-center justify-center gap-0.5 rounded-lg border text-[11px] font-bold tracking-wide",
+          "inline-flex h-11 items-center justify-center gap-0.5 rounded-lg border text-[11px] font-bold tracking-wide",
           dark
-            ? "h-7 w-[3.1rem] border-white/20 bg-white/10 text-white hover:bg-white/15"
-            : "h-9 w-[3.35rem] border-[var(--ipf-line)] bg-white text-[var(--ipf-navy)]",
+            ? "w-[3.1rem] border-white/20 bg-white/10 text-white hover:bg-white/15"
+            : "w-[3.35rem] border-[var(--ipf-line)] bg-white text-[var(--ipf-navy)]",
         )}
         aria-expanded={open}
         aria-label={t("nav.language")}

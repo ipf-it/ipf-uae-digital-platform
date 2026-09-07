@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { Search } from "lucide-react";
 import { useCms } from "../cms/ContentProvider";
@@ -13,6 +13,13 @@ export function SearchDialog() {
   const { content } = useCms();
   const [open, setOpen] = useState(false);
   const [q, setQ] = useState("");
+
+  useEffect(() => {
+    if (!open) return;
+    function escape(event: KeyboardEvent) { if (event.key === "Escape") setOpen(false); }
+    document.addEventListener("keydown", escape);
+    return () => document.removeEventListener("keydown", escape);
+  }, [open]);
 
   const results = useMemo(() => {
     const query = q.trim().toLowerCase();
@@ -39,14 +46,14 @@ export function SearchDialog() {
     <>
       <button
         type="button"
-        className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-[var(--ipf-line)] text-[var(--ipf-navy)] hover:bg-[var(--ipf-ivory)]"
+        className="inline-flex h-11 w-11 items-center justify-center rounded-lg border border-[var(--ipf-line)] text-[var(--ipf-navy)] hover:bg-[var(--ipf-ivory)]"
         aria-label={t("nav.search")}
         onClick={() => setOpen(true)}
       >
         <Search size={16} />
       </button>
       {open ? (
-        <div className="fixed inset-0 z-[70] bg-[var(--ipf-navy)]/50 p-4" onClick={() => setOpen(false)}>
+        <div className="fixed inset-0 z-[70] bg-[var(--ipf-navy)]/50 p-4" role="dialog" aria-modal="true" aria-label={t("nav.search")} onClick={() => setOpen(false)}>
           <div
             className="mx-auto mt-16 max-w-lg rounded-xl border border-[var(--ipf-line)] bg-[var(--ipf-paper)] p-4 shadow-xl"
             onClick={(event) => event.stopPropagation()}

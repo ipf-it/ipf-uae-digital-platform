@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { MessageCircle, X } from "lucide-react";
 import { useLocale } from "../i18n/LocaleProvider";
@@ -7,10 +7,27 @@ import { faqs } from "../data/faqs";
 export function FaqAssistant() {
   const { t } = useLocale();
   const [open, setOpen] = useState(false);
+  const panelRef = useRef<HTMLDivElement>(null);
+  const triggerRef = useRef<HTMLButtonElement>(null);
+
+  useEffect(() => {
+    if (!open) return;
+    function dismiss(event: MouseEvent) {
+      const target = event.target as Node;
+      if (!panelRef.current?.contains(target) && !triggerRef.current?.contains(target)) setOpen(false);
+    }
+    function escape(event: KeyboardEvent) {
+      if (event.key === "Escape") setOpen(false);
+    }
+    document.addEventListener("mousedown", dismiss);
+    document.addEventListener("keydown", escape);
+    return () => { document.removeEventListener("mousedown", dismiss); document.removeEventListener("keydown", escape); };
+  }, [open]);
 
   return (
     <>
       <button
+        ref={triggerRef}
         type="button"
         className="fixed bottom-24 right-4 z-40 flex h-12 w-12 items-center justify-center rounded-full bg-[var(--ipf-navy)] text-white shadow-lg lg:bottom-6"
         aria-label={open ? t("nav.close") : t("common.help")}
@@ -19,7 +36,7 @@ export function FaqAssistant() {
         {open ? <X size={18} /> : <MessageCircle size={18} />}
       </button>
       {open ? (
-        <div className="fixed bottom-40 right-4 z-40 w-[min(22rem,calc(100vw-2rem))] rounded-xl border border-[var(--ipf-line)] bg-[var(--ipf-paper)] p-4 shadow-xl lg:bottom-20">
+        <div ref={panelRef} className="fixed bottom-40 right-4 z-40 w-[min(22rem,calc(100vw-2rem))] rounded-xl border border-[var(--ipf-line)] bg-[var(--ipf-paper)] p-4 shadow-xl lg:bottom-20">
           <p className="text-xs font-bold uppercase tracking-[0.16em] text-[var(--ipf-green)]">{t("common.help")}</p>
           <p className="mt-1 text-sm text-[var(--ipf-muted)]">{t("common.helpBlurb")}</p>
           <ul className="mt-3 max-h-72 space-y-2 overflow-y-auto">

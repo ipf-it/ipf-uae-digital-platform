@@ -35,6 +35,7 @@ const PortalPage = lazy(() => import("./pages/PortalPage"));
 const YuvaPage = lazy(() => import("./pages/YuvaPage"));
 const JobsPage = lazy(() => import("./pages/JobsPage"));
 const CmsPage = lazy(() => import("./pages/CmsPage"));
+const AdminPage = lazy(() => import("./pages/AdminPage"));
 const NotFoundPage = lazy(() => import("./pages/NotFoundPage"));
 
 function App() {
@@ -42,7 +43,9 @@ function App() {
     <BrowserRouter>
       <Suspense fallback={<PageLoader />}>
       <Routes>
-        <Route path="cms" element={<CmsPage />} />
+        <Route path="admin" element={<AdminPage />} />
+        <Route path="admin/content" element={<CmsPage />} />
+        <Route path="cms" element={<Navigate to="/admin" replace />} />
         <Route element={<SiteLayout />}>
           <Route index element={<HomePage />} />
           <Route path="about" element={<AboutPage />} />

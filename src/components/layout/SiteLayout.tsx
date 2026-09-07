@@ -31,7 +31,7 @@ function LayoutShell() {
   }, [pathname]);
 
   return (
-    <div className={`site-theme-shell site-theme-${routeTheme} relative min-h-screen bg-[var(--ipf-ivory)] pb-20 lg:pb-0`} data-route-theme={routeTheme}>
+    <div className={`site-theme-shell site-theme-${routeTheme} relative min-h-screen bg-[var(--ipf-ivory)] pb-[var(--ipf-tabbar-h,5rem)] xl:pb-0`} data-route-theme={routeTheme}>
       <a className="ipf-skip" href="#main">
         {t("common.skip")}
       </a>

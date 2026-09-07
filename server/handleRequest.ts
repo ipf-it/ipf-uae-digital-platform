@@ -91,6 +91,14 @@ function publicAdmin(admin: AdminRow) {
   return { id: admin.id, email: admin.email, name: admin.display_name, role: admin.role, scopeType: admin.scope_type, scopeId: admin.scope_id, mfaRequired: admin.mfa_required };
 }
 
+function isGlobalAdmin(admin: AdminRow) {
+  return admin.scope_type === "global" && (admin.role === "super_admin" || admin.role === "central_content_admin");
+}
+
+function eventInScope(admin: AdminRow, event: { scope_type?: string; scope_id?: string | null }) {
+  return isGlobalAdmin(admin) || (event.scope_type === admin.scope_type && event.scope_id === admin.scope_id);
+}
+
 async function personFromRequest(req: AppRequest) {
   const user = await authenticatedUser(req);
   if (!user) return null;
@@ -288,18 +296,113 @@ export async function handleRequest(req: AppRequest): Promise<AppResponse> {
       let eventsQuery = supabase.from("events").select("*", { count: "exact", head: true });
       let peopleQuery = supabase.from("people").select("*", { count: "exact", head: true });
       let approvalsQuery = supabase.from("approval_requests").select("*", { count: "exact", head: true });
+      let pendingQuery = supabase.from("approval_requests").select("id,entity_type,entity_id,status,scope_type,scope_id,created_at").in("status", ["submitted","under_review","changes_requested"]).order("created_at", { ascending: false }).limit(20);
       if (scope && admin.scope_type === "chapter") {
-        eventsQuery = eventsQuery.eq("emirate", scope);
+        eventsQuery = eventsQuery.eq("scope_type", "chapter").eq("scope_id", scope);
         peopleQuery = peopleQuery.or(`emirate.eq.${scope},chapter.eq.${scope}`);
         approvalsQuery = approvalsQuery.eq("scope_type", "chapter").eq("scope_id", scope);
+        pendingQuery = pendingQuery.eq("scope_type", "chapter").eq("scope_id", scope);
       } else if (scope && admin.scope_type === "council") {
+        eventsQuery = eventsQuery.eq("scope_type", "council").eq("scope_id", scope);
         approvalsQuery = approvalsQuery.eq("scope_type", "council").eq("scope_id", scope);
+        pendingQuery = pendingQuery.eq("scope_type", "council").eq("scope_id", scope);
       }
       const [eventsCount, peopleCount, approvalsCount, pending] = await Promise.all([
         eventsQuery, peopleQuery, approvalsQuery,
-        supabase.from("approval_requests").select("id,entity_type,entity_id,status,scope_type,scope_id,created_at").in("status", ["submitted","under_review","changes_requested"]).order("created_at", { ascending: false }).limit(20),
+        pendingQuery,
       ]);
       return json(200, { counts: { events: eventsCount.count ?? 0, people: peopleCount.count ?? 0, approvals: approvalsCount.count ?? 0 }, pending: pending.data ?? [], admin: publicAdmin(admin) });
+    }
+
+    if (method === "GET" && path === "/api/admin/events") {
+      const admin = await adminFromRequest(req);
+      if (!admin) return json(401, { error: "Administrator sign-in required" });
+      let query = supabase.from("events").select("*").order("updated_at", { ascending: false });
+      if (!isGlobalAdmin(admin)) query = query.eq("scope_type", admin.scope_type).eq("scope_id", admin.scope_id ?? "");
+      const { data, error } = await query;
+      if (error) throw error;
+      return json(200, { events: data ?? [] });
+    }
+
+    if (method === "POST" && path === "/api/admin/events") {
+      const admin = await adminFromRequest(req);
+      if (!admin) return json(401, { error: "Administrator sign-in required" });
+      const body = await readJson<{ title?: string; eventDate?: string; location?: string; body?: string; category?: string; startsAt?: string; isFree?: boolean; slides?: unknown }>(req);
+      if (!body.title?.trim()) return json(400, { error: "Event title is required" });
+      const id = `${body.title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 48)}-${randomUUID().slice(0, 8)}`;
+      const scopeType = isGlobalAdmin(admin) ? "global" : admin.scope_type;
+      const scopeId = isGlobalAdmin(admin) ? null : admin.scope_id;
+      const { data, error } = await supabase.from("events").insert({
+        id, title: body.title.trim(), event_date: body.eventDate ?? "", location: body.location ?? "", body: body.body ?? "",
+        category: body.category ?? "Community", starts_at: body.startsAt || null, is_free: body.isFree !== false,
+        slides: body.slides ?? [],
+        emirate: scopeType === "chapter" ? scopeId : "uae", scope_type: scopeType, scope_id: scopeId,
+        workflow_status: isGlobalAdmin(admin) ? "published" : "draft", published: isGlobalAdmin(admin), created_by: admin.id,
+      }).select("*").single();
+      if (error) throw error;
+      await supabase.from("audit_logs").insert({ actor_id: admin.id, action: "event.create", entity_type: "event", entity_id: id, new_value: data });
+      return json(200, { event: data });
+    }
+
+    const adminEvent = path.match(/^\/api\/admin\/events\/([^/]+)$/);
+    if (method === "PUT" && adminEvent) {
+      const admin = await adminFromRequest(req);
+      if (!admin) return json(401, { error: "Administrator sign-in required" });
+      const id = decodeURIComponent(adminEvent[1]);
+      const { data: current } = await supabase.from("events").select("*").eq("id", id).maybeSingle();
+      if (!current) return json(404, { error: "Event not found" });
+      if (!eventInScope(admin, current)) return json(403, { error: "This event is outside your assigned scope" });
+      const body = await readJson<{ title?: string; eventDate?: string; location?: string; body?: string; category?: string; startsAt?: string; isFree?: boolean; slides?: unknown }>(req);
+      const update = { title: body.title?.trim() || current.title, event_date: body.eventDate ?? current.event_date, location: body.location ?? current.location, body: body.body ?? current.body, category: body.category ?? current.category, starts_at: body.startsAt || null, is_free: body.isFree ?? current.is_free, slides: body.slides ?? current.slides, updated_at: new Date().toISOString(), workflow_status: isGlobalAdmin(admin) ? current.workflow_status : "draft", published: isGlobalAdmin(admin) ? current.published : false };
+      const { data, error } = await supabase.from("events").update(update).eq("id", id).select("*").single();
+      if (error) throw error;
+      await supabase.from("audit_logs").insert({ actor_id: admin.id, action: "event.update", entity_type: "event", entity_id: id, old_value: current, new_value: data });
+      return json(200, { event: data });
+    }
+
+    const submitEvent = path.match(/^\/api\/admin\/events\/([^/]+)\/submit$/);
+    if (method === "POST" && submitEvent) {
+      const admin = await adminFromRequest(req);
+      if (!admin) return json(401, { error: "Administrator sign-in required" });
+      const id = decodeURIComponent(submitEvent[1]);
+      const { data: event } = await supabase.from("events").select("*").eq("id", id).maybeSingle();
+      if (!event) return json(404, { error: "Event not found" });
+      if (!eventInScope(admin, event)) return json(403, { error: "This event is outside your assigned scope" });
+      if (isGlobalAdmin(admin)) return json(400, { error: "Global administrators publish directly" });
+      await supabase.from("events").update({ workflow_status: "submitted", published: false, updated_at: new Date().toISOString() }).eq("id", id);
+      const { error } = await supabase.from("approval_requests").upsert({ entity_type: "event", entity_id: id, scope_type: admin.scope_type, scope_id: admin.scope_id, status: "submitted", submitted_by: admin.id, reviewed_by: null, review_note: "", updated_at: new Date().toISOString() }, { onConflict: "entity_type,entity_id" });
+      if (error) throw error;
+      await supabase.from("audit_logs").insert({ actor_id: admin.id, action: "event.submit", entity_type: "event", entity_id: id });
+      return json(200, { ok: true });
+    }
+
+    const approvalDecision = path.match(/^\/api\/admin\/approvals\/([^/]+)\/decision$/);
+    if (method === "POST" && approvalDecision) {
+      const admin = await adminFromRequest(req);
+      if (!admin || admin.role !== "super_admin") return json(403, { error: "Super-admin access required" });
+      const body = await readJson<{ decision?: "approved" | "rejected" | "changes_requested"; note?: string }>(req);
+      if (!body.decision || !["approved", "rejected", "changes_requested"].includes(body.decision)) return json(400, { error: "A valid decision is required" });
+      const requestId = decodeURIComponent(approvalDecision[1]);
+      const { data: approval } = await supabase.from("approval_requests").select("*").eq("id", requestId).maybeSingle();
+      if (!approval) return json(404, { error: "Approval request not found" });
+      await supabase.from("approval_requests").update({ status: body.decision, reviewed_by: admin.id, review_note: body.note ?? "", updated_at: new Date().toISOString() }).eq("id", requestId);
+      if (approval.entity_type === "event") await supabase.from("events").update({ workflow_status: body.decision === "approved" ? "published" : body.decision, published: body.decision === "approved", updated_at: new Date().toISOString() }).eq("id", approval.entity_id);
+      await supabase.from("audit_logs").insert({ actor_id: admin.id, action: `approval.${body.decision}`, entity_type: approval.entity_type, entity_id: approval.entity_id, new_value: { note: body.note ?? "" } });
+      return json(200, { ok: true });
+    }
+
+    if (method === "POST" && path === "/api/admin/upload") {
+      const admin = await adminFromRequest(req);
+      if (!admin) return json(401, { error: "Administrator sign-in required" });
+      const type = header(req, "x-file-type") || "image/jpeg";
+      if (!type.startsWith("image/")) return json(400, { error: "Only image uploads are allowed" });
+      const name = header(req, "x-file-name") || `upload-${randomUUID()}`;
+      const ext = extname(name) || (type.includes("png") ? ".png" : ".jpg");
+      const fileName = `${admin.scope_type}/${admin.scope_id ?? "global"}/${Date.now()}-${randomUUID().slice(0, 8)}${ext}`;
+      const { error } = await supabase.storage.from(uploadBucket()).upload(fileName, req.body, { contentType: type, upsert: false });
+      if (error) throw error;
+      const { data } = supabase.storage.from(uploadBucket()).getPublicUrl(fileName);
+      return json(200, { src: data.publicUrl });
     }
 
     if (method === "POST" && path === "/api/cms/chapter-login") {
