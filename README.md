@@ -1,4 +1,16 @@
-# React + TypeScript + Vite
+# IPF UAE Platform
+
+## Supabase setup
+
+1. Copy `.env.example` to `.env` and set the server and `VITE_` Supabase keys.
+2. For a new database, run `server/schema.sql`, then the numbered files in `server/migrations/`.
+3. For an existing database, run `server/migrations/003_supabase_auth.sql` before deploying this version.
+4. Set `IPF_ADMIN_EMAIL` and a 12+ character `IPF_ADMIN_PASSWORD`. The first API request creates or links that Supabase Auth user as the initial super admin.
+5. Configure the Supabase Site URL and allowed redirect URLs for the deployed domain. Registration follows the project's email-confirmation setting.
+
+Member, Yuva and administrator credentials are handled by Supabase Auth. Application profiles, membership numbers, roles and organisational scopes remain in public tables protected by server-side authorization and database constraints.
+
+## Development
 
 This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
 

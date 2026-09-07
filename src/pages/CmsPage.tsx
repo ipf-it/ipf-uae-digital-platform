@@ -8,6 +8,7 @@ import { Textarea } from "../components/ui/Textarea";
 import { defaultCmsContent } from "../cms/defaults";
 import { cmsPageKeys, type CmsContent, type CmsPageKey, type CmsSection } from "../cms/types";
 import { api } from "../lib/api";
+import { requireSupabaseAuth, supabaseAuth } from "../lib/supabase";
 
 function newId() {
   return `section-${Date.now()}`;
@@ -15,8 +16,7 @@ function newId() {
 
 export default function CmsPage() {
   const [password, setPassword] = useState("");
-  const [desk, setDesk] = useState<"central" | "chapter">("central");
-  const [chapterId, setChapterId] = useState("dubai");
+  const [email, setEmail] = useState("");
   const [signedIn, setSignedIn] = useState(false);
   const [role, setRole] = useState<"central" | "chapter">("central");
   const [chapterName, setChapterName] = useState("Central desk");
@@ -46,12 +46,10 @@ export default function CmsPage() {
 
   async function signIn() {
     try {
-      const path = desk === "chapter" ? "/api/cms/chapter-login" : "/api/cms/login";
-      const result = (await api(path, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(desk === "chapter" ? { chapterId, password } : { password }),
-      })) as { role: "central" | "chapter"; chapterName?: string };
+      const { error } = await requireSupabaseAuth().auth.signInWithPassword({ email: email.trim().toLowerCase(), password });
+      if (error) throw error;
+      const admin = await api<{ admin: { name: string; role: string; scopeType: string; scopeId?: string } }>("/api/admin/session");
+      const result = { role: admin.admin.scopeType === "global" ? "central" as const : "chapter" as const, chapterName: admin.admin.name };
       setSignedIn(true);
       setRole(result.role);
       setChapterName(result.chapterName ?? "Central desk");
@@ -76,12 +74,13 @@ export default function CmsPage() {
   }
 
   useEffect(() => {
-    void api<{ role: "central" | "chapter"; chapterName?: string }>("/api/cms/session")
+    void api<{ admin: { name: string; scopeType: string } }>("/api/admin/session")
       .then(async (data) => {
         setSignedIn(true);
-        setRole(data.role);
-        setChapterName(data.chapterName ?? "Central desk");
-        if (data.role === "chapter") setTab("inbox");
+        const nextRole = data.admin.scopeType === "global" ? "central" : "chapter";
+        setRole(nextRole);
+        setChapterName(data.admin.name ?? "Central desk");
+        if (nextRole === "chapter") setTab("inbox");
         try {
           const loaded = await api<CmsContent>("/api/cms/content");
           setContent({ ...defaultCmsContent, ...loaded, extras: { ...defaultCmsContent.extras, ...(loaded.extras ?? {}) } });
@@ -134,36 +133,11 @@ export default function CmsPage() {
           size="lg"
           eyebrow="IPF UAE"
           title="Content desk"
-          description="Central desk edits the public website. Chapter desks see members, IPF Yuva and inquiries for one emirate."
+          description="Sign in with your assigned Supabase administrator account. Access is limited to your chapter or council scope."
         >
-          <div className="mb-4 grid grid-cols-2 gap-2">
-            <Button type="button" variant={desk === "central" ? "primary" : "outline"} onClick={() => setDesk("central")}>
-              Central desk
-            </Button>
-            <Button type="button" variant={desk === "chapter" ? "primary" : "outline"} onClick={() => setDesk("chapter")}>
-              Chapter desk
-            </Button>
-          </div>
-          {desk === "chapter" ? (
-            <Field label="Chapter" htmlFor="cms-chapter" className="mb-4">
-              <SimpleSelect
-                id="cms-chapter"
-                value={chapterId}
-                onValueChange={setChapterId}
-                placeholder="Select chapter"
-                options={[
-                  { value: "abu-dhabi", label: "Abu Dhabi" },
-                  { value: "al-ain", label: "Al Ain" },
-                  { value: "dubai", label: "Dubai" },
-                  { value: "sharjah", label: "Sharjah" },
-                  { value: "ajman", label: "Ajman" },
-                  { value: "umm-al-quwain", label: "Umm Al Quwain" },
-                  { value: "ras-al-khaimah", label: "Ras Al Khaimah" },
-                  { value: "fujairah", label: "Fujairah" },
-                ]}
-              />
-            </Field>
-          ) : null}
+          <Field label="Email" htmlFor="cms-email" className="mb-4">
+            <Input id="cms-email" type="email" autoComplete="username" value={email} onChange={(event) => setEmail(event.target.value)} />
+          </Field>
           <Field label="Password" htmlFor="cms-password">
             <Input
               id="cms-password"
@@ -172,11 +146,6 @@ export default function CmsPage() {
               onChange={(event) => setPassword(event.target.value)}
             />
           </Field>
-          <p className="mt-3 text-xs leading-5 text-[var(--ipf-muted)]">
-            {desk === "central"
-              ? "Central password is IPF_CMS_PASSWORD, default ipfuae."
-              : "Local chapter password is ipf- plus the chapter id, for example ipf-dubai."}
-          </p>
           <div className="mt-4">
             <Button type="button" onClick={() => void signIn()}>
               Sign in
@@ -235,7 +204,7 @@ export default function CmsPage() {
             variant="secondary"
             className="w-full"
             onClick={() => {
-              void api("/api/cms/logout", { method: "POST" }).catch(() => undefined);
+              if (supabaseAuth) void supabaseAuth.auth.signOut();
               setSignedIn(false);
               setInbox(null);
               setStatus("");

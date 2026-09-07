@@ -21,6 +21,7 @@ $$;
 
 create table if not exists people (
   id uuid primary key default gen_random_uuid(),
+  auth_user_id uuid unique references auth.users(id) on delete cascade,
   kind text not null check (kind in ('member', 'yuva')),
   membership_no text not null unique,
   name text not null,
@@ -85,9 +86,11 @@ create table if not exists event_registrations (
 
 alter table event_registrations add column if not exists participation_as text not null default 'member';
 create index if not exists people_phone_idx on people (phone);
+create unique index if not exists people_phone_unique_idx on people (phone) where phone <> '';
 
 create table if not exists admin_users (
   id uuid primary key default gen_random_uuid(),
+  auth_user_id uuid unique references auth.users(id) on delete cascade,
   email text not null unique,
   display_name text not null,
   role text not null check (role in ('super_admin', 'central_content_admin', 'chapter_admin', 'council_admin', 'editor')),
@@ -127,8 +130,6 @@ create table if not exists audit_logs (
   request_id text,
   created_at timestamptz not null default now()
 );
-
-alter table sessions add column if not exists admin_user_id uuid references admin_users(id) on delete cascade;
 
 create index if not exists event_registrations_event_idx on event_registrations (event_id, created_at desc);
 
@@ -174,6 +175,8 @@ create table if not exists sessions (
   expires_at timestamptz not null,
   created_at timestamptz not null default now()
 );
+
+alter table sessions add column if not exists admin_user_id uuid references admin_users(id) on delete cascade;
 
 create index if not exists sessions_token_idx on sessions (token_hash);
 create index if not exists sessions_expiry_idx on sessions (expires_at);

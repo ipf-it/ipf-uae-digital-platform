@@ -1,5 +1,6 @@
 import { createContext, useContext, useEffect, useMemo, useState, type PropsWithChildren } from "react";
 import { api } from "../lib/api";
+import { requireSupabaseAuth, supabaseAuth } from "../lib/supabase";
 
 export type Member = {
   id: string;
@@ -73,6 +74,7 @@ export function MemberProvider({ children }: PropsWithChildren) {
 
   async function refresh() {
     try {
+      if (!supabaseAuth || !(await supabaseAuth.auth.getSession()).data.session) throw new Error("Signed out");
       const result = await api<MeResponse>("/api/members/me");
       setMember(result.member);
       setRegistrations(result.registrations ?? []);
@@ -87,6 +89,9 @@ export function MemberProvider({ children }: PropsWithChildren) {
 
   useEffect(() => {
     void refresh();
+    if (!supabaseAuth) return;
+    const { data } = supabaseAuth.auth.onAuthStateChange(() => void refresh());
+    return () => data.subscription.unsubscribe();
   }, []);
 
   const value = useMemo<MemberContextValue>(
@@ -96,23 +101,23 @@ export function MemberProvider({ children }: PropsWithChildren) {
       volunteerShifts,
       ready,
       async signIn(email, password) {
-        const result = await api<{ member: Member }>("/api/members/login", {
-          method: "POST",
-          body: JSON.stringify({ email, password }),
-        });
-        setMember(result.member);
+        const { error } = await requireSupabaseAuth().auth.signInWithPassword({ email: email.trim().toLowerCase(), password });
+        if (error) throw error;
         await refresh();
       },
       async register(payload) {
-        const result = await api<{ member: Member }>("/api/members/register", {
-          method: "POST",
-          body: JSON.stringify(payload),
+        const checked = await api<{ phone: string }>("/api/members/check-phone", { method: "POST", body: JSON.stringify({ phone: payload.phone }) });
+        const { data, error } = await requireSupabaseAuth().auth.signUp({
+          email: payload.email.trim().toLowerCase(),
+          password: payload.password,
+          options: { data: { name: payload.name.trim(), phone: checked.phone, emirate: payload.emirate, account_kind: payload.kind } },
         });
-        setMember(result.member);
+        if (error) throw error;
+        if (!data.session) throw new Error("Check your email to confirm the account, then sign in to finish registration.");
         await refresh();
       },
       async signOut() {
-        await api("/api/members/logout", { method: "POST" }).catch(() => undefined);
+        if (supabaseAuth) await supabaseAuth.auth.signOut();
         setMember(null);
         setRegistrations([]);
         setVolunteerShifts([]);

@@ -92,8 +92,8 @@ export default function RegisterPage() {
               <Field className="mt-4" label={t("common.email")} htmlFor="reg-email" required>
                 <Input id="reg-email" required type="email" autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)} />
               </Field>
-              <Field className="mt-4" label={t("common.phoneUae")} htmlFor="reg-phone">
-                <Input id="reg-phone" type="tel" autoComplete="tel" value={phone} onChange={(e) => setPhone(e.target.value)} />
+              <Field className="mt-4" label={t("common.phoneUae")} htmlFor="reg-phone" required>
+                <Input id="reg-phone" required type="tel" inputMode="tel" autoComplete="tel" placeholder="+971 50 123 4567" value={phone} onChange={(e) => setPhone(e.target.value)} />
               </Field>
               <Field className="mt-4" label={t("common.emirate")} htmlFor="reg-emirate" required>
                 <SimpleSelect
