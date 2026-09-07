@@ -1,14 +1,14 @@
 import { randomUUID } from "node:crypto";
 import { extname } from "node:path";
-import { ensureDatabase, getSupabase, uploadBucket } from "./db.ts";
+import { ensureDatabase, getSupabase, uploadBucket } from "./db.js";
 import {
   chapterDesks,
   eventRegistrationNo,
   matchesChapter,
   type AccountKind,
-} from "./crypto.ts";
-import { header, json, readJson, type AppRequest, type AppResponse } from "./http.ts";
-import { filterPublicEvents, mapEventRow, catalogSeedEvents, isUpcomingEvent, type PublicEvent } from "../src/data/eventCatalog.ts";
+} from "./crypto.js";
+import { header, json, readJson, type AppRequest, type AppResponse } from "./http.js";
+import { filterPublicEvents, mapEventRow, catalogSeedEvents, isUpcomingEvent, type PublicEvent } from "../src/data/eventCatalog.js";
 
 
 type PersonRow = {

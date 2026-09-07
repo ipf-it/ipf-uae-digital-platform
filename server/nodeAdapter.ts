@@ -1,6 +1,6 @@
 import type { IncomingMessage, ServerResponse } from "node:http";
-import { handleRequest } from "./handleRequest.ts";
-import { cookieHeader, parseCookies, type AppRequest } from "./http.ts";
+import { handleRequest } from "./handleRequest.js";
+import { cookieHeader, parseCookies, type AppRequest } from "./http.js";
 
 export function readBody(req: IncomingMessage) {
   return new Promise<Buffer>((resolve, reject) => {

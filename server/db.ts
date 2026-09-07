@@ -1,5 +1,5 @@
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
-import { chapterDesks, hashPassword } from "./crypto.ts";
+import { chapterDesks, hashPassword } from "./crypto.js";
 
 const BUCKET = "ipf-uploads";
 
