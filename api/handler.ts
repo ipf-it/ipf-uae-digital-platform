@@ -1,7 +1,3 @@
-import { Buffer } from "node:buffer";
-import { handleRequest } from "../server/handleRequest.ts";
-import { cookieHeader, parseCookies, type AppRequest } from "../server/http.ts";
-
 function appPath(url: URL) {
   const forwarded = url.searchParams.get("path");
   if (!forwarded) return url.pathname + url.search;
@@ -10,11 +6,15 @@ function appPath(url: URL) {
   return `/api/${forwarded}${query ? `?${query}` : ""}`;
 }
 
-async function fetch(request: Request) {
+async function handler(request: Request) {
   try {
+    const [{ handleRequest }, { cookieHeader, parseCookies }] = await Promise.all([
+      import("../server/handleRequest.ts"),
+      import("../server/http.ts"),
+    ]);
     const url = new URL(request.url);
     const headers = Object.fromEntries(request.headers.entries());
-    const appRequest: AppRequest = {
+    const appRequest = {
       method: request.method,
       url: appPath(url),
       headers,
@@ -33,4 +33,8 @@ async function fetch(request: Request) {
   }
 }
 
-export default { fetch };
+export const GET = handler;
+export const POST = handler;
+export const PUT = handler;
+export const PATCH = handler;
+export const DELETE = handler;
