@@ -19,6 +19,7 @@ export default function CmsPage() {
   const [email, setEmail] = useState("");
   const [signedIn, setSignedIn] = useState(false);
   const [role, setRole] = useState<"central" | "chapter">("central");
+  const [scopeType, setScopeType] = useState<"global" | "chapter" | "council">("global");
   const [chapterName, setChapterName] = useState("Central desk");
   const [content, setContent] = useState<CmsContent>(defaultCmsContent);
   const [status, setStatus] = useState("");
@@ -50,6 +51,7 @@ export default function CmsPage() {
       if (error) throw error;
       const admin = await api<{ admin: { name: string; role: string; scopeType: string; scopeId?: string } }>("/api/admin/session");
       const result = { role: admin.admin.scopeType === "global" ? "central" as const : "chapter" as const, chapterName: admin.admin.name };
+      setScopeType(admin.admin.scopeType as "global" | "chapter" | "council");
       setSignedIn(true);
       setRole(result.role);
       setChapterName(result.chapterName ?? "Central desk");
@@ -78,6 +80,7 @@ export default function CmsPage() {
       .then(async (data) => {
         setSignedIn(true);
         const nextRole = data.admin.scopeType === "global" ? "central" : "chapter";
+        setScopeType(data.admin.scopeType as "global" | "chapter" | "council");
         setRole(nextRole);
         setChapterName(data.admin.name ?? "Central desk");
         if (nextRole === "chapter") setTab("inbox");
@@ -162,7 +165,7 @@ export default function CmsPage() {
       <aside className="bg-[var(--ipf-navy)] px-4 py-6 text-white lg:w-64 lg:shrink-0">
         <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-[var(--ipf-gold)]">IPF desk</p>
         <h1 className="mt-2 text-lg font-bold">{chapterName}</h1>
-        <p className="mt-1 text-xs text-white/70">{role === "chapter" ? "Chapter admin" : "Central admin"}</p>
+        <p className="mt-1 text-xs text-white/70">{scopeType === "council" ? "Council admin" : scopeType === "chapter" ? "Chapter admin" : "Central admin"}</p>
         <nav className="mt-6 grid gap-1">
           {(role === "central"
             ? [

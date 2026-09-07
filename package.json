@@ -7,6 +7,7 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "oxlint",
+    "seed:admins": "node --env-file=.env scripts/seed-admins.mjs",
     "preview": "vite preview"
   },
   "dependencies": {

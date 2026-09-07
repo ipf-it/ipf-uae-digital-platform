@@ -111,8 +111,8 @@ async function hoursFor(personId: string) {
 async function cmsFromRequest(req: AppRequest) {
   const admin = await adminFromRequest(req);
   if (admin) return {
-    role: admin.scope_type === "chapter" ? ("chapter" as const) : ("central" as const),
-    chapterId: admin.scope_type === "chapter" ? admin.scope_id ?? "" : "",
+    role: admin.scope_type === "global" ? ("central" as const) : ("chapter" as const),
+    chapterId: admin.scope_id ?? "",
     admin,
   };
   return null;
