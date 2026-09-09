@@ -2,6 +2,8 @@ import { lazy, Suspense } from "react";
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import { SiteLayout } from "./components/layout/SiteLayout";
 import { PageLoader } from "./components/layout/PageLoader";
+import { AdminLayout, RequireGlobalAdmin, RequireSuperAdmin } from "./admin/AdminLayout";
+import { ToastProvider } from "./components/ui/Toast";
 import HomePage from "./pages/HomePage";
 
 const AboutPage = lazy(() => import("./pages/AboutPage"));
@@ -34,17 +36,40 @@ const DonatePage = lazy(() => import("./pages/DonatePage"));
 const PortalPage = lazy(() => import("./pages/PortalPage"));
 const YuvaPage = lazy(() => import("./pages/YuvaPage"));
 const JobsPage = lazy(() => import("./pages/JobsPage"));
-const CmsPage = lazy(() => import("./pages/CmsPage"));
-const AdminPage = lazy(() => import("./pages/AdminPage"));
+const DashboardTab = lazy(() => import("./admin/tabs/DashboardTab"));
+const EventsTab = lazy(() => import("./admin/tabs/EventsTab"));
+const ContentTab = lazy(() => import("./admin/tabs/ContentTab"));
+const InboxTab = lazy(() => import("./admin/tabs/InboxTab"));
+const ApprovalsTab = lazy(() => import("./admin/tabs/ApprovalsTab"));
 const NotFoundPage = lazy(() => import("./pages/NotFoundPage"));
 
 function App() {
   return (
     <BrowserRouter>
+      <ToastProvider>
       <Suspense fallback={<PageLoader />}>
       <Routes>
-        <Route path="admin" element={<AdminPage />} />
-        <Route path="admin/content" element={<CmsPage />} />
+        <Route path="admin" element={<AdminLayout />}>
+          <Route index element={<DashboardTab />} />
+          <Route path="events" element={<EventsTab />} />
+          <Route
+            path="content"
+            element={
+              <RequireGlobalAdmin>
+                <ContentTab />
+              </RequireGlobalAdmin>
+            }
+          />
+          <Route path="inbox" element={<InboxTab />} />
+          <Route
+            path="approvals"
+            element={
+              <RequireSuperAdmin>
+                <ApprovalsTab />
+              </RequireSuperAdmin>
+            }
+          />
+        </Route>
         <Route path="cms" element={<Navigate to="/admin" replace />} />
         <Route element={<SiteLayout />}>
           <Route index element={<HomePage />} />
@@ -101,6 +126,7 @@ function App() {
         </Route>
       </Routes>
       </Suspense>
+      </ToastProvider>
     </BrowserRouter>
   );
 }

@@ -1,25 +1,28 @@
-import { randomUUID } from "node:crypto";
+import { randomUUID, randomInt, createHash } from "node:crypto";
 import { extname } from "node:path";
 import { ensureDatabase, getSupabase, uploadBucket } from "./db.js";
-import {
-  chapterDesks,
-  eventRegistrationNo,
-  matchesChapter,
-  type AccountKind,
-} from "./crypto.js";
+import { chapterDesks, eventRegistrationNo } from "./crypto.js";
 import { header, json, readJson, type AppRequest, type AppResponse } from "./http.js";
-import { filterPublicEvents, mapEventRow, catalogSeedEvents, isUpcomingEvent, type PublicEvent } from "../src/data/eventCatalog.js";
+import { mapEventRow, catalogSeedEvents, isUpcomingEvent, startOfToday, eventCategories, type PublicEvent } from "../src/data/eventCatalog.js";
+import { rateLimit, clientIp } from "./rateLimit.js";
+import { sendOtpSms } from "./sms.js";
 
+const PUBLIC_CACHE_HEADERS = { "Cache-Control": "public, s-maxage=60, stale-while-revalidate=300" };
+const DEFAULT_PAGE_SIZE = 24;
+const MAX_PAGE_SIZE = 100;
+const OTP_TTL_MS = 10 * 60 * 1000;
+const VERIFIED_PHONE_TTL_MS = 30 * 60 * 1000;
 
 type PersonRow = {
   id: string;
-  kind: AccountKind;
   membership_no: string;
   name: string;
   email: string;
   phone: string;
   emirate: string;
   chapter: string;
+  home_state: string;
+  is_volunteer: boolean;
   password_hash: string;
   created_at: string;
 };
@@ -32,13 +35,14 @@ type AdminRow = { id: string; email: string; display_name: string; role: AdminRo
 function publicPerson(row: PersonRow, hours: HoursRow[] = []) {
   return {
     id: row.id,
-    kind: row.kind,
     membershipNo: row.membership_no,
     name: row.name,
     email: row.email,
     phone: row.phone,
     emirate: row.emirate,
     chapter: row.chapter,
+    homeState: row.home_state,
+    isVolunteer: row.is_volunteer,
     createdAt: row.created_at,
     volunteerHours: hours.map((item) => ({
       id: item.id,
@@ -47,6 +51,10 @@ function publicPerson(row: PersonRow, hours: HoursRow[] = []) {
       activity: item.activity,
     })),
   };
+}
+
+function hashOtp(phone: string, code: string) {
+  return createHash("sha256").update(`${phone}:${code}`).digest("hex");
 }
 
 function bearerToken(req: AppRequest) {
@@ -120,7 +128,8 @@ async function cmsFromRequest(req: AppRequest) {
   const admin = await adminFromRequest(req);
   if (admin) return {
     role: admin.scope_type === "global" ? ("central" as const) : ("chapter" as const),
-    chapterId: admin.scope_id ?? "",
+    scopeType: admin.scope_type,
+    scopeId: admin.scope_id ?? "",
     admin,
   };
   return null;
@@ -254,7 +263,20 @@ export async function handleRequest(req: AppRequest): Promise<AppResponse> {
       return json(200, { ok: true });
     }
 
+    if (method === "GET" && path === "/api/cron/purge-audit-logs") {
+      // Vercel Cron sends `Authorization: Bearer $CRON_SECRET` automatically once CRON_SECRET is
+      // set as a project env var — see vercel.json's `crons` entry for the schedule.
+      const secret = process.env.CRON_SECRET;
+      if (!secret || bearerToken(req) !== secret) return json(401, { error: "Unauthorized" });
+      const cutoff = new Date(Date.now() - 180 * 24 * 60 * 60 * 1000).toISOString();
+      const { error, count } = await supabase.from("audit_logs").delete({ count: "exact" }).lt("created_at", cutoff);
+      if (error) throw error;
+      return json(200, { ok: true, deleted: count ?? 0 });
+    }
+
     if (method === "POST" && path === "/api/members/check-phone") {
+      const checkPhoneLimit = await rateLimit("members-check-phone", clientIp(req.headers), 20, 60);
+      if (!checkPhoneLimit.allowed) return json(429, { error: "Too many attempts. Try again shortly." });
       const body = await readJson<{ phone?: string }>(req);
       let phone = "";
       try { phone = normalizeUaeMobile(body.phone ?? ""); }
@@ -262,6 +284,64 @@ export async function handleRequest(req: AppRequest): Promise<AppResponse> {
       const { data } = await supabase.from("people").select("id").eq("phone", phone).maybeSingle();
       if (data) return json(409, { error: "An account with this mobile number already exists" });
       return json(200, { ok: true, phone });
+    }
+
+    if (method === "POST" && path === "/api/members/otp/request") {
+      const otpRequestLimit = await rateLimit("otp-request", clientIp(req.headers), 5, 300);
+      if (!otpRequestLimit.allowed) return json(429, { error: "Too many codes requested. Try again in a few minutes." });
+      const body = await readJson<{ phone?: string }>(req);
+      let phone = "";
+      try { phone = normalizeUaeMobile(body.phone ?? ""); }
+      catch (error) { return json(400, { error: error instanceof Error ? error.message : "Invalid mobile number" }); }
+      const phoneLimit = await rateLimit("otp-request-phone", phone, 5, 3600);
+      if (!phoneLimit.allowed) return json(429, { error: "Too many codes requested for this number. Try again later." });
+      const code = String(randomInt(0, 1_000_000)).padStart(6, "0");
+      const { error } = await supabase.from("phone_otp_codes").insert({
+        phone,
+        code_hash: hashOtp(phone, code),
+        expires_at: new Date(Date.now() + OTP_TTL_MS).toISOString(),
+      });
+      if (error) throw error;
+      await sendOtpSms(phone, code);
+      return json(200, { ok: true, phone, expiresInSeconds: OTP_TTL_MS / 1000 });
+    }
+
+    if (method === "POST" && path === "/api/members/otp/verify") {
+      const otpVerifyLimit = await rateLimit("otp-verify", clientIp(req.headers), 20, 300);
+      if (!otpVerifyLimit.allowed) return json(429, { error: "Too many attempts. Try again shortly." });
+      const body = await readJson<{ phone?: string; code?: string }>(req);
+      let phone = "";
+      try { phone = normalizeUaeMobile(body.phone ?? ""); }
+      catch (error) { return json(400, { error: error instanceof Error ? error.message : "Invalid mobile number" }); }
+      const code = (body.code ?? "").trim();
+      if (!/^\d{6}$/.test(code)) return json(400, { error: "Enter the 6-digit code" });
+      const { data: pending } = await supabase
+        .from("phone_otp_codes")
+        .select("id, code_hash, attempts, expires_at")
+        .eq("phone", phone)
+        .is("consumed_at", null)
+        .gt("expires_at", new Date().toISOString())
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      if (!pending) return json(400, { error: "Request a new code — this one has expired or doesn't exist." });
+      if (pending.attempts >= 5) return json(429, { error: "Too many incorrect attempts. Request a new code." });
+      if (pending.code_hash !== hashOtp(phone, code)) {
+        await supabase.from("phone_otp_codes").update({ attempts: pending.attempts + 1 }).eq("id", pending.id);
+        return json(400, { error: "Incorrect code" });
+      }
+      await supabase.from("phone_otp_codes").update({ consumed_at: new Date().toISOString() }).eq("id", pending.id);
+      await supabase.from("verified_phones").upsert({ phone, expires_at: new Date(Date.now() + VERIFIED_PHONE_TTL_MS).toISOString() });
+      return json(200, { ok: true, phone });
+    }
+
+    if (method === "POST" && path === "/api/members/become-volunteer") {
+      const person = await personFromRequest(req);
+      if (!person) return json(401, { error: "Sign in required" });
+      if (person.is_volunteer) return json(200, { ok: true, alreadyVolunteer: true });
+      const { error } = await supabase.from("people").update({ is_volunteer: true }).eq("id", person.id);
+      if (error) throw error;
+      return json(200, { ok: true });
     }
 
     if (method === "POST" && path === "/api/cms/login") {
@@ -299,11 +379,12 @@ export async function handleRequest(req: AppRequest): Promise<AppResponse> {
       let pendingQuery = supabase.from("approval_requests").select("id,entity_type,entity_id,status,scope_type,scope_id,created_at").in("status", ["submitted","under_review","changes_requested"]).order("created_at", { ascending: false }).limit(20);
       if (scope && admin.scope_type === "chapter") {
         eventsQuery = eventsQuery.eq("scope_type", "chapter").eq("scope_id", scope);
-        peopleQuery = peopleQuery.or(`emirate.eq.${scope},chapter.eq.${scope}`);
+        peopleQuery = peopleQuery.eq("emirate", scope);
         approvalsQuery = approvalsQuery.eq("scope_type", "chapter").eq("scope_id", scope);
         pendingQuery = pendingQuery.eq("scope_type", "chapter").eq("scope_id", scope);
       } else if (scope && admin.scope_type === "council") {
         eventsQuery = eventsQuery.eq("scope_type", "council").eq("scope_id", scope);
+        peopleQuery = peopleQuery.eq("home_state", scope);
         approvalsQuery = approvalsQuery.eq("scope_type", "council").eq("scope_id", scope);
         pendingQuery = pendingQuery.eq("scope_type", "council").eq("scope_id", scope);
       }
@@ -317,11 +398,27 @@ export async function handleRequest(req: AppRequest): Promise<AppResponse> {
     if (method === "GET" && path === "/api/admin/events") {
       const admin = await adminFromRequest(req);
       if (!admin) return json(401, { error: "Administrator sign-in required" });
-      let query = supabase.from("events").select("*").order("updated_at", { ascending: false });
+      const url = new URL(req.url, "http://localhost");
+      const after = url.searchParams.get("after") ?? "";
+      const limit = Math.min(Math.max(Number(url.searchParams.get("limit")) || DEFAULT_PAGE_SIZE, 1), MAX_PAGE_SIZE);
+      let query = supabase.from("events").select("*").order("updated_at", { ascending: false }).limit(limit + 1);
       if (!isGlobalAdmin(admin)) query = query.eq("scope_type", admin.scope_type).eq("scope_id", admin.scope_id ?? "");
+      if (after) query = query.lt("updated_at", after);
       const { data, error } = await query;
       if (error) throw error;
-      return json(200, { events: data ?? [] });
+      const rows = data ?? [];
+      const hasMore = rows.length > limit;
+      const events = rows.slice(0, limit);
+      const nextCursor = hasMore ? events[events.length - 1]?.updated_at ?? null : null;
+      type ParticipationCount = { event_id: string; member_count: number; volunteer_count: number };
+      const { data: counts } = await supabase.rpc("event_participation_counts", { event_ids: events.map((e) => e.id) });
+      const countsById = new Map<string, ParticipationCount>(((counts ?? []) as ParticipationCount[]).map((row) => [row.event_id, row]));
+      const eventsWithCounts = events.map((event) => ({
+        ...event,
+        memberCount: countsById.get(event.id)?.member_count ?? 0,
+        volunteerCount: countsById.get(event.id)?.volunteer_count ?? 0,
+      }));
+      return json(200, { events: eventsWithCounts, nextCursor });
     }
 
     if (method === "POST" && path === "/api/admin/events") {
@@ -409,52 +506,55 @@ export async function handleRequest(req: AppRequest): Promise<AppResponse> {
       return json(410, { error: "Shared chapter passwords have been replaced by individually assigned Supabase administrator accounts." });
     }
 
-    if (method === "POST" && (path === "/api/cms/logout" || path === "/api/members/logout")) {
-      return json(200, { ok: true });
-    }
-
-    if (method === "GET" && path === "/api/cms/session") {
-      const session = await cmsFromRequest(req);
-      if (!session) return json(401, { error: "Sign in required" });
-      const desk = chapterDesks.find((item) => item.id === session.chapterId);
-      return json(200, {
-        role: session.role,
-        chapterId: session.chapterId,
-        chapterName: session.role === "central" ? "Central desk" : desk?.name,
-      });
-    }
-
     if (method === "GET" && path === "/api/cms/content") {
       const { data } = await supabase.from("site_content").select("payload").eq("id", "site").maybeSingle();
       if (!data?.payload) return json(404, { error: "No CMS content yet" });
-      return json(200, data.payload);
+      return json(200, data.payload, undefined, PUBLIC_CACHE_HEADERS);
     }
 
     if (method === "GET" && path === "/api/stats") {
-      const [members, yuva, events] = await Promise.all([
-        supabase.from("people").select("*", { count: "exact", head: true }).eq("kind", "member"),
-        supabase.from("people").select("*", { count: "exact", head: true }).eq("kind", "yuva"),
+      const [members, volunteers, events] = await Promise.all([
+        supabase.from("people").select("*", { count: "exact", head: true }),
+        supabase.from("people").select("*", { count: "exact", head: true }).eq("is_volunteer", true),
         supabase.from("events").select("*", { count: "exact", head: true }).eq("published", true),
       ]);
       return json(200, {
         members: members.count ?? 0,
-        yuva: yuva.count ?? 0,
+        yuva: volunteers.count ?? 0,
         events: events.count ?? 0,
         chapters: chapterDesks.length,
-      });
+      }, undefined, PUBLIC_CACHE_HEADERS);
     }
 
     if (method === "GET" && path === "/api/events") {
       const url = new URL(req.url, "http://localhost");
-      const { data, error } = await supabase.from("events").select("*").eq("published", true);
+      const tab = url.searchParams.get("tab") === "past" ? "past" : "upcoming";
+      const category = url.searchParams.get("category")?.trim() ?? "";
+      const emirate = url.searchParams.get("emirate")?.trim() ?? "";
+      const free = url.searchParams.get("free") ?? "";
+      const after = url.searchParams.get("after") ?? "";
+      const limit = Math.min(Math.max(Number(url.searchParams.get("limit")) || DEFAULT_PAGE_SIZE, 1), MAX_PAGE_SIZE);
+      const upcoming = tab === "upcoming";
+
+      let query = supabase.from("events").select("*").eq("published", true);
+      const todayIso = startOfToday().toISOString();
+      if (upcoming) {
+        query = after ? query.gt("starts_at", after) : query.gte("starts_at", todayIso);
+      } else {
+        query = after ? query.lt("starts_at", after) : query.lt("starts_at", todayIso);
+      }
+      if (category && category !== "All" && (eventCategories as readonly string[]).includes(category)) query = query.eq("category", category);
+      if (emirate) query = query.eq("emirate", emirate);
+      if (free === "1" || free === "true") query = query.eq("is_free", true);
+      query = query.order("starts_at", { ascending: upcoming }).limit(limit + 1);
+
+      const { data, error } = await query;
       if (error) throw error;
-      const events = filterPublicEvents((data ?? []).map((row) => eventFromRow(row as Record<string, unknown>)), {
-        tab: url.searchParams.get("tab") === "past" ? "past" : "upcoming",
-        category: url.searchParams.get("category") ?? "",
-        emirate: url.searchParams.get("emirate") ?? "",
-        free: url.searchParams.get("free") ?? "",
-      });
-      return json(200, { events });
+      const rows = data ?? [];
+      const hasMore = rows.length > limit;
+      const events = rows.slice(0, limit).map((row) => eventFromRow(row as Record<string, unknown>));
+      const nextCursor = hasMore ? events[events.length - 1]?.startsAt ?? null : null;
+      return json(200, { events, nextCursor }, undefined, PUBLIC_CACHE_HEADERS);
     }
 
     const eventOne = path.match(/^\/api\/events\/([^/]+)$/);
@@ -463,7 +563,15 @@ export async function handleRequest(req: AppRequest): Promise<AppResponse> {
       const { data, error } = await supabase.from("events").select("*").eq("id", eventId).maybeSingle();
       if (error) throw error;
       if (!data) return json(404, { error: "Event not found" });
-      return json(200, { event: eventFromRow(data as Record<string, unknown>) });
+      const [memberCount, volunteerCount] = await Promise.all([
+        supabase.from("event_registrations").select("*", { count: "exact", head: true }).eq("event_id", eventId).eq("participation_as", "member"),
+        supabase.from("event_registrations").select("*", { count: "exact", head: true }).eq("event_id", eventId).eq("participation_as", "volunteer"),
+      ]);
+      return json(200, {
+        event: eventFromRow(data as Record<string, unknown>),
+        memberCount: memberCount.count ?? 0,
+        volunteerCount: volunteerCount.count ?? 0,
+      });
     }
 
     if (method === "PUT" && path === "/api/cms/content") {
@@ -514,27 +622,42 @@ export async function handleRequest(req: AppRequest): Promise<AppResponse> {
     if (method === "GET" && path === "/api/cms/inbox") {
       const session = await cmsFromRequest(req);
       if (!session) return json(401, { error: "Sign in required" });
-      const chapter = session.chapterId;
-      const peopleRes = await supabase.from("people").select("id, kind, membership_no, name, email, phone, emirate, chapter, created_at").order("created_at", { ascending: false });
+      // A chapter admin's scope_id is a UAE emirate id (matches people.emirate); a council
+      // admin's scope_id is an Indian state id (matches people.home_state). One person can
+      // legitimately match both a chapter admin's and a council admin's inbox at once — that's
+      // the point: one registration, visible wherever it belongs, no duplication.
+      const scopeColumn = session.scopeType === "council" ? "home_state" : "emirate";
+      const inboxUrl = new URL(req.url, "http://localhost");
+      const rawQuery = inboxUrl.searchParams.get("q")?.trim() ?? "";
+      // Strip PostgREST filter-syntax characters (,()) and ilike wildcards so user input can never
+      // alter the intended filter structure — see the .or() calls below and in /api/admin/dashboard.
+      const safeQuery = rawQuery.replace(/[,()%_]/g, "").slice(0, 80);
+      let peopleQuery = supabase
+        .from("people")
+        .select("id, membership_no, name, email, phone, emirate, home_state, is_volunteer, created_at")
+        .order("created_at", { ascending: false });
+      if (session.role !== "central") peopleQuery = peopleQuery.eq(scopeColumn, session.scopeId);
+      peopleQuery = safeQuery.length >= 2
+        ? peopleQuery.or(`name.ilike.%${safeQuery}%,email.ilike.%${safeQuery}%,membership_no.ilike.%${safeQuery}%`).limit(200)
+        : peopleQuery.limit(500);
+      const peopleRes = await peopleQuery;
       if (peopleRes.error) throw peopleRes.error;
-      const people = (peopleRes.data ?? []).filter(
-        (item) => session.role === "central" || matchesChapter(item.emirate as string, chapter) || matchesChapter(item.chapter as string, chapter),
-      );
+      const people = peopleRes.data ?? [];
       const emails = new Set(people.map((item) => String(item.email)));
       const [inquiries, registrations, volunteers, donations] = await Promise.all([
         supabase.from("inquiries").select("*").order("created_at", { ascending: false }).limit(200),
         supabase.from("event_registrations").select("*, events(title)").order("created_at", { ascending: false }).limit(300),
-        supabase.from("event_volunteers").select("*, people(name, email, membership_no, emirate), events(title)").order("created_at", { ascending: false }).limit(300),
+        supabase.from("event_volunteers").select("*, people(name, email, membership_no, emirate, home_state), events(title)").order("created_at", { ascending: false }).limit(300),
         supabase.from("donations").select("*").order("created_at", { ascending: false }).limit(200),
       ]);
       const inquiryRows = (inquiries.data ?? []).filter(
-        (item) => session.role === "central" || matchesChapter(item.emirate as string, chapter),
+        (item) => session.role === "central" || item[scopeColumn] === session.scopeId,
       );
       const registrationRows = (registrations.data ?? []).filter((item) => session.role === "central" || emails.has(String(item.email)));
       const volunteerRows = (volunteers.data ?? []).filter((item) => {
         if (session.role === "central") return true;
-        const person = item.people as { emirate?: string } | null;
-        return matchesChapter(person?.emirate, chapter);
+        const person = item.people as Record<string, unknown> | null;
+        return person?.[scopeColumn] === session.scopeId;
       });
       return json(200, {
         inquiries: inquiryRows.map((item) => ({
@@ -574,20 +697,19 @@ export async function handleRequest(req: AppRequest): Promise<AppResponse> {
           note: item.note,
           status: item.status,
         })) : [],
-        members: people
-          .filter((item) => item.kind !== "yuva")
-          .map((item) => ({
-            id: item.id,
-            membershipNo: item.membership_no,
-            name: item.name,
-            email: item.email,
-            phone: item.phone,
-            emirate: item.emirate,
-            createdAt: item.created_at,
-            kind: item.kind,
-          })),
+        members: people.map((item) => ({
+          id: item.id,
+          membershipNo: item.membership_no,
+          name: item.name,
+          email: item.email,
+          phone: item.phone,
+          emirate: item.emirate,
+          homeState: item.home_state,
+          createdAt: item.created_at,
+          isVolunteer: item.is_volunteer,
+        })),
         yuva: people
-          .filter((item) => item.kind === "yuva")
+          .filter((item) => item.is_volunteer)
           .map((item) => ({
             id: item.id,
             membershipNo: item.membership_no,
@@ -595,12 +717,17 @@ export async function handleRequest(req: AppRequest): Promise<AppResponse> {
             email: item.email,
             phone: item.phone,
             emirate: item.emirate,
+            homeState: item.home_state,
             createdAt: item.created_at,
           })),
+        peopleQuery: safeQuery,
+        peopleMayBeTruncated: !safeQuery && (peopleRes.data ?? []).length >= 500,
       });
     }
 
     if (method === "POST" && path === "/api/inquiries") {
+      const inquiriesLimit = await rateLimit("inquiries", clientIp(req.headers), 10, 300);
+      if (!inquiriesLimit.allowed) return json(429, { error: "Too many submissions. Try again in a few minutes." });
       const body = await readJson<{
         intent?: string;
         name?: string;
@@ -686,27 +813,29 @@ export async function handleRequest(req: AppRequest): Promise<AppResponse> {
 
     const eventRegister = path.match(/^\/api\/events\/([^/]+)\/register$/);
     if (method === "POST" && eventRegister) {
+      const registerLimit = await rateLimit("event-register", clientIp(req.headers), 15, 300);
+      if (!registerLimit.allowed) return json(429, { error: "Too many registration attempts. Try again in a few minutes." });
       const eventId = decodeURIComponent(eventRegister[1]);
       const known = await loadPublicEvent(eventId);
-      if (!isUpcomingEvent({ startsAt: known?.startsAt ?? null })) {
+      if (!known) return json(404, { error: "Event not found" });
+      if (!isUpcomingEvent({ startsAt: known.startsAt })) {
         return json(400, { error: "Registration is closed for this event" });
       }
-      const body = await readJson<{ identifier?: string; participationAs?: "member" | "volunteer"; name?: string; email?: string; phone?: string; eventTitle?: string; date?: string; location?: string; eventBody?: string }>(req);
+      const body = await readJson<{ identifier?: string; participationAs?: "member" | "volunteer"; name?: string; email?: string; phone?: string }>(req);
       let person = await personFromRequest(req);
       const identifier = body.identifier?.trim();
       if (!person && identifier) {
-        const column = /^IPF[MY]-/i.test(identifier) ? "membership_no" : "phone";
+        const column = /^IPF-/i.test(identifier) ? "membership_no" : "phone";
         const { data: matched } = await supabase.from("people").select("*").eq(column, identifier).maybeSingle();
         person = (matched as PersonRow | null) ?? null;
       }
-      if (body.participationAs === "volunteer" && person?.kind !== "yuva") {
-        return json(403, { error: "A valid IPF Yuva ID or registered mobile number is required to join as a volunteer" });
+      if (body.participationAs === "volunteer" && !person?.is_volunteer) {
+        return json(403, { error: "Opt in as an IPF Yuva volunteer first, then join this event as a volunteer", code: "not_volunteer" });
       }
       const name = body.name?.trim() || person?.name;
       const email = (body.email?.trim() || person?.email || "").toLowerCase();
       const phone = body.phone?.trim() || person?.phone || "";
       if (!name || !email) return json(400, { error: "Name and email are required" });
-      await ensureEvent({ id: eventId, title: body.eventTitle, date: body.date, location: body.location, body: body.eventBody });
       const { data: existing } = await supabase
         .from("event_registrations")
         .select("registration_no")
@@ -746,14 +875,13 @@ export async function handleRequest(req: AppRequest): Promise<AppResponse> {
     if (method === "POST" && eventVolunteer) {
       const eventId = decodeURIComponent(eventVolunteer[1]);
       const known = await loadPublicEvent(eventId);
-      if (!isUpcomingEvent({ startsAt: known?.startsAt ?? null })) {
+      if (!known) return json(404, { error: "Event not found" });
+      if (!isUpcomingEvent({ startsAt: known.startsAt })) {
         return json(400, { error: "Volunteering is closed for this event" });
       }
       const person = await personFromRequest(req);
-      if (!person) return json(401, { error: "Sign in as IPF Yuva to volunteer for an event" });
-      if (person.kind !== "yuva") return json(403, { error: "Event volunteering is for IPF Yuva members" });
-      const body = await readJson<{ eventTitle?: string; date?: string; location?: string; eventBody?: string }>(req);
-      await ensureEvent({ id: eventId, title: body.eventTitle, date: body.date, location: body.location, body: body.eventBody });
+      if (!person) return json(401, { error: "Sign in to volunteer for an event" });
+      if (!person.is_volunteer) return json(403, { error: "Opt in as an IPF Yuva volunteer first, then volunteer for this event", code: "not_volunteer" });
       const { data: existing } = await supabase
         .from("event_volunteers")
         .select("id, status")
@@ -798,6 +926,8 @@ export async function handleRequest(req: AppRequest): Promise<AppResponse> {
     }
 
     if (method === "POST" && path === "/api/donations") {
+      const donationsLimit = await rateLimit("donations", clientIp(req.headers), 10, 300);
+      if (!donationsLimit.allowed) return json(429, { error: "Too many submissions. Try again in a few minutes." });
       const body = await readJson<{ name?: string; email?: string; amountAed?: number; note?: string }>(req);
       if (!body.name || !body.email || !body.amountAed || body.amountAed <= 0) {
         return json(400, { error: "Name, email and a valid amount are required" });

@@ -10,15 +10,17 @@ import { Container } from "../components/ui/Container";
 import { Field } from "../components/ui/Field";
 import { Input } from "../components/ui/Input";
 import { Section } from "../components/ui/Section";
+import { useToast } from "../components/ui/Toast";
 import { useLocale } from "../i18n/LocaleProvider";
 
 export default function PortalPage() {
   const { t } = useLocale();
-  const { member, ready, signOut, addHours, registrations, volunteerShifts } = useMember();
+  const { member, ready, signOut, addHours, becomeVolunteer, registrations, volunteerShifts } = useMember();
+  const toast = useToast();
   const [date, setDate] = useState(() => new Date().toISOString().slice(0, 10));
   const [hours, setHours] = useState("2");
   const [activity, setActivity] = useState("");
-  const [status, setStatus] = useState("");
+  const [becomingVolunteer, setBecomingVolunteer] = useState(false);
 
   if (!ready) return null;
   if (!member) return <Navigate to="/sign-in" replace />;
@@ -27,23 +29,34 @@ export default function PortalPage() {
 
   async function onHours(event: FormEvent) {
     event.preventDefault();
-    setStatus("");
     try {
       await addHours({ date, hours: Number(hours), activity });
       setActivity("");
-      setStatus(t("page.portal.saved"));
+      toast.success(t("page.portal.saved"));
     } catch (error) {
-      setStatus(error instanceof Error ? error.message : "Could not save hours");
+      toast.error(error instanceof Error ? error.message : "Could not save hours");
+    }
+  }
+
+  async function onBecomeVolunteer() {
+    setBecomingVolunteer(true);
+    try {
+      await becomeVolunteer();
+      toast.success("You're now an IPF Yuva volunteer.");
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Could not update your account");
+    } finally {
+      setBecomingVolunteer(false);
     }
   }
 
   return (
     <>
-      <DocumentTitle title={member.kind === "yuva" ? t("page.yuva.title") : t("nav.portal")} />
+      <DocumentTitle title={member.isVolunteer ? t("page.yuva.title") : t("nav.portal")} />
       <PageHero
-        eyebrow={member.kind === "yuva" ? t("page.yuva.title") : t("page.signin.eyebrow")}
+        eyebrow={member.isVolunteer ? t("page.yuva.title") : t("page.signin.eyebrow")}
         title={t("page.portal.welcome", { name: member.name.split(" ")[0] })}
-        description={member.kind === "yuva" ? t("page.portal.yuvaDesc") : t("page.portal.memberDesc")}
+        description={member.isVolunteer ? t("page.portal.yuvaDesc") : t("page.portal.memberDesc")}
         crumbs={[{ label: t("nav.portal") }]}
       />
       <Section tone="white">
@@ -66,6 +79,11 @@ export default function PortalPage() {
                 <Button asChild variant="outline" size="sm">
                   <Link to="/donate">{t("page.portal.supportWelfare")}</Link>
                 </Button>
+                {!member.isVolunteer ? (
+                  <Button type="button" variant="outline" size="sm" disabled={becomingVolunteer} onClick={() => void onBecomeVolunteer()}>
+                    {becomingVolunteer ? "Updating…" : "Become an IPF Yuva volunteer"}
+                  </Button>
+                ) : null}
                 <Button type="button" variant="ghost" size="sm" onClick={() => void signOut()}>
                   {t("common.signOut")}
                 </Button>
@@ -84,7 +102,6 @@ export default function PortalPage() {
                     <Input id="hrs-activity" required value={activity} onChange={(e) => setActivity(e.target.value)} placeholder={t("page.portal.placeholder")} />
                   </Field>
                 </div>
-                {status ? <p className="mt-3 text-sm text-[var(--ipf-muted)]">{status}</p> : null}
                 <div className="mt-4">
                   <Button type="submit" size="sm">
                     {t("page.portal.saveHours")}

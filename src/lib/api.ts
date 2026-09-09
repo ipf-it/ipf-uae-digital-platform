@@ -1,5 +1,16 @@
 import { supabaseAuth } from "./supabase";
 
+export class ApiError extends Error {
+  code?: string;
+  status: number;
+  constructor(message: string, status: number, code?: string) {
+    super(message);
+    this.name = "ApiError";
+    this.status = status;
+    this.code = code;
+  }
+}
+
 export async function api<T>(path: string, init?: RequestInit): Promise<T> {
   const headers = new Headers(init?.headers);
   const session = supabaseAuth ? (await supabaseAuth.auth.getSession()).data.session : null;
@@ -13,9 +24,9 @@ export async function api<T>(path: string, init?: RequestInit): Promise<T> {
     credentials: "include",
     headers,
   });
-  const body = (await response.json().catch(() => ({}))) as T & { error?: string };
+  const body = (await response.json().catch(() => ({}))) as T & { error?: string; code?: string };
   if (!response.ok) {
-    throw new Error(body.error ?? "Request failed");
+    throw new ApiError(body.error ?? "Request failed", response.status, body.code);
   }
   return body;
 }

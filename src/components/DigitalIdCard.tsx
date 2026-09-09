@@ -3,10 +3,9 @@ import { site } from "../data/site";
 import type { Member } from "../cms/MemberProvider";
 
 export function DigitalIdCard({ member }: { member: Member }) {
-  const yuva = member.kind === "yuva";
+  const yuva = member.isVolunteer;
   const payload = JSON.stringify({
     org: "IPF UAE",
-    kind: member.kind,
     id: member.membershipNo,
     name: member.name,
     chapter: member.chapter || member.emirate,
@@ -22,7 +21,7 @@ export function DigitalIdCard({ member }: { member: Member }) {
     >
       <div className="ipf-tricolor mb-4" />
       <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-[var(--ipf-gold)]">
-        {yuva ? "IPF Yuva · Youth volunteer" : "Indian People's Forum UAE"}
+        {yuva ? "Indian People's Forum UAE · IPF Yuva volunteer" : "Indian People's Forum UAE"}
       </p>
       <div className="mt-4 flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
         <div>
@@ -30,8 +29,7 @@ export function DigitalIdCard({ member }: { member: Member }) {
           <p className="mt-1 text-sm text-white/75">{member.chapter || member.emirate || "UAE"}</p>
           <p className="mt-6 font-mono text-lg tracking-[0.14em] text-[var(--ipf-gold)]">{member.membershipNo}</p>
           <p className="mt-2 text-xs text-white/60">
-            Issued {new Date(member.createdAt).toLocaleDateString("en-GB")}
-            {yuva ? " · Permanent Yuva ID" : " · Membership no."}
+            Issued {new Date(member.createdAt).toLocaleDateString("en-GB")} · Membership no.
           </p>
           <p className="mt-6 text-xs text-white/70">{site.office}</p>
         </div>

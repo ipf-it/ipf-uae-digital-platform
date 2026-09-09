@@ -4,13 +4,14 @@ import { requireSupabaseAuth, supabaseAuth } from "../lib/supabase";
 
 export type Member = {
   id: string;
-  kind: "member" | "yuva";
   membershipNo: string;
   name: string;
   email: string;
   phone: string;
   emirate: string;
   chapter: string;
+  homeState: string;
+  isVolunteer: boolean;
   createdAt: string;
   volunteerHours: { id: string; date: string; hours: number; activity: string }[];
 };
@@ -35,23 +36,29 @@ type MeResponse = {
   volunteerShifts?: VolunteerShift[];
 };
 
+export type RegisterPayload = {
+  name: string;
+  email: string;
+  phone: string;
+  emirate: string;
+  homeState: string;
+  isVolunteer: boolean;
+  password: string;
+};
+
 type MemberContextValue = {
   member: Member | null;
   registrations: EventRegistration[];
   volunteerShifts: VolunteerShift[];
   ready: boolean;
   signIn: (email: string, password: string) => Promise<void>;
-  register: (payload: {
-    name: string;
-    email: string;
-    phone: string;
-    emirate: string;
-    password: string;
-    kind: "member" | "yuva";
-  }) => Promise<void>;
+  requestPhoneOtp: (phone: string) => Promise<{ phone: string; expiresInSeconds: number }>;
+  verifyPhoneOtp: (phone: string, code: string) => Promise<void>;
+  register: (payload: RegisterPayload) => Promise<{ needsEmailConfirmation: boolean }>;
   signOut: () => Promise<void>;
   refresh: () => Promise<void>;
   addHours: (payload: { date: string; hours: number; activity: string }) => Promise<void>;
+  becomeVolunteer: () => Promise<void>;
 };
 
 const MemberContext = createContext<MemberContextValue>({
@@ -60,10 +67,13 @@ const MemberContext = createContext<MemberContextValue>({
   volunteerShifts: [],
   ready: false,
   signIn: async () => undefined,
-  register: async () => undefined,
+  requestPhoneOtp: async () => ({ phone: "", expiresInSeconds: 0 }),
+  verifyPhoneOtp: async () => undefined,
+  register: async () => ({ needsEmailConfirmation: false }),
   signOut: async () => undefined,
   refresh: async () => undefined,
   addHours: async () => undefined,
+  becomeVolunteer: async () => undefined,
 });
 
 export function MemberProvider({ children }: PropsWithChildren) {
@@ -92,6 +102,7 @@ export function MemberProvider({ children }: PropsWithChildren) {
     if (!supabaseAuth) return;
     const { data } = supabaseAuth.auth.onAuthStateChange(() => void refresh());
     return () => data.subscription.unsubscribe();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const value = useMemo<MemberContextValue>(
@@ -105,16 +116,35 @@ export function MemberProvider({ children }: PropsWithChildren) {
         if (error) throw error;
         await refresh();
       },
+      async requestPhoneOtp(phone) {
+        const checked = await api<{ phone: string }>("/api/members/check-phone", { method: "POST", body: JSON.stringify({ phone }) });
+        return api<{ phone: string; expiresInSeconds: number }>("/api/members/otp/request", {
+          method: "POST",
+          body: JSON.stringify({ phone: checked.phone }),
+        });
+      },
+      async verifyPhoneOtp(phone, code) {
+        await api("/api/members/otp/verify", { method: "POST", body: JSON.stringify({ phone, code }) });
+      },
       async register(payload) {
-        const checked = await api<{ phone: string }>("/api/members/check-phone", { method: "POST", body: JSON.stringify({ phone: payload.phone }) });
         const { data, error } = await requireSupabaseAuth().auth.signUp({
           email: payload.email.trim().toLowerCase(),
           password: payload.password,
-          options: { data: { name: payload.name.trim(), phone: checked.phone, emirate: payload.emirate, account_kind: payload.kind } },
+          options: {
+            data: {
+              name: payload.name.trim(),
+              phone: payload.phone,
+              emirate: payload.emirate,
+              home_state: payload.homeState,
+              is_volunteer: payload.isVolunteer,
+              account_kind: "member",
+            },
+          },
         });
         if (error) throw error;
-        if (!data.session) throw new Error("Check your email to confirm the account, then sign in to finish registration.");
+        if (!data.session) return { needsEmailConfirmation: true };
         await refresh();
+        return { needsEmailConfirmation: false };
       },
       async signOut() {
         if (supabaseAuth) await supabaseAuth.auth.signOut();
@@ -129,6 +159,10 @@ export function MemberProvider({ children }: PropsWithChildren) {
           body: JSON.stringify(payload),
         });
         setMember(result.member);
+      },
+      async becomeVolunteer() {
+        await api("/api/members/become-volunteer", { method: "POST" });
+        setMember((prev) => (prev ? { ...prev, isVolunteer: true } : prev));
       },
     }),
     [member, ready, registrations, volunteerShifts],

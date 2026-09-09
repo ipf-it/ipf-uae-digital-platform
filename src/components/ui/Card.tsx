@@ -144,8 +144,8 @@ export function CardGrid({ columns = 3, className = "", children }: CardGridProp
     <div
       className={cn(
         "grid items-stretch gap-5",
-        columns === 2 && "md:grid-cols-2",
-        columns === 3 && "lg:grid-cols-3",
+        columns === 2 && "sm:grid-cols-2",
+        columns === 3 && "sm:grid-cols-2 lg:grid-cols-3",
         columns === 4 && "sm:grid-cols-2 lg:grid-cols-4",
         className,
       )}

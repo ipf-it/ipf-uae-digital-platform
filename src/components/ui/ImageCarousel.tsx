@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { cn } from "../../lib/utils";
 import { TricolorFrame } from "./TricolorFrame";
@@ -264,58 +264,5 @@ export function ImageCarousel({
         </figcaption>
       ) : null}
     </figure>
-  );
-}
-
-type HeroSlideshowProps = {
-  slides: CarouselSlide[];
-  children: ReactNode;
-  interval?: number;
-  fillViewport?: boolean;
-};
-
-export function HeroSlideshow({ slides, children, interval = 7000, fillViewport = false }: HeroSlideshowProps) {
-  const items = uniqueSlides(slides);
-  const { index, setIndex, go, hover } = useCarousel(items.length, interval, true);
-
-  if (items.length === 0) return <>{children}</>;
-
-  return (
-    <section
-      className={cn(
-        "relative overflow-hidden bg-[var(--ipf-navy)] text-white",
-        fillViewport && "flex h-[calc(100svh-var(--ipf-header-h,4.85rem))] flex-col overflow-hidden",
-      )}
-      onMouseEnter={() => {
-        hover.current = true;
-      }}
-      onMouseLeave={() => {
-        hover.current = false;
-      }}
-    >
-      {items.map((item, itemIndex) => (
-        <img
-          key={`${item.src}-${itemIndex}`}
-          src={item.src}
-          alt={itemIndex === index ? item.alt : ""}
-          className={cn(
-            "absolute inset-0 h-full w-full max-w-none object-cover object-[68%_center] transition-opacity duration-700",
-            itemIndex === index ? "opacity-70" : "opacity-0",
-          )}
-        />
-      ))}
-      <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(11,31,58,0.92)_0%,rgba(11,31,58,0.72)_38%,rgba(11,31,58,0.28)_68%,rgba(11,31,58,0.12)_100%)]" />
-      <div className={cn("relative", fillViewport && "flex flex-1 flex-col justify-center")}>{children}</div>
-      <Controls
-        count={items.length}
-        index={index}
-        onPrev={() => go(-1)}
-        onNext={() => go(1)}
-        onSelect={setIndex}
-        light
-        compact
-        heroFill={fillViewport}
-      />
-    </section>
   );
 }

@@ -13,21 +13,23 @@ export function SectionTitle({
   title,
   description,
   centered = false,
-  tone = "dark",
+  tone = "light",
 }: SectionTitleProps) {
+  // "dark" = this sits on a dark background, so use white text. "light" (default) = a
+  // light background, so use navy text. Matches the tone convention in Quote/PersonIdentity/StatPill.
   return (
     <div className={centered ? "text-center" : ""}>
       {eyebrow ? (
         <p
           className={cn(
             "section-eyebrow mb-2 text-xs font-semibold uppercase tracking-[0.22em]",
-            tone === "light" ? "text-[var(--ipf-gold)]" : "text-[var(--ipf-green)]",
+            tone === "dark" ? "text-[var(--ipf-gold)]" : "text-[var(--ipf-green)]",
           )}
         >
           {eyebrow}
         </p>
       ) : null}
-      <h2 className={cn("text-2xl font-bold break-words sm:text-3xl", tone === "light" ? "text-white" : "text-[var(--ipf-navy)]")}>
+      <h2 className={cn("text-2xl font-bold break-words sm:text-3xl", tone === "dark" ? "text-white" : "text-[var(--ipf-navy)]")}>
         {title}
       </h2>
       <div
@@ -40,7 +42,7 @@ export function SectionTitle({
         <p
           className={cn(
             "mt-4 max-w-3xl text-sm leading-7 sm:text-base",
-            tone === "light" ? "text-white/80" : "text-[var(--ipf-muted)]",
+            tone === "dark" ? "text-white/80" : "text-[var(--ipf-muted)]",
             centered ? "mx-auto" : "",
           )}
         >

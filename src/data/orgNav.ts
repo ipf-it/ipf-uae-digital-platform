@@ -93,6 +93,10 @@ export const stateCouncilRecords: Council[] = [
   { id: "tripura", name: "Tripura Council", kind: "state", region: "Tripura", bullet: "green", image: stateImage, email: site.email },
 ];
 
+/** The Indian home-state options for member/Yuva registration — one shared source of truth with
+ * the state council directory, so a new registrant is always matched to a real council. */
+export const homeStateOptions = stateCouncilRecords.map((council) => ({ value: council.id, label: council.region }));
+
 export const specialCouncilRecords: Council[] = [
   {
     id: "business",

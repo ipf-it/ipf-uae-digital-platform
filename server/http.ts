@@ -21,8 +21,6 @@ export type AppResponse = {
   raw?: Buffer;
 };
 
-export const PERSON_COOKIE = "ipf_session";
-export const CMS_COOKIE = "ipf_cms";
 const SESSION_DAYS = 30;
 
 export function header(req: AppRequest, name: string) {
@@ -40,8 +38,8 @@ export function parseCookies(cookieHeader: string) {
   return out;
 }
 
-export function json(status: number, body: unknown, cookies?: AppCookie[]): AppResponse {
-  return { status, body, cookies };
+export function json(status: number, body: unknown, cookies?: AppCookie[], headers?: Record<string, string>): AppResponse {
+  return { status, body, cookies, headers };
 }
 
 export function cookieHeader(cookie: AppCookie) {

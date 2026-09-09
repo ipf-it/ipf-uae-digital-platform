@@ -14,7 +14,7 @@ import NotFoundPage from "./NotFoundPage";
 export default function EventDetailPage() {
   const { t } = useLocale();
   const { eventId = "" } = useParams();
-  const { event, ready } = usePublicEvent(eventId);
+  const { event, ready, memberCount, volunteerCount } = usePublicEvent(eventId);
   if (!ready) return <PageLoader />;
   if (!event) return <NotFoundPage />;
 
@@ -53,6 +53,8 @@ export default function EventDetailPage() {
               startsAt={event.startsAt}
               location={event.location}
               body={event.body}
+              memberCount={memberCount}
+              volunteerCount={volunteerCount}
             />
             <p className="mt-6 text-sm">
               <Link className="font-semibold text-[var(--ipf-navy)]" to="/events">

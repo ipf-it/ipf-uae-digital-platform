@@ -3,6 +3,7 @@ import { CalendarDays, Clock } from "lucide-react";
 import { EventCard } from "../components/EventCard";
 import { DocumentTitle } from "../components/layout/DocumentTitle";
 import { PageHero } from "../components/layout/PageHero";
+import { Button } from "../components/ui/Button";
 import { Container } from "../components/ui/Container";
 import { Section } from "../components/ui/Section";
 import { eventCategories, eventEmirates } from "../data/eventCatalog";
@@ -17,7 +18,7 @@ export default function EventsPage() {
   const category = params.get("category") || "All";
   const emirate = params.get("emirate") || "";
   const free = params.get("free") === "1";
-  const { events, ready } = usePublicEvents({ tab, category, emirate, free });
+  const { events, ready, hasMore, loadingMore, loadMore } = usePublicEvents({ tab, category, emirate, free });
 
   function setFilter(next: Record<string, string | null>) {
     const copy = new URLSearchParams(params);
@@ -116,6 +117,13 @@ export default function EventsPage() {
             <p className="mt-10 text-sm text-[var(--ipf-muted)]">
               {tab === "past" ? t("page.events.emptyPast") : t("page.events.emptyUpcoming")}
             </p>
+          ) : null}
+          {hasMore ? (
+            <div className="mt-8 flex justify-center">
+              <Button type="button" variant="outline" onClick={() => void loadMore()} disabled={loadingMore}>
+                {loadingMore ? "Loading…" : "Load more events"}
+              </Button>
+            </div>
           ) : null}
         </Container>
       </Section>

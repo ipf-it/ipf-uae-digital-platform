@@ -1,5 +1,4 @@
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
-import { chapterDesks, hashPassword } from "./crypto.js";
 
 const BUCKET = "ipf-uploads";
 
@@ -23,19 +22,9 @@ export function getSupabase() {
 export async function ensureDatabase() {
   if (ready) return;
   const supabase = getSupabase();
-  const { error } = await supabase.from("chapter_admins").select("chapter_id").limit(1);
+  const { error } = await supabase.from("admin_users").select("id").limit(1);
   if (error) {
     throw new Error("Supabase tables are missing. Run server/schema.sql in the Supabase SQL editor, then create a public storage bucket named ipf-uploads.");
-  }
-  const { count } = await supabase.from("chapter_admins").select("*", { count: "exact", head: true });
-  if (!count) {
-    await supabase.from("chapter_admins").insert(
-      chapterDesks.map((desk) => ({
-        chapter_id: desk.id,
-        chapter_name: desk.name,
-        password_hash: hashPassword(`ipf-${desk.id}`),
-      })),
-    );
   }
   const { data: buckets } = await supabase.storage.listBuckets();
   if (!buckets?.some((item) => item.name === BUCKET)) {

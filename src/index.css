@@ -279,12 +279,28 @@ html:not([lang="en"]) thead th {
   }
 }
 
+@keyframes ipf-toast-in {
+  from { transform: translateX(100%); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+@keyframes ipf-toast-out {
+  from { transform: translateX(0); opacity: 1; }
+  to { transform: translateX(100%); opacity: 0; }
+}
+.ipf-toast[data-state="open"] { animation: ipf-toast-in 220ms ease-out; }
+.ipf-toast[data-state="closed"] { animation: ipf-toast-out 160ms ease-in; }
+.ipf-toast[data-swipe="move"] { transform: translateX(var(--radix-toast-swipe-move-x)); }
+.ipf-toast[data-swipe="cancel"] { transform: translateX(0); }
+.ipf-toast[data-swipe="end"] { animation: ipf-toast-out 160ms ease-in; }
+
 @media (prefers-reduced-motion: reduce) {
   .ipf-cloth svg,
   .ipf-emblem-spin,
   .ipf-splash-emblem-in,
   .ipf-splash-letter.is-on,
-  .ipf-splash-rule.is-on {
+  .ipf-splash-rule.is-on,
+  .ipf-toast[data-state="open"],
+  .ipf-toast[data-state="closed"] {
     animation: none;
   }
 

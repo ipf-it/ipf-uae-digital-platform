@@ -29,9 +29,14 @@ create table if not exists people (
   phone text not null default '',
   emirate text not null default '',
   chapter text not null default '',
+  home_state text not null default '',
+  is_volunteer boolean not null default false,
   password_hash text not null,
   created_at timestamptz not null default now()
 );
+
+create index if not exists people_home_state_idx on people (home_state);
+create index if not exists people_emirate_idx on people (emirate);
 
 create table if not exists volunteer_hours (
   id uuid primary key default gen_random_uuid(),
@@ -73,6 +78,8 @@ alter table events add column if not exists is_free boolean not null default tru
 
 create index if not exists events_starts_idx on events (starts_at desc);
 create index if not exists events_category_idx on events (category, emirate);
+create index if not exists events_published_starts_idx on events (published, starts_at);
+create index if not exists events_published_category_emirate_idx on events (published, category, emirate);
 
 create table if not exists event_registrations (
   id uuid primary key default gen_random_uuid(),
@@ -135,6 +142,9 @@ create table if not exists audit_logs (
   created_at timestamptz not null default now()
 );
 
+create index if not exists audit_logs_entity_idx on audit_logs (entity_type, entity_id, created_at desc);
+create index if not exists audit_logs_actor_idx on audit_logs (actor_id, created_at desc);
+
 do $$ begin
   if not exists (select 1 from pg_constraint where conname = 'events_created_by_fkey') then
     alter table events add constraint events_created_by_fkey foreign key (created_by) references admin_users(id) on delete set null;
@@ -144,6 +154,7 @@ create index if not exists events_scope_idx on events (scope_type, scope_id, upd
 create unique index if not exists approval_entity_unique_idx on approval_requests (entity_type, entity_id);
 
 create index if not exists event_registrations_event_idx on event_registrations (event_id, created_at desc);
+create index if not exists event_registrations_person_idx on event_registrations (person_id);
 
 create table if not exists event_volunteers (
   id uuid primary key default gen_random_uuid(),
@@ -155,6 +166,7 @@ create table if not exists event_volunteers (
 );
 
 create index if not exists event_volunteers_event_idx on event_volunteers (event_id, created_at desc);
+create index if not exists event_volunteers_person_idx on event_volunteers (person_id);
 
 create table if not exists inquiries (
   id uuid primary key default gen_random_uuid(),
@@ -178,26 +190,10 @@ create table if not exists donations (
   created_at timestamptz not null default now()
 );
 
-create table if not exists sessions (
-  id uuid primary key default gen_random_uuid(),
-  token_hash text not null unique,
-  kind text not null check (kind in ('person', 'cms_central', 'cms_chapter')),
-  person_id uuid references people(id) on delete cascade,
-  chapter_id text,
-  expires_at timestamptz not null,
-  created_at timestamptz not null default now()
-);
-
-alter table sessions add column if not exists admin_user_id uuid references admin_users(id) on delete cascade;
-
-create index if not exists sessions_token_idx on sessions (token_hash);
-create index if not exists sessions_expiry_idx on sessions (expires_at);
-
-create table if not exists chapter_admins (
-  chapter_id text primary key,
-  chapter_name text not null,
-  password_hash text not null
-);
+-- Note: the legacy `sessions` and `chapter_admins` tables (opaque cookie sessions and shared
+-- chapter passwords, both predating the move to Supabase Auth) are dropped by migration
+-- 006_unified_identity.sql rather than defined here — see that file if bootstrapping a database
+-- that predates this schema.
 
 create table if not exists site_content (
   id text primary key,
@@ -205,15 +201,47 @@ create table if not exists site_content (
   updated_at timestamptz not null default now()
 );
 
+create table if not exists verified_phones (
+  phone text primary key,
+  expires_at timestamptz not null,
+  created_at timestamptz not null default now()
+);
+
+create table if not exists phone_otp_codes (
+  id uuid primary key default gen_random_uuid(),
+  phone text not null,
+  code_hash text not null,
+  expires_at timestamptz not null,
+  attempts int not null default 0,
+  consumed_at timestamptz,
+  created_at timestamptz not null default now()
+);
+
+create index if not exists phone_otp_codes_phone_idx on phone_otp_codes (phone, created_at desc);
+
+create or replace function event_participation_counts(event_ids text[])
+returns table (event_id text, member_count bigint, volunteer_count bigint)
+language sql
+stable
+as $$
+  select
+    event_registrations.event_id,
+    count(*) filter (where participation_as = 'member') as member_count,
+    count(*) filter (where participation_as = 'volunteer') as volunteer_count
+  from event_registrations
+  where event_registrations.event_id = any(event_ids)
+  group by event_registrations.event_id;
+$$;
+
 alter table people enable row level security;
+alter table verified_phones enable row level security;
+alter table phone_otp_codes enable row level security;
 alter table volunteer_hours enable row level security;
 alter table events enable row level security;
 alter table event_registrations enable row level security;
 alter table event_volunteers enable row level security;
 alter table inquiries enable row level security;
 alter table donations enable row level security;
-alter table sessions enable row level security;
-alter table chapter_admins enable row level security;
 alter table site_content enable row level security;
 alter table admin_users enable row level security;
 alter table approval_requests enable row level security;
