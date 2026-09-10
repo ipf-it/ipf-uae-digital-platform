@@ -1,5 +1,4 @@
 import { Link } from "react-router-dom";
-import { InquiryForm } from "../components/forms/InquiryForm";
 import { DocumentTitle } from "../components/layout/DocumentTitle";
 import { PageHero } from "../components/layout/PageHero";
 import { Button } from "../components/ui/Button";
@@ -22,7 +21,25 @@ export default function MembershipPage() {
       />
       <Section tone="white">
         <Container className="grid gap-10 lg:grid-cols-[1fr,0.85fr] lg:items-start">
-          <InquiryForm intent="membership" />
+          <Card size="lg" title={t("page.membership.twoWays")}>
+            <p className="text-sm leading-7 text-[var(--ipf-muted)]">
+              <strong className="text-[var(--ipf-navy)]">{t("nav.member")}.</strong> {t("page.membership.memberBlurb")}
+            </p>
+            <p className="mt-3 text-sm leading-7 text-[var(--ipf-muted)]">
+              <strong className="text-[var(--ipf-navy)]">{t("page.yuva.title")}.</strong> {t("page.membership.yuvaBlurb")}
+            </p>
+            <p className="mt-4 text-sm leading-7 text-[var(--ipf-muted)]">
+              One registration covers both — you'll verify your mobile number, then tell us your UAE emirate and your home state in India, so you show up correctly in both your local chapter and your state council. Tick the volunteer box if you'd like to join as IPF Yuva too — it's the same account either way.
+            </p>
+            <div className="mt-5 flex flex-wrap gap-3">
+              <Button asChild>
+                <Link to="/register">{t("page.membership.memberAccount")}</Link>
+              </Button>
+              <Button asChild variant="outline">
+                <Link to="/register?kind=yuva">{t("page.membership.yuvaId")}</Link>
+              </Button>
+            </div>
+          </Card>
           <aside className="space-y-5">
             <Card tone="ivory" title={t("page.membership.after")}>
               <p className="text-sm leading-7 text-[var(--ipf-muted)]">{t("page.membership.afterBody")}</p>
@@ -40,19 +57,11 @@ export default function MembershipPage() {
                 </Link>
               </p>
             </Card>
-            <Card title={t("page.membership.twoWays")}>
-              <p className="text-sm leading-7 text-[var(--ipf-muted)]">
-                <strong className="text-[var(--ipf-navy)]">{t("nav.member")}.</strong> {t("page.membership.memberBlurb")}
-              </p>
-              <p className="mt-3 text-sm leading-7 text-[var(--ipf-muted)]">
-                <strong className="text-[var(--ipf-navy)]">{t("page.yuva.title")}.</strong> {t("page.membership.yuvaBlurb")}
-              </p>
-              <div className="mt-4 flex flex-wrap gap-3">
-                <Button asChild>
-                  <Link to="/register">{t("page.membership.memberAccount")}</Link>
-                </Button>
+            <Card title={t("nav.contact")}>
+              <p className="text-sm leading-7 text-[var(--ipf-muted)]">Have a question before you sign up? Reach out and a chapter volunteer will get back to you.</p>
+              <div className="mt-4">
                 <Button asChild variant="outline">
-                  <Link to="/register?kind=yuva">{t("page.membership.yuvaId")}</Link>
+                  <Link to="/contact">{t("nav.contact")}</Link>
                 </Button>
               </div>
             </Card>

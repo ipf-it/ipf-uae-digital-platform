@@ -18,7 +18,6 @@ type AdminContextValue = {
   mustChangePassword: boolean;
   isGlobalAdmin: boolean;
   isSuperAdmin: boolean;
-  signIn: (email: string, password: string) => Promise<void>;
   signOut: () => Promise<void>;
   changePassword: (newPassword: string) => Promise<void>;
   refresh: () => Promise<void>;
@@ -30,7 +29,6 @@ const AdminContext = createContext<AdminContextValue>({
   mustChangePassword: false,
   isGlobalAdmin: false,
   isSuperAdmin: false,
-  signIn: async () => undefined,
   signOut: async () => undefined,
   changePassword: async () => undefined,
   refresh: async () => undefined,
@@ -71,21 +69,6 @@ export function AdminProvider({ children }: PropsWithChildren) {
       mustChangePassword,
       isGlobalAdmin: admin?.isGlobalAdmin ?? false,
       isSuperAdmin: admin?.role === "super_admin",
-      async signIn(email, password) {
-        const { error } = await requireSupabaseAuth().auth.signInWithPassword({ email: email.trim().toLowerCase(), password });
-        if (error) throw error;
-        // A correct Supabase login doesn't guarantee this account has administrator access — check
-        // explicitly and surface a real error instead of silently leaving the user on the sign-in
-        // screen with no feedback (see /api/admin/session's 401 vs 403 distinction).
-        try {
-          await api<{ admin: Admin }>("/api/admin/session");
-        } catch (sessionError) {
-          await supabaseAuth?.auth.signOut();
-          throw sessionError instanceof Error ? sessionError : new Error("This account does not have administrator access");
-        }
-        await api("/api/admin/login-audit", { method: "POST" }).catch(() => undefined);
-        await refresh();
-      },
       async signOut() {
         if (supabaseAuth) await supabaseAuth.auth.signOut();
         setAdmin(null);

@@ -1300,6 +1300,10 @@ export async function handleRequest(req: AppRequest): Promise<AppResponse> {
         extra?: Record<string, string>;
       }>(req);
       if (!body.name || !body.email) return json(400, { error: "Name and email are required" });
+      // Link to the submitter's account when they're signed in, so their own "my support
+      // requests" list (see /api/members/support) can find it — anonymous submission still works
+      // fine either way, this is additive.
+      const submitter = await personFromRequest(req);
       const { data, error } = await supabase
         .from("inquiries")
         .insert({
@@ -1310,6 +1314,7 @@ export async function handleRequest(req: AppRequest): Promise<AppResponse> {
           emirate: body.emirate ?? "",
           message: body.message ?? "",
           extra: body.extra ?? {},
+          person_id: submitter?.id ?? null,
         })
         .select("id")
         .single();
@@ -1355,6 +1360,50 @@ export async function handleRequest(req: AppRequest): Promise<AppResponse> {
           createdAt: item.created_at,
         })),
       });
+    }
+
+    if (method === "GET" && path === "/api/members/support") {
+      const person = await personFromRequest(req);
+      if (!person) return json(401, { error: "Sign in required" });
+      const { data, error } = await supabase
+        .from("inquiries")
+        .select("id, created_at, intent, message, status")
+        .eq("person_id", person.id)
+        .order("created_at", { ascending: false });
+      if (error) throw error;
+      return json(200, {
+        requests: (data ?? []).map((item) => ({
+          id: item.id,
+          createdAt: item.created_at,
+          intent: item.intent,
+          message: item.message,
+          status: item.status ?? "new",
+        })),
+      });
+    }
+
+    if (method === "POST" && path === "/api/members/support") {
+      const person = await personFromRequest(req);
+      if (!person) return json(401, { error: "Sign in required" });
+      const supportLimit = await rateLimit("members-support", clientIp(req.headers), 10, 300);
+      if (!supportLimit.allowed) return json(429, { error: "Too many submissions. Try again in a few minutes." });
+      const body = await readJson<{ message?: string }>(req);
+      if (!body.message?.trim()) return json(400, { error: "Enter a message describing your request" });
+      const { data, error } = await supabase
+        .from("inquiries")
+        .insert({
+          intent: "support",
+          name: person.name,
+          email: person.email,
+          phone: person.phone,
+          emirate: person.emirate,
+          message: body.message.trim(),
+          person_id: person.id,
+        })
+        .select("id")
+        .single();
+      if (error) throw error;
+      return json(200, { ok: true, id: data.id });
     }
 
     if (method === "POST" && path === "/api/members/hours") {

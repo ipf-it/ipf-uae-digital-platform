@@ -221,7 +221,7 @@ export function Header({ logoSrc }: HeaderProps) {
             <LanguageToggle className="md:hidden" />
             <SearchDialog />
             <Button asChild size="sm" className="hidden px-3 sm:px-4 lg:inline-flex">
-              <Link to="/membership">{t("nav.join")}</Link>
+              <Link to="/register">{t("nav.join")}</Link>
             </Button>
             <Button
               type="button"
@@ -263,7 +263,7 @@ export function Header({ logoSrc }: HeaderProps) {
               <Link className="block rounded-lg py-2 text-sm font-semibold text-[var(--ipf-navy)]" to="/yuva" onClick={() => setOpen(false)}>
                 {t("nav.yuva")}
               </Link>
-              <Link className="block rounded-lg py-2 text-sm font-semibold text-[var(--ipf-navy)]" to="/membership" onClick={() => setOpen(false)}>
+              <Link className="block rounded-lg py-2 text-sm font-semibold text-[var(--ipf-navy)]" to="/register" onClick={() => setOpen(false)}>
                 {t("nav.joinLong")}
               </Link>
               <Accordion type="single" collapsible className="mt-1">

@@ -1,5 +1,5 @@
 import { useEffect, useState, type FormEvent } from "react";
-import { NavLink, Outlet, useLocation } from "react-router-dom";
+import { NavLink, Navigate, Outlet, useLocation } from "react-router-dom";
 import { LayoutDashboard, ClipboardList, Layers, Inbox as InboxIcon, Users, Building2, LogOut, ExternalLink, Menu, X } from "lucide-react";
 import { AdminProvider, useAdmin } from "./AdminProvider";
 import { AuthScreen } from "../components/ui/AuthScreen";
@@ -7,41 +7,6 @@ import { Field } from "../components/ui/Field";
 import { Input } from "../components/ui/Input";
 import { PageLoader } from "../components/layout/PageLoader";
 import { cn } from "../lib/utils";
-
-function SignInScreen() {
-  const { signIn } = useAdmin();
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [status, setStatus] = useState("");
-
-  async function onSubmit(event: FormEvent) {
-    event.preventDefault();
-    setStatus("");
-    try {
-      await signIn(email, password);
-    } catch (error) {
-      setStatus(error instanceof Error ? error.message : "Sign-in failed");
-    }
-  }
-
-  return (
-    <AuthScreen
-      eyebrow="IPF UAE"
-      title="Administrator login"
-      description="One secure login for super, chapter and council administrators."
-      status={status}
-      onSubmit={onSubmit}
-      submitLabel="Sign in"
-    >
-      <Field label="Email" htmlFor="admin-email" required>
-        <Input id="admin-email" required type="email" autoComplete="username" value={email} onChange={(e) => setEmail(e.target.value)} />
-      </Field>
-      <Field label="Password" htmlFor="admin-password" required>
-        <Input id="admin-password" required type="password" autoComplete="current-password" value={password} onChange={(e) => setPassword(e.target.value)} />
-      </Field>
-    </AuthScreen>
-  );
-}
 
 function ChangePasswordScreen() {
   const { changePassword } = useAdmin();
@@ -98,7 +63,7 @@ function AdminShell() {
   }, [location.pathname]);
 
   if (!ready) return <PageLoader />;
-  if (!admin) return <SignInScreen />;
+  if (!admin) return <Navigate to={`/sign-in?next=${encodeURIComponent(location.pathname)}`} replace />;
   if (mustChangePassword) return <ChangePasswordScreen />;
 
   const scopeLabel = admin.scopeType === "global" ? "All IPF UAE" : `${admin.scopeType === "chapter" ? "Chapter" : "Council"}: ${admin.scopeId}`;
