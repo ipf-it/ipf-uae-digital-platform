@@ -34,4 +34,6 @@ create table if not exists audit_logs (
 alter table admin_users enable row level security;
 alter table approval_requests enable row level security;
 alter table audit_logs enable row level security;
-alter table sessions add column if not exists admin_user_id uuid references admin_users(id) on delete cascade;
+-- Note: this migration no longer touches `sessions` — that table was dropped in favor of
+-- Supabase Auth (see 003_supabase_auth.sql, 006_unified_identity.sql) and schema.sql never
+-- creates it, so an `alter table sessions ...` here would fail with "relation does not exist".
