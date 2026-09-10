@@ -8,7 +8,7 @@ import { SegmentedTabs } from "../../components/ui/Tabs";
 import { Textarea } from "../../components/ui/Textarea";
 import { defaultCmsContent } from "../../cms/defaults";
 import { cmsPageKeys, type CmsContent, type CmsPageKey, type CmsSection } from "../../cms/types";
-import { api } from "../../lib/api";
+import { api, ApiError } from "../../lib/api";
 import { useToast } from "../../components/ui/Toast";
 import { EditorList } from "../EditorList";
 
@@ -47,8 +47,19 @@ export default function ContentTab() {
   useEffect(() => {
     void api<CmsContent>("/api/cms/content")
       .then((loaded) => setContent({ ...defaultCmsContent, ...loaded, extras: { ...defaultCmsContent.extras, ...(loaded.extras ?? {}) } }))
-      .catch(() => setContent(defaultCmsContent))
+      .catch((error: unknown) => {
+        // A 404 means there's genuinely no saved content yet — falling back to defaults is
+        // correct. Any other failure (network blip, transient 500) must not silently swap in
+        // placeholder defaults, since clicking "Save to website" from there would overwrite real
+        // site content with them.
+        if (error instanceof ApiError && error.status === 404) {
+          setContent(defaultCmsContent);
+        } else {
+          toast.error(error instanceof Error ? error.message : "Could not load site content — try reloading before saving.");
+        }
+      })
       .finally(() => setReady(true));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   async function save() {
@@ -101,7 +112,6 @@ export default function ContentTab() {
           title="Home hero carousel"
           hint="These photographs rotate on the home page. Add a title and caption for each."
           items={content.heroSlides}
-          mediaOptions={mediaOptions}
           onChange={(heroSlides) => setContent({ ...content, heroSlides })}
           onUpload={(file, index) =>
             void upload(file, (src) => {
@@ -119,7 +129,6 @@ export default function ContentTab() {
           title="Gallery photographs"
           hint="Used by the home carousel, gallery page and any new photo sections."
           items={content.galleryImages}
-          mediaOptions={mediaOptions}
           onChange={(galleryImages) => setContent({ ...content, galleryImages })}
           onUpload={(file, index) =>
             void upload(file, (src) => {
@@ -272,7 +281,6 @@ export default function ContentTab() {
                   <EditorList
                     title="Section photographs"
                     items={item.slides ?? []}
-                    mediaOptions={mediaOptions}
                     onChange={(slides) => updateSection(pageKey, index, { ...item, slides })}
                     onUpload={(file, slideIndex) =>
                       void upload(file, (src) => {

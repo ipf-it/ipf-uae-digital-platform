@@ -33,10 +33,15 @@ export default function ApprovalsTab() {
   async function decide(id: string, decision: Decision, note: string) {
     try {
       await api(`/api/admin/approvals/${id}/decision`, { method: "POST", body: JSON.stringify({ decision, note }) });
-      toast.success(`Submission ${decisionLabel[decision]}.`);
-      await load();
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Could not record this decision");
+      return;
+    }
+    toast.success(`Submission ${decisionLabel[decision]}.`);
+    try {
+      await load();
+    } catch {
+      toast.error("Recorded, but the queue could not refresh. Reload the page to see it.");
     }
   }
 
@@ -57,21 +62,25 @@ export default function ApprovalsTab() {
       </div>
 
       <div className="space-y-3">
-        {pending?.length
-          ? pending.map((item) => (
-              <Card key={item.id} title={`${item.entity_type}: ${item.entity_id}`} description={`${item.scope_type}: ${item.scope_id}`}>
-                <div className="flex flex-wrap gap-3">
-                  <Button onClick={() => onDecide(item.id, "approved")}>Approve & publish</Button>
-                  <Button variant="outline" onClick={() => onDecide(item.id, "changes_requested")}>
-                    Request changes
-                  </Button>
-                  <Button variant="outline" onClick={() => onDecide(item.id, "rejected")}>
-                    Reject
-                  </Button>
-                </div>
-              </Card>
-            ))
-          : <Card title="No submissions awaiting review" />}
+        {pending === null ? (
+          <Card title="Loading submissions…" />
+        ) : pending.length ? (
+          pending.map((item) => (
+            <Card key={item.id} title={`${item.entity_type}: ${item.entity_id}`} description={`${item.scope_type}: ${item.scope_id}`}>
+              <div className="flex flex-wrap gap-3">
+                <Button onClick={() => onDecide(item.id, "approved")}>Approve & publish</Button>
+                <Button variant="outline" onClick={() => onDecide(item.id, "changes_requested")}>
+                  Request changes
+                </Button>
+                <Button variant="outline" onClick={() => onDecide(item.id, "rejected")}>
+                  Reject
+                </Button>
+              </div>
+            </Card>
+          ))
+        ) : (
+          <Card title="No submissions awaiting review" />
+        )}
       </div>
 
       <PromptDialog

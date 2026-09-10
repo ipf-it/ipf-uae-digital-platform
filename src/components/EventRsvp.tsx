@@ -40,6 +40,7 @@ export function EventRsvp({ eventId, title, date, startsAt, location, body, mont
   const [identifier, setIdentifier] = useState(member?.membershipNo ?? member?.phone ?? "");
   const [participationAs, setParticipationAs] = useState<"member" | "volunteer">("member");
   const [confirmBecomeVolunteer, setConfirmBecomeVolunteer] = useState(false);
+  const [confirmVolunteerOnly, setConfirmVolunteerOnly] = useState(false);
 
   useEffect(() => {
     void api<{ registration: { registrationNo: string } | null; volunteer: { status: string } | null }>(
@@ -109,17 +110,28 @@ export function EventRsvp({ eventId, title, date, startsAt, location, body, mont
       toast.success("You're down as a volunteer for this event.");
     } catch (error) {
       if (error instanceof ApiError && error.code === "not_volunteer") {
-        try {
-          await becomeVolunteer();
-          await api(`/api/events/${encodeURIComponent(eventId)}/volunteer`, { method: "POST" });
-          setVolunteering(true);
-          toast.success("You're now an IPF Yuva volunteer, and signed up for this event.");
-        } catch (innerError) {
-          toast.error(innerError instanceof Error ? innerError.message : "Could not assign volunteer");
-        }
+        // Same explicit-consent standard as the registration form's inline checkbox — becoming a
+        // volunteer changes the member's account, so it must never happen from a single silent
+        // click, here or anywhere else.
+        setConfirmVolunteerOnly(true);
       } else {
         toast.error(error instanceof Error ? error.message : "Could not assign volunteer");
       }
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
+  async function onConfirmVolunteerOnly() {
+    setSubmitting(true);
+    try {
+      await becomeVolunteer();
+      await api(`/api/events/${encodeURIComponent(eventId)}/volunteer`, { method: "POST" });
+      setVolunteering(true);
+      setConfirmVolunteerOnly(false);
+      toast.success("You're now an IPF Yuva volunteer, and signed up for this event.");
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Could not assign volunteer");
     } finally {
       setSubmitting(false);
     }
@@ -163,6 +175,25 @@ export function EventRsvp({ eventId, title, date, startsAt, location, body, mont
           ) : null
         ) : null}
       </div>
+      {confirmVolunteerOnly ? (
+        <div className="flex items-start gap-3 rounded-lg border border-[var(--ipf-saffron)] bg-orange-50 p-3">
+          <Checkbox
+            id={`${eventId}-become-volunteer-standalone`}
+            checked
+            onCheckedChange={(checked) => {
+              if (checked !== true) setConfirmVolunteerOnly(false);
+            }}
+          />
+          <Label htmlFor={`${eventId}-become-volunteer-standalone`} className="text-sm leading-6 text-[var(--ipf-navy)]">
+            You're not yet signed up as an IPF Yuva volunteer. Tick to become one now and continue.
+          </Label>
+        </div>
+      ) : null}
+      {confirmVolunteerOnly ? (
+        <Button type="button" size="sm" disabled={submitting} onClick={() => void onConfirmVolunteerOnly()}>
+          Become a volunteer and continue
+        </Button>
+      ) : null}
       {open && formOpen && !registrationNo ? (
         <form onSubmit={onSubmit} className="w-full space-y-3 rounded-xl border border-[var(--ipf-line)] bg-[var(--ipf-ivory)] p-4">
           <div className="grid gap-3 sm:grid-cols-2">

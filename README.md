@@ -3,8 +3,8 @@
 ## Supabase setup
 
 1. Copy `.env.example` to `.env` and set the server and `VITE_` Supabase keys.
-2. For a new database, run `server/schema.sql`, then the numbered files in `server/migrations/`.
-3. For an existing database, run `server/migrations/003_supabase_auth.sql` before deploying this version.
+2. For a new database, run these three files in order: `server/schema.sql`, `server/migrations/003_supabase_auth.sql`, `server/migrations/006_unified_identity.sql`, `server/migrations/007_signup_trigger_and_admin_integrity.sql`. The other numbered migrations (`002`, `003_identity_rbac_workflow`, `004`, `005`) are already folded into `schema.sql` and only matter when bootstrapping a database that predates it.
+3. For an existing database that predates Supabase Auth, run `server/migrations/003_supabase_auth.sql`, `006_unified_identity.sql` and `007_signup_trigger_and_admin_integrity.sql` in order before deploying this version.
 4. Set `IPF_ADMIN_EMAIL` and a 12+ character `IPF_ADMIN_PASSWORD`. The first API request creates or links that Supabase Auth user as the initial super admin.
 5. Configure the Supabase Site URL and allowed redirect URLs for the deployed domain. Registration follows the project's email-confirmation setting.
 

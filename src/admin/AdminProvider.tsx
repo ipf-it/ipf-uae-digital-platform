@@ -9,6 +9,7 @@ export type Admin = {
   role: "super_admin" | "central_content_admin" | "chapter_admin" | "council_admin" | "editor";
   scopeType: "global" | "chapter" | "council";
   scopeId: string | null;
+  isGlobalAdmin: boolean;
 };
 
 type AdminContextValue = {
@@ -68,11 +69,21 @@ export function AdminProvider({ children }: PropsWithChildren) {
       admin,
       ready,
       mustChangePassword,
-      isGlobalAdmin: admin?.scopeType === "global",
+      isGlobalAdmin: admin?.isGlobalAdmin ?? false,
       isSuperAdmin: admin?.role === "super_admin",
       async signIn(email, password) {
         const { error } = await requireSupabaseAuth().auth.signInWithPassword({ email: email.trim().toLowerCase(), password });
         if (error) throw error;
+        // A correct Supabase login doesn't guarantee this account has administrator access — check
+        // explicitly and surface a real error instead of silently leaving the user on the sign-in
+        // screen with no feedback (see /api/admin/session's 401 vs 403 distinction).
+        try {
+          await api<{ admin: Admin }>("/api/admin/session");
+        } catch (sessionError) {
+          await supabaseAuth?.auth.signOut();
+          throw sessionError instanceof Error ? sessionError : new Error("This account does not have administrator access");
+        }
+        await api("/api/admin/login-audit", { method: "POST" }).catch(() => undefined);
         await refresh();
       },
       async signOut() {

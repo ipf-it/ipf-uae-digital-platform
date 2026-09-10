@@ -95,16 +95,22 @@ async function adminFromRequest(req: AppRequest) {
   return (data as AdminRow | null) ?? null;
 }
 
-function publicAdmin(admin: AdminRow) {
-  return { id: admin.id, email: admin.email, name: admin.display_name, role: admin.role, scopeType: admin.scope_type, scopeId: admin.scope_id, mfaRequired: admin.mfa_required };
-}
-
 function isGlobalAdmin(admin: AdminRow) {
   return admin.scope_type === "global" && (admin.role === "super_admin" || admin.role === "central_content_admin");
 }
 
-function eventInScope(admin: AdminRow, event: { scope_type?: string; scope_id?: string | null }) {
-  return isGlobalAdmin(admin) || (event.scope_type === admin.scope_type && event.scope_id === admin.scope_id);
+function publicAdmin(admin: AdminRow) {
+  return { id: admin.id, email: admin.email, name: admin.display_name, role: admin.role, scopeType: admin.scope_type, scopeId: admin.scope_id, mfaRequired: admin.mfa_required, isGlobalAdmin: isGlobalAdmin(admin) };
+}
+
+// Editors are scoped exactly like chapter/council admins, except they may only touch events they
+// themselves created ("assigned drafts only" — the role's advertised restriction, now enforced
+// instead of just described in the dashboard copy).
+function eventInScope(admin: AdminRow, event: { scope_type?: string; scope_id?: string | null; created_by?: string | null }) {
+  if (isGlobalAdmin(admin)) return true;
+  if (event.scope_type !== admin.scope_type || event.scope_id !== admin.scope_id) return false;
+  if (admin.role === "editor") return event.created_by === admin.id;
+  return true;
 }
 
 async function personFromRequest(req: AppRequest) {
@@ -127,7 +133,7 @@ async function hoursFor(personId: string) {
 async function cmsFromRequest(req: AppRequest) {
   const admin = await adminFromRequest(req);
   if (admin) return {
-    role: admin.scope_type === "global" ? ("central" as const) : ("chapter" as const),
+    role: isGlobalAdmin(admin) ? ("central" as const) : ("chapter" as const),
     scopeType: admin.scope_type,
     scopeId: admin.scope_id ?? "",
     admin,
@@ -171,7 +177,7 @@ async function ensureEvent(input: {
     if (input.title) {
       const { error } = await supabase.from("events").update(extra).eq("id", input.id);
       if (error) {
-        await supabase
+        const fallback = await supabase
           .from("events")
           .update({
             title: extra.title,
@@ -182,6 +188,7 @@ async function ensureEvent(input: {
             updated_at: extra.updated_at,
           })
           .eq("id", input.id);
+        if (fallback.error) throw fallback.error;
       }
     }
     return;
@@ -296,13 +303,19 @@ export async function handleRequest(req: AppRequest): Promise<AppResponse> {
       const phoneLimit = await rateLimit("otp-request-phone", phone, 5, 3600);
       if (!phoneLimit.allowed) return json(429, { error: "Too many codes requested for this number. Try again later." });
       const code = String(randomInt(0, 1_000_000)).padStart(6, "0");
+      // Send before persisting: a failed send should never leave a valid, never-delivered code
+      // sitting in the table, and the provider's raw error text should never reach the client.
+      try {
+        await sendOtpSms(phone, code);
+      } catch {
+        return json(502, { error: "Could not send the verification code. Try again shortly." });
+      }
       const { error } = await supabase.from("phone_otp_codes").insert({
         phone,
         code_hash: hashOtp(phone, code),
         expires_at: new Date(Date.now() + OTP_TTL_MS).toISOString(),
       });
       if (error) throw error;
-      await sendOtpSms(phone, code);
       return json(200, { ok: true, phone, expiresInSeconds: OTP_TTL_MS / 1000 });
     }
 
@@ -336,6 +349,8 @@ export async function handleRequest(req: AppRequest): Promise<AppResponse> {
     }
 
     if (method === "POST" && path === "/api/members/become-volunteer") {
+      const becomeVolunteerLimit = await rateLimit("become-volunteer", clientIp(req.headers), 10, 300);
+      if (!becomeVolunteerLimit.allowed) return json(429, { error: "Too many attempts. Try again shortly." });
       const person = await personFromRequest(req);
       if (!person) return json(401, { error: "Sign in required" });
       if (person.is_volunteer) return json(200, { ok: true, alreadyVolunteer: true });
@@ -348,25 +363,31 @@ export async function handleRequest(req: AppRequest): Promise<AppResponse> {
       return json(410, { error: "Password-only CMS login has been replaced by Supabase administrator authentication." });
     }
 
-    if (method === "POST" && path === "/api/admin/login") {
-      const body = await readJson<{ email?: string; password?: string }>(req);
-      const email = body.email?.trim().toLowerCase() ?? "";
-      const signedIn = await supabase.auth.signInWithPassword({ email, password: body.password ?? "" });
-      if (signedIn.error || !signedIn.data.user || !signedIn.data.session) return json(401, { error: "Email or password is incorrect" });
-      const { data } = await supabase.from("admin_users").select("*").eq("auth_user_id", signedIn.data.user.id).eq("active", true).maybeSingle();
+    if (method === "GET" && path === "/api/admin/session") {
+      // The client signs in via Supabase Auth directly (supabaseAuth.auth.signInWithPassword) and
+      // then calls this route to resolve the resulting session into an admin_users row — it never
+      // uses a dedicated admin/login endpoint. Distinguish "not signed in at all" (401) from
+      // "signed in, but this account has no administrator access" (403) so AdminProvider.signIn can
+      // surface a real error instead of silently failing to navigate anywhere.
+      const user = await authenticatedUser(req);
+      if (!user) return json(401, { error: "Administrator sign-in required" });
+      const { data } = await supabase.from("admin_users").select("*").eq("auth_user_id", user.id).eq("active", true).maybeSingle();
       const admin = data as AdminRow | null;
       if (!admin) return json(403, { error: "This account does not have administrator access" });
+      return json(200, { admin: publicAdmin(admin) });
+    }
+
+    if (method === "POST" && path === "/api/admin/login-audit") {
+      // Called once by AdminProvider.signIn right after a successful sign-in — kept separate from
+      // /api/admin/session (which also runs on every page load and auth-state-change event) so the
+      // audit log records real login events, not every session check.
+      const admin = await adminFromRequest(req);
+      if (!admin) return json(401, { error: "Administrator sign-in required" });
       await Promise.all([
         supabase.from("admin_users").update({ last_login_at: new Date().toISOString() }).eq("id", admin.id),
         supabase.from("audit_logs").insert({ actor_id: admin.id, action: "admin.login", entity_type: "admin_user", entity_id: admin.id, request_id: header(req, "x-request-id") || randomUUID() }),
       ]);
-      return json(200, { admin: publicAdmin(admin), accessToken: signedIn.data.session.access_token, refreshToken: signedIn.data.session.refresh_token });
-    }
-
-    if (method === "GET" && path === "/api/admin/session") {
-      const admin = await adminFromRequest(req);
-      if (!admin) return json(401, { error: "Administrator sign-in required" });
-      return json(200, { admin: publicAdmin(admin) });
+      return json(200, { ok: true });
     }
 
     if (method === "GET" && path === "/api/admin/dashboard") {
@@ -403,6 +424,7 @@ export async function handleRequest(req: AppRequest): Promise<AppResponse> {
       const limit = Math.min(Math.max(Number(url.searchParams.get("limit")) || DEFAULT_PAGE_SIZE, 1), MAX_PAGE_SIZE);
       let query = supabase.from("events").select("*").order("updated_at", { ascending: false }).limit(limit + 1);
       if (!isGlobalAdmin(admin)) query = query.eq("scope_type", admin.scope_type).eq("scope_id", admin.scope_id ?? "");
+      if (admin.role === "editor") query = query.eq("created_by", admin.id);
       if (after) query = query.lt("updated_at", after);
       const { data, error } = await query;
       if (error) throw error;
@@ -825,7 +847,11 @@ export async function handleRequest(req: AppRequest): Promise<AppResponse> {
       let person = await personFromRequest(req);
       const identifier = body.identifier?.trim();
       if (!person && identifier) {
-        const column = /^IPF-/i.test(identifier) ? "membership_no" : "phone";
+        // Matches both the current "IPF-######" format and the legacy "IPFM-####"/"IPFY-####"
+        // format issued before 006_unified_identity.sql merged member/Yuva numbering — a
+        // pre-migration member typing their real membership number must still be found by it,
+        // not misrouted into a failed phone lookup.
+        const column = /^IPF[A-Z]?-/i.test(identifier) ? "membership_no" : "phone";
         const { data: matched } = await supabase.from("people").select("*").eq(column, identifier).maybeSingle();
         person = (matched as PersonRow | null) ?? null;
       }
@@ -873,6 +899,8 @@ export async function handleRequest(req: AppRequest): Promise<AppResponse> {
 
     const eventVolunteer = path.match(/^\/api\/events\/([^/]+)\/volunteer$/);
     if (method === "POST" && eventVolunteer) {
+      const volunteerLimit = await rateLimit("event-volunteer", clientIp(req.headers), 15, 300);
+      if (!volunteerLimit.allowed) return json(429, { error: "Too many attempts. Try again in a few minutes." });
       const eventId = decodeURIComponent(eventVolunteer[1]);
       const known = await loadPublicEvent(eventId);
       if (!known) return json(404, { error: "Event not found" });
@@ -903,12 +931,15 @@ export async function handleRequest(req: AppRequest): Promise<AppResponse> {
       const eventId = decodeURIComponent(eventMine[1]);
       const person = await personFromRequest(req);
       if (!person) return json(200, { registration: null, volunteer: null });
+      // Same PostgREST filter-character stripping as /api/cms/inbox's .or() calls — defense in
+      // depth so a stored email can never alter the intended filter structure.
+      const safeEmail = person.email.replace(/[,()]/g, "");
       const [registration, volunteer] = await Promise.all([
         supabase
           .from("event_registrations")
           .select("registration_no, status")
           .eq("event_id", eventId)
-          .or(`person_id.eq.${person.id},email.eq.${person.email}`)
+          .or(`person_id.eq.${person.id},email.eq.${safeEmail}`)
           .maybeSingle(),
         supabase.from("event_volunteers").select("status").eq("event_id", eventId).eq("person_id", person.id).maybeSingle(),
       ]);

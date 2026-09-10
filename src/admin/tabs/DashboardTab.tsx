@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { api } from "../../lib/api";
 import { Card } from "../../components/ui/Card";
 import { StatPill } from "../../components/ui/StatPill";
+import { useToast } from "../../components/ui/Toast";
 import { useAdmin } from "../AdminProvider";
 
 type Dashboard = {
@@ -19,10 +20,14 @@ const roleScopes = [
 
 export default function DashboardTab() {
   const { admin, isGlobalAdmin } = useAdmin();
+  const toast = useToast();
   const [dashboard, setDashboard] = useState<Dashboard | null>(null);
 
   useEffect(() => {
-    void api<Dashboard>("/api/admin/dashboard").then(setDashboard).catch(() => undefined);
+    void api<Dashboard>("/api/admin/dashboard")
+      .then(setDashboard)
+      .catch((error: unknown) => toast.error(error instanceof Error ? error.message : "Could not load the dashboard"));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (

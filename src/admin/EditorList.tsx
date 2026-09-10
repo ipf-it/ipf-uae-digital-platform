@@ -5,7 +5,6 @@ type EditorListProps = {
   title: string;
   hint?: string;
   items: { src: string; alt: string; title?: string; caption?: string }[];
-  mediaOptions: string[];
   onChange: (items: { src: string; alt: string; title?: string; caption?: string }[]) => void;
   onUpload: (file: File, index: number) => void;
   onAdd: () => void;

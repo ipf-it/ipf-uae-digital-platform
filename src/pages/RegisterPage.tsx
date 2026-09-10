@@ -86,7 +86,16 @@ export default function RegisterPage() {
         navigate("/portal");
       }
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Could not create the account");
+      const message = error instanceof Error ? error.message : "Could not create the account";
+      // The verified-phone window is short-lived (30 minutes) — if it expired while this step was
+      // open, send the person back to re-verify instead of leaving them stuck on a form that will
+      // fail the same way every time they resubmit it. Typed details (name/email/etc.) are kept.
+      if (/not been verified/i.test(message)) {
+        toast.error("Your verification code expired. Verify your mobile number again.");
+        setStep("phone");
+      } else {
+        toast.error(message);
+      }
     } finally {
       setBusy(false);
     }
@@ -133,6 +142,9 @@ export default function RegisterPage() {
                   <Button type="button" variant="outline" disabled={busy} onClick={() => void sendCode()}>
                     Resend code
                   </Button>
+                  <Button type="button" variant="ghost" disabled={busy} onClick={() => setStep("phone")}>
+                    Change number
+                  </Button>
                 </div>
               </form>
             ) : null}
@@ -162,9 +174,12 @@ export default function RegisterPage() {
                     I'd like to volunteer as IPF Yuva — I can join events as a volunteer, not just as a member.
                   </Label>
                 </div>
-                <div className="mt-5">
+                <div className="mt-5 flex flex-wrap gap-3">
                   <Button type="submit" disabled={busy}>
                     {busy ? "Creating account…" : "Create my account"}
+                  </Button>
+                  <Button type="button" variant="ghost" disabled={busy} onClick={() => setStep("phone")}>
+                    Back / re-verify number
                   </Button>
                 </div>
               </form>

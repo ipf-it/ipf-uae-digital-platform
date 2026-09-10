@@ -132,12 +132,14 @@ export function MemberProvider({ children }: PropsWithChildren) {
           password: payload.password,
           options: {
             data: {
+              // The create_ipf_profile() DB trigger (server/migrations/007_signup_trigger_and_admin_integrity.sql)
+              // fires only when `phone` metadata is present, which is what distinguishes a real
+              // member signup from the admin-only auth users ensureAdminSeed() creates.
               name: payload.name.trim(),
               phone: payload.phone,
               emirate: payload.emirate,
               home_state: payload.homeState,
               is_volunteer: payload.isVolunteer,
-              account_kind: "member",
             },
           },
         });

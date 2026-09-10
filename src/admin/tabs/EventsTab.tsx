@@ -43,7 +43,8 @@ export default function EventsTab() {
   }
 
   useEffect(() => {
-    void load().catch(() => undefined);
+    void load().catch((error: unknown) => toast.error(error instanceof Error ? error.message : "Could not load events"));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   async function loadMore() {
@@ -71,16 +72,22 @@ export default function EventsTab() {
 
   async function saveEvent(event: FormEvent) {
     event.preventDefault();
+    const wasEditing = editingId;
     try {
       await api(editingId ? `/api/admin/events/${encodeURIComponent(editingId)}` : "/api/admin/events", {
         method: editingId ? "PUT" : "POST",
         body: JSON.stringify(form),
       });
-      toast.success(editingId ? "Event updated as a draft." : "Event created.");
-      cancelEdit();
-      await load();
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Could not save event");
+      return;
+    }
+    toast.success(wasEditing ? (isGlobalAdmin ? "Event updated." : "Event updated as a draft.") : "Event created.");
+    cancelEdit();
+    try {
+      await load();
+    } catch {
+      toast.error("Saved, but the event list could not refresh. Reload the page to see it.");
     }
   }
 
@@ -101,10 +108,15 @@ export default function EventsTab() {
   async function submit(id: string) {
     try {
       await api(`/api/admin/events/${encodeURIComponent(id)}/submit`, { method: "POST" });
-      toast.success("Event submitted for super-admin approval.");
-      await load();
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Could not submit event");
+      return;
+    }
+    toast.success("Event submitted for super-admin approval.");
+    try {
+      await load();
+    } catch {
+      toast.error("Submitted, but the event list could not refresh. Reload the page to see it.");
     }
   }
 

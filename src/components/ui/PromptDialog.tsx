@@ -42,7 +42,14 @@ export function PromptDialog({ open, onOpenChange, title, description, label, su
             <Textarea id="prompt-dialog-value" className="min-h-24" required={required} value={value} onChange={(e) => setValue(e.target.value)} />
           </Field>
           <div className="mt-4 flex justify-end gap-3">
-            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => {
+                setValue("");
+                onOpenChange(false);
+              }}
+            >
               Cancel
             </Button>
             <Button type="submit">{submitLabel}</Button>
