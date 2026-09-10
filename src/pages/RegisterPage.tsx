@@ -201,13 +201,16 @@ export default function RegisterPage() {
             ) : null}
           </Card>
 
-          <Card tone="ivory" title={t("page.register.enrol")}>
-            <p className="text-sm leading-7 text-[var(--ipf-muted)]">{t("page.register.enrolBody")}</p>
-            <div className="mt-4">
-              <Button asChild variant="outline">
-                <Link to="/membership">{t("page.membership.title")}</Link>
-              </Button>
-            </div>
+          <Card tone="ivory" title="What happens next">
+            <p className="text-sm leading-7 text-[var(--ipf-muted)]">
+              This form is your membership application — there's no separate manual step. Once your mobile number is verified and your details are saved, your account is created immediately with your own membership number and digital ID.
+            </p>
+            <p className="mt-3 text-sm leading-7 text-[var(--ipf-muted)]">
+              Already have an account?{" "}
+              <Link className="font-semibold text-[var(--ipf-navy)]" to="/sign-in">
+                {t("nav.signIn")}
+              </Link>
+            </p>
           </Card>
         </Container>
       </Section>
