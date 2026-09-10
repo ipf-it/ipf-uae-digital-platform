@@ -1,0 +1,30 @@
+import { readFileSync, mkdirSync, writeFileSync } from "node:fs";
+import { join } from "node:path";
+
+const root = process.cwd();
+const out = join(root, "design-review", "ipf-logo-system");
+const marks = join(out, "recommended-lockups");
+mkdirSync(marks, { recursive: true });
+const logo = `data:image/png;base64,${readFileSync(join(root, "public/legacy-assets/images/logo.png")).toString("base64")}`;
+const esc = (s) => s.replace(/[<>&"']/g, (c) => ({"<":"&lt;",">":"&gt;","&":"&amp;",'"':"&quot;","'":"&apos;"}[c]));
+const chapters = ["Abu Dhabi","Dubai","Sharjah","Ajman","Umm Al Quwain","Ras Al Khaimah","Fujairah","Al Ain"].map(name=>({name:`${name} Chapter`,type:"UAE CHAPTER",tone:"#168b3a"}));
+const states = ["Kerala","Karnataka","Andhra Pradesh","Telangana","Tamil Nadu","Maharashtra","Gujarat","Punjab","Rajasthan","Uttar Pradesh","Bihar","Assam","Odisha","West Bengal","Madhya Pradesh","Haryana","Jharkhand","Chhattisgarh","Uttarakhand","Himachal Pradesh","Goa","Arunachal Pradesh","Manipur","Meghalaya","Mizoram","Nagaland","Sikkim","Tripura"].map(name=>({name:`${name} Council`,type:"STATE COUNCIL",tone:"#f7931e"}));
+const special = ["Business Council","Women's Council","Cultural Council"].map(name=>({name,type:"SPECIAL COUNCIL",tone:"#273476"}));
+const all=[...chapters,...states,...special];
+const slug=(s)=>s.toLowerCase().replace(/['’]/g,"").replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"");
+
+function lockup(item, variant="a") {
+  const {name,type,tone}=item; const n=esc(name); const t=esc(type);
+  if(variant==="b") return `<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="420" viewBox="0 0 1200 420"><rect width="1200" height="420" rx="32" fill="#fffdf8"/><image href="${logo}" x="70" y="48" width="450" height="181"/><rect x="70" y="274" width="1060" height="92" rx="15" fill="${tone}"/><text x="600" y="322" text-anchor="middle" font-family="Arial,sans-serif" font-size="34" font-weight="700" fill="white">${n}</text><text x="600" y="350" text-anchor="middle" font-family="Arial,sans-serif" font-size="14" letter-spacing="4" fill="white" opacity=".8">${t} · UAE</text></svg>`;
+  if(variant==="c") return `<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="420" viewBox="0 0 1200 420"><rect width="1200" height="420" rx="32" fill="#0b1f3a"/><rect x="45" y="45" width="1110" height="330" rx="22" fill="#fffdf8"/><rect x="45" y="45" width="18" height="330" rx="9" fill="${tone}"/><image href="${logo}" x="100" y="112" width="430" height="173"/><text x="595" y="180" font-family="Arial,sans-serif" font-size="17" font-weight="700" letter-spacing="5" fill="${tone}">${t}</text><text x="595" y="240" font-family="Arial,sans-serif" font-size="42" font-weight="700" fill="#0b1f3a">${n}</text><text x="595" y="280" font-family="Arial,sans-serif" font-size="18" letter-spacing="2" fill="#667085">INDIAN PEOPLE'S FORUM · UAE</text></svg>`;
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="360" viewBox="0 0 1200 360"><rect width="1200" height="360" rx="28" fill="#fffdf8"/><image href="${logo}" x="58" y="73" width="445" height="179"/><rect x="545" y="70" width="5" height="185" rx="2.5" fill="${tone}"/><text x="595" y="132" font-family="Arial,sans-serif" font-size="16" font-weight="700" letter-spacing="5" fill="${tone}">${t}</text><text x="595" y="195" font-family="Arial,sans-serif" font-size="42" font-weight="700" fill="#0b1f3a">${n}</text><text x="595" y="238" font-family="Arial,sans-serif" font-size="18" letter-spacing="2" fill="#667085">INDIAN PEOPLE'S FORUM · UAE</text><path d="M58 294h1084" stroke="#f7931e" stroke-width="5"/><path d="M820 294h322" stroke="#168b3a" stroke-width="5"/></svg>`;
+}
+
+for(const item of all) writeFileSync(join(marks,`ipf-${slug(item.name)}.svg`),lockup(item));
+const samples=[{name:"Dubai Chapter",type:"UAE CHAPTER",tone:"#168b3a"},{name:"Telangana Council",type:"STATE COUNCIL",tone:"#f7931e"},{name:"Business Council",type:"SPECIAL COUNCIL",tone:"#273476"}];
+const cards=samples.flatMap((item,row)=>["a","b","c"].map((v,col)=>`<g transform="translate(${40+col*820} ${145+row*330}) scale(.64)">${lockup(item,v).replace(/^<svg[^>]*>|<\/svg>$/g,"")}</g>`)).join("");
+const board=`<svg xmlns="http://www.w3.org/2000/svg" width="2560" height="1200" viewBox="0 0 2560 1200"><rect width="2560" height="1200" fill="#edf1f4"/><text x="40" y="58" font-family="Arial" font-size="31" font-weight="700" fill="#0b1f3a">IPF UAE — Chapter & Council Logo System</text><text x="40" y="96" font-family="Arial" font-size="18" fill="#667085">Official master mark remains unchanged. Compare three lockup directions across all organisation types.</text><text x="40" y="132" font-family="Arial" font-size="16" font-weight="700" fill="#168b3a">A · RECOMMENDED / HORIZONTAL</text><text x="860" y="132" font-family="Arial" font-size="16" font-weight="700" fill="#168b3a">B · STACKED BAND</text><text x="1680" y="132" font-family="Arial" font-size="16" font-weight="700" fill="#168b3a">C · FRAMED SIGNATURE</text>${cards}</svg>`;
+writeFileSync(join(out,"concept-board.svg"),board);
+const rows=all.map(item=>`<article><img src="recommended-lockups/ipf-${slug(item.name)}.svg" alt="${esc(item.name)}"><span>${esc(item.name)}</span></article>`).join("");
+writeFileSync(join(out,"index.html"),`<!doctype html><meta charset="utf-8"><title>IPF logo review</title><style>body{margin:0;padding:40px;background:#edf1f4;color:#0b1f3a;font:16px Arial}h1{margin-bottom:4px}.note{color:#667085;margin-bottom:32px}.board{width:100%;border-radius:18px;box-shadow:0 8px 30px #0b1f3a18}section{display:grid;grid-template-columns:repeat(auto-fit,minmax(400px,1fr));gap:20px;margin-top:30px}article{background:white;border-radius:14px;padding:12px;box-shadow:0 4px 16px #0b1f3a12}article img{width:100%}article span{display:block;padding:8px;font-weight:bold}</style><h1>IPF UAE unified logo review</h1><p class="note">Review directions first. The complete roster below uses recommended Direction A and is not connected to the application.</p><img class="board" src="concept-board.svg"><section>${rows}</section>`);
+console.log(`Generated ${all.length} lockups in ${out}`);
