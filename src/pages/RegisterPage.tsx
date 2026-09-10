@@ -17,64 +17,30 @@ import { emirates } from "../data/forms";
 import { useOrgCouncils } from "../hooks/useOrgDirectory";
 import { useLocale } from "../i18n/LocaleProvider";
 
-type Step = "phone" | "code" | "details" | "check-email";
+type Step = "details" | "check-email";
 
 export default function RegisterPage() {
   const { t } = useLocale();
   const { councils } = useOrgCouncils();
   const homeStateOptions = councils.filter((council) => council.kind === "state").map((council) => ({ value: council.id, label: council.region }));
-  const { member, ready, requestPhoneOtp, verifyPhoneOtp, register } = useMember();
+  const { member, ready, register } = useMember();
   const navigate = useNavigate();
   const toast = useToast();
   const [params] = useSearchParams();
   const wantsVolunteer = params.get("kind") === "yuva";
 
-  const [step, setStep] = useState<Step>("phone");
+  const [step, setStep] = useState<Step>("details");
   const [busy, setBusy] = useState(false);
-
-  const [phone, setPhone] = useState("");
-  const [code, setCode] = useState("");
 
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
   const [emirate, setEmirate] = useState("");
   const [homeState, setHomeState] = useState("");
   const [isVolunteer, setIsVolunteer] = useState(wantsVolunteer);
   const [password, setPassword] = useState("");
 
   if (ready && member) return <Navigate to="/portal" replace />;
-
-  async function sendCode() {
-    setBusy(true);
-    try {
-      await requestPhoneOtp(phone);
-      toast.success("Verification code sent.");
-      setStep("code");
-    } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Could not send a verification code");
-    } finally {
-      setBusy(false);
-    }
-  }
-
-  function onRequestCode(event: FormEvent) {
-    event.preventDefault();
-    void sendCode();
-  }
-
-  async function onVerifyCode(event: FormEvent) {
-    event.preventDefault();
-    setBusy(true);
-    try {
-      await verifyPhoneOtp(phone, code);
-      toast.success("Mobile number verified.");
-      setStep("details");
-    } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Incorrect code");
-    } finally {
-      setBusy(false);
-    }
-  }
 
   async function onSubmitDetails(event: FormEvent) {
     event.preventDefault();
@@ -88,16 +54,7 @@ export default function RegisterPage() {
         navigate("/portal");
       }
     } catch (error) {
-      const message = error instanceof Error ? error.message : "Could not create the account";
-      // The verified-phone window is short-lived (30 minutes) — if it expired while this step was
-      // open, send the person back to re-verify instead of leaving them stuck on a form that will
-      // fail the same way every time they resubmit it. Typed details (name/email/etc.) are kept.
-      if (/not been verified/i.test(message)) {
-        toast.error("Your verification code expired. Verify your mobile number again.");
-        setStep("phone");
-      } else {
-        toast.error(message);
-      }
+      toast.error(error instanceof Error ? error.message : "Could not create the account");
     } finally {
       setBusy(false);
     }
@@ -115,49 +72,19 @@ export default function RegisterPage() {
       <Section tone="white">
         <Container className="grid gap-10 lg:grid-cols-[1fr,0.85fr]">
           <Card size="lg" title="Create your account">
-            {step === "phone" ? (
-              <form onSubmit={onRequestCode}>
-                <p className="text-sm leading-7 text-[var(--ipf-muted)]">
-                  One registration covers your emirate chapter and your home-state council — start by verifying your mobile number.
-                </p>
-                <Field className="mt-4" label={t("common.phoneUae")} htmlFor="reg-phone" required>
-                  <Input id="reg-phone" required type="tel" inputMode="tel" autoComplete="tel" placeholder="+971 50 123 4567" value={phone} onChange={(e) => setPhone(e.target.value)} />
-                </Field>
-                <div className="mt-5">
-                  <Button type="submit" disabled={busy}>
-                    {busy ? "Sending…" : "Send verification code"}
-                  </Button>
-                </div>
-              </form>
-            ) : null}
-
-            {step === "code" ? (
-              <form onSubmit={onVerifyCode}>
-                <p className="text-sm leading-7 text-[var(--ipf-muted)]">Enter the 6-digit code sent to {phone}.</p>
-                <Field className="mt-4" label="Verification code" htmlFor="reg-code" required>
-                  <Input id="reg-code" required inputMode="numeric" pattern="\d{6}" maxLength={6} autoComplete="one-time-code" value={code} onChange={(e) => setCode(e.target.value)} />
-                </Field>
-                <div className="mt-5 flex flex-wrap gap-3">
-                  <Button type="submit" disabled={busy}>
-                    {busy ? "Verifying…" : "Verify code"}
-                  </Button>
-                  <Button type="button" variant="outline" disabled={busy} onClick={() => void sendCode()}>
-                    Resend code
-                  </Button>
-                  <Button type="button" variant="ghost" disabled={busy} onClick={() => setStep("phone")}>
-                    Change number
-                  </Button>
-                </div>
-              </form>
-            ) : null}
-
             {step === "details" ? (
               <form onSubmit={onSubmitDetails}>
-                <Field label={t("common.fullName")} htmlFor="reg-name" required>
+                <p className="text-sm leading-7 text-[var(--ipf-muted)]">
+                  One registration covers both your emirate chapter and your home-state council — no re-registration, no duplicate accounts.
+                </p>
+                <Field className="mt-4" label={t("common.fullName")} htmlFor="reg-name" required>
                   <Input id="reg-name" required autoComplete="name" value={name} onChange={(e) => setName(e.target.value)} />
                 </Field>
                 <Field className="mt-4" label={t("common.email")} htmlFor="reg-email" required>
                   <Input id="reg-email" required type="email" autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)} />
+                </Field>
+                <Field className="mt-4" label={t("common.phoneUae")} htmlFor="reg-phone" required>
+                  <Input id="reg-phone" required type="tel" inputMode="tel" autoComplete="tel" placeholder="+971 50 123 4567" value={phone} onChange={(e) => setPhone(e.target.value)} />
                 </Field>
                 <div className="mt-4 grid gap-4 sm:grid-cols-2">
                   <Field label={t("common.emirate")} htmlFor="reg-emirate" required>
@@ -176,12 +103,9 @@ export default function RegisterPage() {
                     I'd like to volunteer as IPF Yuva — I can join events as a volunteer, not just as a member.
                   </Label>
                 </div>
-                <div className="mt-5 flex flex-wrap gap-3">
+                <div className="mt-5">
                   <Button type="submit" disabled={busy}>
                     {busy ? "Creating account…" : "Create my account"}
-                  </Button>
-                  <Button type="button" variant="ghost" disabled={busy} onClick={() => setStep("phone")}>
-                    Back / re-verify number
                   </Button>
                 </div>
               </form>
@@ -203,7 +127,7 @@ export default function RegisterPage() {
 
           <Card tone="ivory" title="What happens next">
             <p className="text-sm leading-7 text-[var(--ipf-muted)]">
-              This form is your membership application — there's no separate manual step. Once your mobile number is verified and your details are saved, your account is created immediately with your own membership number and digital ID.
+              This form is your membership application — there's no separate manual step. Once your details are saved, your account is created immediately with your own membership number and digital ID.
             </p>
             <p className="mt-3 text-sm leading-7 text-[var(--ipf-muted)]">
               Already have an account?{" "}
