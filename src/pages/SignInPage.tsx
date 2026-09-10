@@ -9,14 +9,39 @@ import { Container } from "../components/ui/Container";
 import { Field } from "../components/ui/Field";
 import { Input } from "../components/ui/Input";
 import { Section } from "../components/ui/Section";
+import { SegmentedTabs } from "../components/ui/Tabs";
 import { useLocale } from "../i18n/LocaleProvider";
 import { api } from "../lib/api";
 import { requireSupabaseAuth, supabaseAuth } from "../lib/supabase";
 
+type SignInTab = "member" | "yuva" | "admin";
+
+const tabCopy: Record<SignInTab, { eyebrow: string; title: string; description: string; cardTitle: string }> = {
+  member: {
+    eyebrow: "Members",
+    title: "Member sign in",
+    description: "Sign in to view your digital ID, event registrations and volunteer hours.",
+    cardTitle: "Sign in as a member",
+  },
+  yuva: {
+    eyebrow: "IPF Yuva",
+    title: "Yuva volunteer sign in",
+    description: "Same account as members — sign in to manage your volunteer duty and hours.",
+    cardTitle: "Sign in as an IPF Yuva volunteer",
+  },
+  admin: {
+    eyebrow: "Administration",
+    title: "Administrator sign in",
+    description: "For super, chapter and council administrators managing the platform.",
+    cardTitle: "Sign in as an administrator",
+  },
+};
+
 /** The one sign-in form for the whole site — members, Yuva volunteers, and administrators all
- * authenticate here with the same Supabase Auth login. Which experience they land in (the member
- * portal or the admin panel) is detected after authenticating, not chosen up front — nobody needs
- * to know in advance "which kind" of account they have. */
+ * authenticate here with the same Supabase Auth login. The tab switch only sets expectations and
+ * points the "register" link the right way — after credentials are verified, the destination
+ * (member portal vs admin panel) is always detected from the account itself, so picking the
+ * "wrong" tab by mistake still lands someone in the right place rather than locking them out. */
 export default function SignInPage() {
   const { t } = useLocale();
   const { member, ready } = useMember();
@@ -26,6 +51,7 @@ export default function SignInPage() {
   // URL from a query param, which would make this an open redirect.
   const rawNext = params.get("next") ?? "";
   const next = rawNext.startsWith("/") && !rawNext.startsWith("//") ? rawNext : "";
+  const [tab, setTab] = useState<SignInTab>(next.startsWith("/admin") ? "admin" : "member");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [status, setStatus] = useState("");
@@ -80,19 +106,25 @@ export default function SignInPage() {
     }
   }
 
+  const copy = tabCopy[tab];
+
   return (
     <>
-      <DocumentTitle title={t("page.signin.title")} />
-      <PageHero
-        eyebrow={t("page.signin.eyebrow")}
-        title={t("page.signin.title")}
-        description={t("page.signin.desc")}
-        crumbs={[{ label: t("nav.signIn") }]}
-      />
+      <DocumentTitle title={copy.title} />
+      <PageHero eyebrow={copy.eyebrow} title={copy.title} description={copy.description} crumbs={[{ label: t("nav.signIn") }]} />
       <Section tone="white">
         <Container className="max-w-lg">
-          <form onSubmit={onSubmit}>
-            <Card size="lg" title={t("page.signin.title")}>
+          <SegmentedTabs
+            value={tab}
+            onValueChange={setTab}
+            items={[
+              { value: "member", label: "Member" },
+              { value: "yuva", label: "IPF Yuva" },
+              { value: "admin", label: "Admin" },
+            ]}
+          />
+          <form className="mt-5" onSubmit={onSubmit}>
+            <Card size="lg" title={copy.cardTitle}>
               <Field label={t("common.email")} htmlFor="signin-email" required>
                 <Input id="signin-email" required type="email" autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)} />
               </Field>
@@ -107,24 +139,31 @@ export default function SignInPage() {
                 />
               </Field>
               {status ? <p className="mt-3 text-sm text-red-700">{status}</p> : null}
-              <div className="mt-5 flex flex-wrap gap-3">
+              <div className="mt-5">
                 <Button type="submit" disabled={busy}>
                   {busy ? "Signing in…" : t("nav.signIn")}
                 </Button>
-                <Button asChild variant="outline">
-                  <Link to="/register">{t("page.register.create")}</Link>
-                </Button>
               </div>
-              <p className="mt-4 text-sm text-[var(--ipf-muted)]">
-                {t("page.signin.new")}{" "}
-                <Link className="font-semibold text-[var(--ipf-navy)]" to="/register">
-                  {t("page.yuva.registerMember")}
-                </Link>{" "}
-                ·{" "}
-                <Link className="font-semibold text-[var(--ipf-navy)]" to="/register?kind=yuva">
-                  {t("page.yuva.title")}
-                </Link>
-              </p>
+              {tab === "admin" ? (
+                <p className="mt-4 text-sm text-[var(--ipf-muted)]">
+                  Administrator accounts are created by a super admin — contact yours if you need access.
+                </p>
+              ) : (
+                <p className="mt-4 text-sm text-[var(--ipf-muted)]">
+                  {t("page.signin.new")}{" "}
+                  <Link className="font-semibold text-[var(--ipf-navy)]" to={tab === "yuva" ? "/register?kind=yuva" : "/register"}>
+                    {tab === "yuva" ? t("page.yuva.title") : t("page.yuva.registerMember")}
+                  </Link>
+                  {tab === "member" ? (
+                    <>
+                      {" "}
+                      · <Link className="font-semibold text-[var(--ipf-navy)]" to="/register?kind=yuva">
+                        {t("page.yuva.title")}
+                      </Link>
+                    </>
+                  ) : null}
+                </p>
+              )}
             </Card>
           </form>
         </Container>
