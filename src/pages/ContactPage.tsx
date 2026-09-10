@@ -7,6 +7,7 @@ import { Container } from "../components/ui/Container";
 import { Section } from "../components/ui/Section";
 import { site } from "../data/site";
 import { useLocale } from "../i18n/LocaleProvider";
+import { PageExtras } from "../cms/PageExtras";
 
 export default function ContactPage() {
   const { t } = useLocale();
@@ -62,6 +63,7 @@ export default function ContactPage() {
           </aside>
         </Container>
       </Section>
+      <PageExtras page="contact" />
     </>
   );
 }

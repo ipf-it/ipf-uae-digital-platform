@@ -229,7 +229,7 @@ export function EventRsvp({ eventId, title, date, startsAt, location, body, mont
                 {t("nav.register")}
               </Link>
               {" · "}
-              <Link className="font-semibold text-[var(--ipf-navy)]" to="/sign-in">
+              <Link className="font-semibold text-[var(--ipf-navy)]" to={`/sign-in?next=${encodeURIComponent(`/events/${eventId}`)}`}>
                 {t("nav.signIn")}
               </Link>
             </p>

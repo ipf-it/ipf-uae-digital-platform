@@ -8,7 +8,10 @@ const emptyExtras = {
   events: [],
   news: [],
   support: [],
-  president: [],
+  governance: [],
+  history: [],
+  membership: [],
+  contact: [],
 } satisfies Record<CmsPageKey, CmsContent["extras"][CmsPageKey]>;
 
 export const defaultCmsContent: CmsContent = {

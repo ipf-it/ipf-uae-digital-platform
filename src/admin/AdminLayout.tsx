@@ -1,6 +1,6 @@
-import { useState, type FormEvent } from "react";
-import { NavLink, Outlet } from "react-router-dom";
-import { LayoutDashboard, ClipboardList, Layers, Inbox as InboxIcon, Users, Building2, LogOut, ExternalLink } from "lucide-react";
+import { useEffect, useState, type FormEvent } from "react";
+import { NavLink, Outlet, useLocation } from "react-router-dom";
+import { LayoutDashboard, ClipboardList, Layers, Inbox as InboxIcon, Users, Building2, LogOut, ExternalLink, Menu, X } from "lucide-react";
 import { AdminProvider, useAdmin } from "./AdminProvider";
 import { AuthScreen } from "../components/ui/AuthScreen";
 import { Field } from "../components/ui/Field";
@@ -88,6 +88,14 @@ const navItems = [
 
 function AdminShell() {
   const { admin, ready, mustChangePassword, isGlobalAdmin, signOut } = useAdmin();
+  const location = useLocation();
+  const [mobileNavOpen, setMobileNavOpen] = useState(false);
+
+  // Close the mobile nav drawer automatically whenever the route changes, instead of leaving it
+  // open and covering the page the user just navigated to.
+  useEffect(() => {
+    setMobileNavOpen(false);
+  }, [location.pathname]);
 
   if (!ready) return <PageLoader />;
   if (!admin) return <SignInScreen />;
@@ -98,11 +106,28 @@ function AdminShell() {
 
   return (
     <div className="min-h-screen bg-[var(--ipf-ivory)] lg:flex">
-      <aside className="bg-[var(--ipf-navy)] p-6 text-white lg:w-72 lg:shrink-0">
-        <p className="text-xs font-bold uppercase tracking-[0.2em] text-[var(--ipf-gold)]">IPF administration</p>
-        <h1 className="mt-3 text-xl font-bold">{admin.name}</h1>
-        <p className="mt-1 text-sm text-white/70">{scopeLabel}</p>
-        <nav className="mt-8 grid gap-1">
+      <header className="flex items-center justify-between bg-[var(--ipf-navy)] px-5 py-4 text-white lg:hidden">
+        <div className="min-w-0">
+          <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-[var(--ipf-gold)]">IPF administration</p>
+          <p className="truncate text-sm font-semibold">{admin.name}</p>
+        </div>
+        <button
+          type="button"
+          aria-label={mobileNavOpen ? "Close menu" : "Open menu"}
+          aria-expanded={mobileNavOpen}
+          onClick={() => setMobileNavOpen((value) => !value)}
+          className="flex size-11 shrink-0 items-center justify-center rounded-lg hover:bg-white/10"
+        >
+          {mobileNavOpen ? <X size={22} /> : <Menu size={22} />}
+        </button>
+      </header>
+      <aside className={cn("bg-[var(--ipf-navy)] p-6 text-white lg:block lg:w-72 lg:shrink-0", mobileNavOpen ? "block" : "hidden")}>
+        <div className="hidden lg:block">
+          <p className="text-xs font-bold uppercase tracking-[0.2em] text-[var(--ipf-gold)]">IPF administration</p>
+          <h1 className="mt-3 text-xl font-bold">{admin.name}</h1>
+        </div>
+        <p className="text-sm text-white/70 lg:mt-1">{scopeLabel}</p>
+        <nav className="mt-6 grid gap-1 lg:mt-8">
           {visibleItems.map((item) => (
             <NavLink
               key={item.to}

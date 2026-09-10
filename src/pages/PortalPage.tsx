@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from "react";
-import { Link, Navigate } from "react-router-dom";
+import { Link, Navigate, useLocation } from "react-router-dom";
 import { useMember } from "../cms/MemberProvider";
 import { DigitalIdCard } from "../components/DigitalIdCard";
 import { DocumentTitle } from "../components/layout/DocumentTitle";
@@ -17,13 +17,14 @@ export default function PortalPage() {
   const { t } = useLocale();
   const { member, ready, signOut, addHours, becomeVolunteer, registrations, volunteerShifts } = useMember();
   const toast = useToast();
+  const location = useLocation();
   const [date, setDate] = useState(() => new Date().toISOString().slice(0, 10));
   const [hours, setHours] = useState("2");
   const [activity, setActivity] = useState("");
   const [becomingVolunteer, setBecomingVolunteer] = useState(false);
 
   if (!ready) return null;
-  if (!member) return <Navigate to="/sign-in" replace />;
+  if (!member) return <Navigate to={`/sign-in?next=${encodeURIComponent(location.pathname)}`} replace />;
 
   const totalHours = member.volunteerHours.reduce((sum, item) => sum + item.hours, 0);
 

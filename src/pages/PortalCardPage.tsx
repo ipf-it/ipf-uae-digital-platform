@@ -12,7 +12,7 @@ export default function PortalCardPage() {
   const { t } = useLocale();
   const { member, ready } = useMember();
   if (!ready) return null;
-  if (!member) return <Navigate to="/sign-in" replace />;
+  if (!member) return <Navigate to="/sign-in?next=/portal/card" replace />;
 
   return (
     <>

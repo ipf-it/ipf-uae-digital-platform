@@ -3,6 +3,7 @@ import { PageHero } from "../components/layout/PageHero";
 import { Container } from "../components/ui/Container";
 import { Section } from "../components/ui/Section";
 import { useLocale } from "../i18n/LocaleProvider";
+import { PageExtras } from "../cms/PageExtras";
 
 export default function GovernancePage() {
   const { t } = useLocale();
@@ -43,6 +44,7 @@ export default function GovernancePage() {
           <p>{t("page.governance.it2")}</p>
         </Container>
       </Section>
+      <PageExtras page="governance" />
     </>
   );
 }

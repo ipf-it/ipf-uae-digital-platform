@@ -23,6 +23,7 @@ import { useLocale } from "../i18n/LocaleProvider";
 import { usePublicEvents } from "../hooks/usePublicEvents";
 import { useLeadership } from "../hooks/useOrgDirectory";
 import { markMobileIntroPlayed, shouldPlayMobileIntro } from "../lib/mobileIntro";
+import { PageExtras } from "../cms/PageExtras";
 
 export default function HomePage() {
   const { t } = useLocale();
@@ -284,6 +285,7 @@ export default function HomePage() {
           </Card>
         </Container>
       </Section>
+      <PageExtras page="home" />
     </div>
   );
 }

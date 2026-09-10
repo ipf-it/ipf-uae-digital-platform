@@ -7,6 +7,7 @@ import { Card } from "../components/ui/Card";
 import { Container } from "../components/ui/Container";
 import { Section } from "../components/ui/Section";
 import { useLocale } from "../i18n/LocaleProvider";
+import { PageExtras } from "../cms/PageExtras";
 
 export default function MembershipPage() {
   const { t } = useLocale();
@@ -58,6 +59,7 @@ export default function MembershipPage() {
           </aside>
         </Container>
       </Section>
+      <PageExtras page="membership" />
     </>
   );
 }

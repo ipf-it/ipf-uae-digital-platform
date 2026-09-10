@@ -8,6 +8,7 @@ import { Container } from "../components/ui/Container";
 import { Section } from "../components/ui/Section";
 import { eventCategories, eventEmirates } from "../data/eventCatalog";
 import { usePublicEvents } from "../hooks/usePublicEvents";
+import { PageExtras } from "../cms/PageExtras";
 import { useLocale } from "../i18n/LocaleProvider";
 import { cn } from "../lib/utils";
 
@@ -127,6 +128,7 @@ export default function EventsPage() {
           ) : null}
         </Container>
       </Section>
+      <PageExtras page="events" />
     </>
   );
 }

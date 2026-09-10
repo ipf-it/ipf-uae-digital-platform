@@ -5,6 +5,7 @@ import { Container } from "../components/ui/Container";
 import { Section } from "../components/ui/Section";
 import { historyMilestones } from "../data/platformContent";
 import { useLocale } from "../i18n/LocaleProvider";
+import { PageExtras } from "../cms/PageExtras";
 
 export default function HistoryPage() {
   const { t } = useLocale();
@@ -35,6 +36,7 @@ export default function HistoryPage() {
           </CardGrid>
         </Container>
       </Section>
+      <PageExtras page="history" />
     </>
   );
 }

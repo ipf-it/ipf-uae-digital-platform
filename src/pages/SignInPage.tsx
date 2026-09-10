@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from "react";
-import { Link, Navigate, useNavigate } from "react-router-dom";
+import { Link, Navigate, useNavigate, useSearchParams } from "react-router-dom";
 import { useMember } from "../cms/MemberProvider";
 import { DocumentTitle } from "../components/layout/DocumentTitle";
 import { PageHero } from "../components/layout/PageHero";
@@ -15,18 +15,23 @@ export default function SignInPage() {
   const { t } = useLocale();
   const { member, ready, signIn } = useMember();
   const navigate = useNavigate();
+  const [params] = useSearchParams();
+  // Only ever redirect to a same-site relative path — never follow an absolute/protocol-relative
+  // URL from a query param, which would make this an open redirect.
+  const rawNext = params.get("next") ?? "";
+  const next = rawNext.startsWith("/") && !rawNext.startsWith("//") ? rawNext : "/portal";
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [status, setStatus] = useState("");
 
-  if (ready && member) return <Navigate to="/portal" replace />;
+  if (ready && member) return <Navigate to={next} replace />;
 
   async function onSubmit(event: FormEvent) {
     event.preventDefault();
     setStatus("");
     try {
       await signIn(email, password);
-      navigate("/portal");
+      navigate(next);
     } catch (error) {
       setStatus(error instanceof Error ? error.message : "Could not sign in");
     }

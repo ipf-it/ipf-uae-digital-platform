@@ -44,7 +44,7 @@ export type CmsPerson = {
   image: string;
 };
 
-export const cmsPageKeys = ["home", "about", "gallery", "events", "news", "support", "president"] as const;
+export const cmsPageKeys = ["home", "about", "gallery", "events", "news", "support", "governance", "history", "membership", "contact"] as const;
 export type CmsPageKey = (typeof cmsPageKeys)[number];
 
 export type CmsContent = {
