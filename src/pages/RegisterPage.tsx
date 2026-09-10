@@ -16,6 +16,7 @@ import { useToast } from "../components/ui/Toast";
 import { emirates } from "../data/forms";
 import { useOrgCouncils } from "../hooks/useOrgDirectory";
 import { useLocale } from "../i18n/LocaleProvider";
+import { api } from "../lib/api";
 
 type Step = "details" | "check-email";
 
@@ -46,7 +47,15 @@ export default function RegisterPage() {
     event.preventDefault();
     setBusy(true);
     try {
-      const result = await register({ name, email, phone, emirate, homeState, isVolunteer, password });
+      // Validates the mobile number's format (accepts 05XXXXXXXX or +971XXXXXXXXX) and checks it
+      // isn't already registered *before* creating the account — otherwise a bad phone or a
+      // duplicate only surfaces as Supabase's generic "Database error saving new user", which
+      // names no field and gives no way to tell what's actually wrong.
+      const { phone: normalizedPhone } = await api<{ phone: string }>("/api/members/check-phone", {
+        method: "POST",
+        body: JSON.stringify({ phone }),
+      });
+      const result = await register({ name, email, phone: normalizedPhone, emirate, homeState, isVolunteer, password });
       if (result.needsEmailConfirmation) {
         setStep("check-email");
       } else {
@@ -54,7 +63,16 @@ export default function RegisterPage() {
         navigate("/portal");
       }
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Could not create the account");
+      const message = error instanceof Error ? error.message : "Could not create the account";
+      // Supabase's own message for this specific failure mode names no field and isn't
+      // actionable — replace it with something a real person can act on. Every other error
+      // (invalid/duplicate phone from the check above, "User already registered" from Supabase
+      // Auth itself, a weak password, etc.) is already specific and shown as-is.
+      toast.error(
+        /database error/i.test(message)
+          ? "Could not create your account. This usually means your mobile number or email is already registered — double-check your details and try again."
+          : message,
+      );
     } finally {
       setBusy(false);
     }
@@ -83,8 +101,8 @@ export default function RegisterPage() {
                 <Field className="mt-4" label={t("common.email")} htmlFor="reg-email" required>
                   <Input id="reg-email" required type="email" autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)} />
                 </Field>
-                <Field className="mt-4" label={t("common.phoneUae")} htmlFor="reg-phone" required>
-                  <Input id="reg-phone" required type="tel" inputMode="tel" autoComplete="tel" placeholder="+971 50 123 4567" value={phone} onChange={(e) => setPhone(e.target.value)} />
+                <Field className="mt-4" label={t("common.phoneUae")} htmlFor="reg-phone" hint="Either 05XXXXXXXX or +971 5XXXXXXXX" required>
+                  <Input id="reg-phone" required type="tel" inputMode="tel" autoComplete="tel" placeholder="050 123 4567 or +971 50 123 4567" value={phone} onChange={(e) => setPhone(e.target.value)} />
                 </Field>
                 <div className="mt-4 grid gap-4 sm:grid-cols-2">
                   <Field label={t("common.emirate")} htmlFor="reg-emirate" required>

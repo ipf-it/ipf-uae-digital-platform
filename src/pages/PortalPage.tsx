@@ -11,6 +11,7 @@ import { Container } from "../components/ui/Container";
 import { Field } from "../components/ui/Field";
 import { Input } from "../components/ui/Input";
 import { Section } from "../components/ui/Section";
+import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from "../components/ui/Table";
 import { Textarea } from "../components/ui/Textarea";
 import { useToast } from "../components/ui/Toast";
 import { useLocale } from "../i18n/LocaleProvider";
@@ -101,7 +102,10 @@ export default function PortalPage() {
         crumbs={[{ label: t("nav.portal") }]}
       />
       <Section tone="white">
-        <Container className="grid gap-8 lg:grid-cols-[0.9fr,1.1fr]">
+        {/* items-start: without it, CSS Grid stretches both columns to the tallest one's height,
+            and since every Card is h-full, each stacked Card below then claims that whole
+            stretched height too — the huge dead space above "Log volunteer hours" was this. */}
+        <Container className="grid items-start gap-8 lg:grid-cols-[0.9fr,1.1fr]">
           <DigitalIdCard member={member} />
           <div className="space-y-5">
             <Card title={t("page.portal.account")}>
@@ -125,7 +129,7 @@ export default function PortalPage() {
                     {becomingVolunteer ? "Updating…" : "Become an IPF Yuva volunteer"}
                   </Button>
                 ) : null}
-                <Button type="button" variant="ghost" size="sm" onClick={() => void signOut()}>
+                <Button type="button" variant="outline" size="sm" onClick={() => void signOut()}>
                   {t("common.signOut")}
                 </Button>
               </div>
@@ -157,17 +161,25 @@ export default function PortalPage() {
         <Section>
           <Container>
             <Card title={t("page.portal.myEvents")}>
-              <ul className="space-y-3 text-sm">
-                {registrations.map((item) => (
-                  <li key={`${item.eventId}-${item.registrationNo}`} className="flex justify-between gap-4 border-b border-[var(--ipf-line)] pb-3 last:border-0">
-                    <span>
-                      <span className="font-semibold text-[var(--ipf-navy)]">{item.eventTitle}</span>
-                      <span className="mt-0.5 block text-xs text-[var(--ipf-muted)]">{item.createdAt.slice(0, 10)}</span>
-                    </span>
-                    <span className="font-semibold text-[var(--ipf-green)]">{item.registrationNo}</span>
-                  </li>
-                ))}
-              </ul>
+              <Table>
+                <TableCaption>{t("page.portal.myEvents")}</TableCaption>
+                <TableHead>
+                  <TableRow>
+                    <TableHeader>Event</TableHeader>
+                    <TableHeader>Date</TableHeader>
+                    <TableHeader>Registration no.</TableHeader>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {registrations.map((item) => (
+                    <TableRow key={`${item.eventId}-${item.registrationNo}`}>
+                      <TableCell className="font-semibold text-[var(--ipf-navy)]">{item.eventTitle}</TableCell>
+                      <TableCell>{item.createdAt.slice(0, 10)}</TableCell>
+                      <TableCell className="font-semibold text-[var(--ipf-green)]">{item.registrationNo}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
             </Card>
           </Container>
         </Section>
@@ -176,14 +188,23 @@ export default function PortalPage() {
         <Section>
           <Container>
             <Card title={t("page.portal.myShifts")}>
-              <ul className="space-y-3 text-sm">
-                {volunteerShifts.map((item) => (
-                  <li key={`${item.eventId}-${item.status}`} className="flex justify-between gap-4 border-b border-[var(--ipf-line)] pb-3 last:border-0">
-                    <span className="font-semibold text-[var(--ipf-navy)]">{item.eventTitle}</span>
-                    <span className="font-semibold text-[var(--ipf-green)]">{item.status}</span>
-                  </li>
-                ))}
-              </ul>
+              <Table>
+                <TableCaption>{t("page.portal.myShifts")}</TableCaption>
+                <TableHead>
+                  <TableRow>
+                    <TableHeader>Event</TableHeader>
+                    <TableHeader>Status</TableHeader>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {volunteerShifts.map((item) => (
+                    <TableRow key={`${item.eventId}-${item.status}`}>
+                      <TableCell className="font-semibold text-[var(--ipf-navy)]">{item.eventTitle}</TableCell>
+                      <TableCell className="font-semibold text-[var(--ipf-green)]">{item.status}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
             </Card>
           </Container>
         </Section>
@@ -192,17 +213,25 @@ export default function PortalPage() {
         <Section>
           <Container>
             <Card title={t("page.portal.recent")}>
-              <ul className="space-y-3 text-sm">
-                {member.volunteerHours.slice(0, 12).map((item) => (
-                  <li key={item.id} className="flex justify-between gap-4 border-b border-[var(--ipf-line)] pb-3 last:border-0">
-                    <span>
-                      <span className="font-semibold text-[var(--ipf-navy)]">{item.activity}</span>
-                      <span className="mt-0.5 block text-xs text-[var(--ipf-muted)]">{item.date}</span>
-                    </span>
-                    <span className="font-semibold text-[var(--ipf-green)]">{item.hours}h</span>
-                  </li>
-                ))}
-              </ul>
+              <Table>
+                <TableCaption>{t("page.portal.recent")}</TableCaption>
+                <TableHead>
+                  <TableRow>
+                    <TableHeader>Activity</TableHeader>
+                    <TableHeader>Date</TableHeader>
+                    <TableHeader>Hours</TableHeader>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {member.volunteerHours.slice(0, 12).map((item) => (
+                    <TableRow key={item.id}>
+                      <TableCell className="font-semibold text-[var(--ipf-navy)]">{item.activity}</TableCell>
+                      <TableCell>{item.date}</TableCell>
+                      <TableCell className="font-semibold text-[var(--ipf-green)]">{item.hours}h</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
             </Card>
           </Container>
         </Section>
@@ -232,17 +261,29 @@ export default function PortalPage() {
             ) : supportRequests.length === 0 ? (
               <p className="mt-4 text-sm text-[var(--ipf-muted)]">You haven't sent any requests yet.</p>
             ) : (
-              <ul className="mt-4 space-y-3 text-sm">
-                {supportRequests.map((item) => (
-                  <li key={item.id} className="flex items-start justify-between gap-4 border-b border-[var(--ipf-line)] pb-3 last:border-0">
-                    <span>
-                      <span className="block text-[var(--ipf-navy)]">{item.message}</span>
-                      <span className="mt-0.5 block text-xs text-[var(--ipf-muted)]">{item.createdAt.slice(0, 10)}</span>
-                    </span>
-                    <Badge tone={supportStatusTone[item.status] ?? "paper"}>{supportStatusLabel[item.status] ?? item.status}</Badge>
-                  </li>
-                ))}
-              </ul>
+              <div className="mt-4">
+                <Table>
+                  <TableCaption>Support requests</TableCaption>
+                  <TableHead>
+                    <TableRow>
+                      <TableHeader>Date</TableHeader>
+                      <TableHeader>Message</TableHeader>
+                      <TableHeader>Status</TableHeader>
+                    </TableRow>
+                  </TableHead>
+                  <TableBody>
+                    {supportRequests.map((item) => (
+                      <TableRow key={item.id}>
+                        <TableCell>{item.createdAt.slice(0, 10)}</TableCell>
+                        <TableCell className="max-w-sm text-[var(--ipf-navy)]">{item.message}</TableCell>
+                        <TableCell>
+                          <Badge tone={supportStatusTone[item.status] ?? "paper"}>{supportStatusLabel[item.status] ?? item.status}</Badge>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
             )}
           </Card>
         </Container>
