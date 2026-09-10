@@ -247,5 +247,10 @@ alter table admin_users enable row level security;
 alter table approval_requests enable row level security;
 alter table audit_logs enable row level security;
 
+-- CREATE POLICY has no IF NOT EXISTS in Postgres, so drop-then-create to make this file safe
+-- to re-run (it errors with "policy ... already exists" otherwise, on a database where it's
+-- already been applied once).
+drop policy if exists "public read published events" on events;
 create policy "public read published events" on events for select using (published = true);
+drop policy if exists "public read site content" on site_content;
 create policy "public read site content" on site_content for select using (true);
