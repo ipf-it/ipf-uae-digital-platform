@@ -5,15 +5,16 @@ import { EventCard } from "../components/EventCard";
 import { Button } from "../components/ui/Button";
 import { Card, CardGrid } from "../components/ui/Card";
 import { Container } from "../components/ui/Container";
+import { PersonIdentity } from "../components/ui/PersonIdentity";
 import { Section } from "../components/ui/Section";
 import { StatPill } from "../components/ui/StatPill";
-import { chapterPath, emirateChapterOrder, getChapter } from "../data/orgNav";
-import { chapters } from "../data/platformContent";
+import { chapterPath } from "../data/orgNav";
 import { site } from "../data/site";
 import { useLocale } from "../i18n/LocaleProvider";
 import { useScopeStats } from "../hooks/useScopeStats";
 import { useTenantContent } from "../hooks/useTenantContent";
 import { usePublicEvents } from "../hooks/usePublicEvents";
+import { useLeadership, useOrgChapters } from "../hooks/useOrgDirectory";
 import NotFoundPage from "./NotFoundPage";
 import { chapterTheme } from "../data/orgThemes";
 import type { CSSProperties } from "react";
@@ -21,19 +22,19 @@ import type { CSSProperties } from "react";
 export default function ChapterPage() {
   const { t } = useLocale();
   const { chapterId = "" } = useParams();
-  const chapter = getChapter(chapterId);
+  const { chapters, ready: chaptersReady } = useOrgChapters();
+  const chapter = chapters.find((item) => item.id === chapterId);
   const { content: tenantContent } = useTenantContent("chapter", chapterId);
   const { stats } = useScopeStats("chapter", chapterId);
   const { events: upcomingEvents } = usePublicEvents({ tab: "upcoming", emirate: chapterId });
-  if (!chapter) return <NotFoundPage />;
+  const { leadership: officers } = useLeadership("chapter", chapterId);
+  if (chaptersReady && !chapter) return <NotFoundPage />;
+  if (!chapter) return null;
 
-  const email = chapter.email ?? site.email;
+  const email = chapter.contactEmail || site.email;
   const theme = chapterTheme(chapter.id);
   const pageStyle = { "--org-primary": theme.primary, "--org-secondary": theme.secondary, "--org-accent": theme.accent } as CSSProperties;
-  const note = t(`page.chapter.note.${chapter.id}`);
-  const peers = emirateChapterOrder
-    .map((id) => chapters.find((item) => item.id === id))
-    .filter((item): item is (typeof chapters)[number] => Boolean(item && item.id !== chapter.id));
+  const peers = chapters.filter((item) => item.id !== chapter.id);
   const highlights = tenantContent?.highlights.filter(Boolean) ?? [];
 
   return (
@@ -53,8 +54,7 @@ export default function ChapterPage() {
               <StatPill label="Volunteers" value={String(stats.volunteerCount)} />
               <StatPill label="Upcoming events" value={String(stats.upcomingEventCount)} />
             </div>
-            {tenantContent?.intro ? <p>{tenantContent.intro}</p> : <p>{t("page.chapter.intro", { name: chapter.name })}</p>}
-            {tenantContent?.intro ? null : <p>{note}</p>}
+            <p>{tenantContent?.intro || chapter.description || t("page.chapter.intro", { name: chapter.name })}</p>
             <p>{t("page.chapter.workLead")}</p>
             <ul className="list-disc space-y-2 pl-5">
               {highlights.length > 0 ? (
@@ -71,11 +71,13 @@ export default function ChapterPage() {
               <Button asChild>
                 <a href={`mailto:${email}`}>{t("page.council.writeDesk")}</a>
               </Button>
-              <Button asChild variant="outline">
-                <a href={chapter.facebook} target="_blank" rel="noreferrer">
-                  {t("common.facebook")}
-                </a>
-              </Button>
+              {chapter.facebookUrl ? (
+                <Button asChild variant="outline">
+                  <a href={chapter.facebookUrl} target="_blank" rel="noreferrer">
+                    {t("common.facebook")}
+                  </a>
+                </Button>
+              ) : null}
               <Button asChild variant="outline">
                 <Link to="/membership">{t("nav.membership")}</Link>
               </Button>
@@ -93,14 +95,24 @@ export default function ChapterPage() {
                   {email}
                 </a>
               </p>
-              <p className="mt-3 text-sm">
-                <a className="font-semibold text-[var(--ipf-green)]" href={chapter.facebook} target="_blank" rel="noreferrer">
-                  {t("common.facebook")}
-                </a>
-              </p>
+              {chapter.facebookUrl ? (
+                <p className="mt-3 text-sm">
+                  <a className="font-semibold text-[var(--ipf-green)]" href={chapter.facebookUrl} target="_blank" rel="noreferrer">
+                    {t("common.facebook")}
+                  </a>
+                </p>
+              ) : null}
             </Card>
             <Card tone="ivory" title={t("page.council.officersTitle")}>
-              <p className="text-sm leading-7 text-[var(--ipf-muted)]">{t("page.chapter.officersEmpty")}</p>
+              {officers.length > 0 ? (
+                <div className="grid gap-3">
+                  {officers.map((officer) => (
+                    <PersonIdentity key={officer.id} src={officer.personImage} alt={officer.personName} name={officer.personName} role={officer.positionTitle} />
+                  ))}
+                </div>
+              ) : (
+                <p className="text-sm leading-7 text-[var(--ipf-muted)]">{t("page.chapter.officersEmpty")}</p>
+              )}
               <p className="mt-3 text-sm">
                 <Link className="font-semibold text-[var(--ipf-green)]" to="/leadership">
                   {t("nav.leadership")}

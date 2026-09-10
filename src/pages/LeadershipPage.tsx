@@ -8,15 +8,19 @@ import { PersonIdentity } from "../components/ui/PersonIdentity";
 import { Section } from "../components/ui/Section";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../components/ui/Table";
 import { FramedPhoto } from "../components/ui/TricolorFrame";
-import { useCms } from "../cms/ContentProvider";
-import { committeeExtended, presidentMessageBody } from "../data/platformContent";
+import { presidentMessageBody } from "../data/platformContent";
+import { useLeadership } from "../hooks/useOrgDirectory";
 import { img, site } from "../data/site";
 import { useLocale } from "../i18n/LocaleProvider";
 
 export default function LeadershipPage() {
   const { t } = useLocale();
-  const { content } = useCms();
-  const leaders = content.leadership;
+  const { leadership } = useLeadership("global");
+  // Central Committee members have a photo on file; the wider extended committee (Business
+  // Council convenors, CSR/legal/media leads, etc.) doesn't — same distinction the page has
+  // always drawn, now derived from live appointment data instead of two separate hardcoded lists.
+  const committee = leadership.filter((entry) => entry.personImage);
+  const extended = leadership.filter((entry) => !entry.personImage);
 
   return (
     <>
@@ -60,9 +64,9 @@ export default function LeadershipPage() {
             {t("page.leadership.committeeBody")}
           </p>
           <CardGrid columns={2} className="mt-8">
-            {leaders.map((member) => (
-              <Card key={`${member.name}-${member.role}`} size="sm" tone="ivory">
-                <PersonIdentity src={member.image} alt={member.name} name={member.name} role={member.role} />
+            {committee.map((member) => (
+              <Card key={member.id} size="sm" tone="ivory">
+                <PersonIdentity src={member.personImage} alt={member.personName} name={member.personName} role={member.positionTitle} />
               </Card>
             ))}
           </CardGrid>
@@ -80,10 +84,10 @@ export default function LeadershipPage() {
                 </tr>
               </TableHead>
               <TableBody>
-                {committeeExtended.map((row) => (
-                  <TableRow key={`${row.role}-${row.name}`}>
-                    <TableCell className="font-medium text-[var(--ipf-navy)]">{row.role}</TableCell>
-                    <TableCell>{row.name}</TableCell>
+                {extended.map((row) => (
+                  <TableRow key={row.id}>
+                    <TableCell className="font-medium text-[var(--ipf-navy)]">{row.positionTitle}</TableCell>
+                    <TableCell>{row.personName}</TableCell>
                   </TableRow>
                 ))}
               </TableBody>

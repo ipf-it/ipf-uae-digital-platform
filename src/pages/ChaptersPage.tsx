@@ -6,19 +6,20 @@ import { PageHero } from "../components/layout/PageHero";
 import { Card, CardGrid } from "../components/ui/Card";
 import { Container } from "../components/ui/Container";
 import { Section } from "../components/ui/Section";
-import { chapterPath, getChapter } from "../data/orgNav";
-import { chapters } from "../data/platformContent";
+import { chapterPath } from "../data/orgNav";
+import { useOrgChapters } from "../hooks/useOrgDirectory";
 import { useLocale } from "../i18n/LocaleProvider";
 
 export default function ChaptersPage() {
   const { t } = useLocale();
+  const { chapters } = useOrgChapters();
   const location = useLocation();
   const navigate = useNavigate();
 
   useEffect(() => {
     const id = location.hash.replace("#", "");
-    if (id && getChapter(id)) navigate(chapterPath(id), { replace: true });
-  }, [location.hash, navigate]);
+    if (id && chapters.some((chapter) => chapter.id === id)) navigate(chapterPath(id), { replace: true });
+  }, [location.hash, navigate, chapters]);
 
   return (
     <>
@@ -40,7 +41,7 @@ export default function ChaptersPage() {
                 className="scroll-mt-28"
                 tone="ivory"
                 title={chapter.name}
-                description={t(`page.chapter.note.${chapter.id}`)}
+                description={chapter.description}
                 to={chapterPath(chapter.id)}
               />
             ))}

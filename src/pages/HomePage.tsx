@@ -21,6 +21,7 @@ import { cn } from "../lib/utils";
 import { img, site } from "../data/site";
 import { useLocale } from "../i18n/LocaleProvider";
 import { usePublicEvents } from "../hooks/usePublicEvents";
+import { useLeadership } from "../hooks/useOrgDirectory";
 import { markMobileIntroPlayed, shouldPlayMobileIntro } from "../lib/mobileIntro";
 
 export default function HomePage() {
@@ -32,7 +33,8 @@ export default function HomePage() {
     markMobileIntroPlayed();
     setIntroReady(true);
   }, []);
-  const leaders = content.leadership;
+  const { leadership } = useLeadership("global");
+  const leaders = leadership.filter((entry) => entry.personImage).map((entry) => ({ name: entry.personName, role: entry.positionTitle, image: entry.personImage }));
   const galleryPreview = content.galleryImages.slice(0, 6);
   const { events: upcomingEvents } = usePublicEvents({ tab: "upcoming" });
   const eventsPreview = upcomingEvents.slice(0, 3);

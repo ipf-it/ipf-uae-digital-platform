@@ -7,18 +7,22 @@ import { Button } from "../components/ui/Button";
 import { Card, CardGrid } from "../components/ui/Card";
 import { Container } from "../components/ui/Container";
 import { Section } from "../components/ui/Section";
-import { getCouncil, specialCouncilDirectory, stateCouncils } from "../data/orgNav";
+import { councilPath } from "../data/orgNav";
+import { useOrgCouncils } from "../hooks/useOrgDirectory";
 import { useLocale } from "../i18n/LocaleProvider";
 
 export default function CouncilsPage() {
   const { t } = useLocale();
+  const { councils } = useOrgCouncils();
+  const stateCouncils = councils.filter((council) => council.kind === "state");
+  const specialCouncils = councils.filter((council) => council.kind === "special");
   const location = useLocation();
   const navigate = useNavigate();
 
   useEffect(() => {
     const id = location.hash.replace("#", "");
-    if (id && getCouncil(id)) navigate(`/councils/${id}`, { replace: true });
-  }, [location.hash, navigate]);
+    if (id && councils.some((council) => council.id === id)) navigate(councilPath(id), { replace: true });
+  }, [location.hash, navigate, councils]);
 
   return (
     <>
@@ -42,7 +46,7 @@ export default function CouncilsPage() {
                 size="sm"
                 tone="ivory"
                 title={council.name}
-                to={council.to}
+                to={councilPath(council.id)}
               />
             ))}
           </CardGrid>
@@ -53,15 +57,15 @@ export default function CouncilsPage() {
           <h2 className="text-2xl font-bold text-[var(--ipf-navy)]">{t("nav.specialCouncils")}</h2>
           <p className="max-w-3xl text-sm leading-7 text-[var(--ipf-muted)]">{t("page.councils.specialBody")}</p>
           <CardGrid columns={2}>
-            {specialCouncilDirectory.map((council) => (
+            {specialCouncils.map((council) => (
               <Card
                 id={council.id}
                 key={council.id}
                 className="scroll-mt-28"
                 tone="ivory"
                 title={council.name}
-                description={t(`page.council.note.${council.id}`)}
-                to={council.to}
+                description={council.description}
+                to={councilPath(council.id)}
               />
             ))}
           </CardGrid>

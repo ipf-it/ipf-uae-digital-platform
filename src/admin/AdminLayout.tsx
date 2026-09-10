@@ -1,6 +1,6 @@
 import { useState, type FormEvent } from "react";
 import { NavLink, Outlet } from "react-router-dom";
-import { LayoutDashboard, ClipboardList, Layers, Inbox as InboxIcon, Users, LogOut, ExternalLink } from "lucide-react";
+import { LayoutDashboard, ClipboardList, Layers, Inbox as InboxIcon, Users, Building2, LogOut, ExternalLink } from "lucide-react";
 import { AdminProvider, useAdmin } from "./AdminProvider";
 import { AuthScreen } from "../components/ui/AuthScreen";
 import { Field } from "../components/ui/Field";
@@ -78,21 +78,23 @@ function ChangePasswordScreen() {
 }
 
 const navItems = [
-  { to: "/admin", label: "Dashboard", icon: LayoutDashboard, end: true },
-  { to: "/admin/operations", label: "Operations", icon: ClipboardList, end: false },
-  { to: "/admin/cms", label: "CMS", icon: Layers, end: false },
-  { to: "/admin/support", label: "Support", icon: InboxIcon, end: false },
-  { to: "/admin/people", label: "People", icon: Users, end: false },
+  { to: "/admin", label: "Dashboard", icon: LayoutDashboard, end: true, requiresGlobal: false },
+  { to: "/admin/operations", label: "Operations", icon: ClipboardList, end: false, requiresGlobal: false },
+  { to: "/admin/organisation", label: "Organisation", icon: Building2, end: false, requiresGlobal: true },
+  { to: "/admin/cms", label: "CMS", icon: Layers, end: false, requiresGlobal: false },
+  { to: "/admin/support", label: "Support", icon: InboxIcon, end: false, requiresGlobal: false },
+  { to: "/admin/people", label: "People", icon: Users, end: false, requiresGlobal: false },
 ];
 
 function AdminShell() {
-  const { admin, ready, mustChangePassword, signOut } = useAdmin();
+  const { admin, ready, mustChangePassword, isGlobalAdmin, signOut } = useAdmin();
 
   if (!ready) return <PageLoader />;
   if (!admin) return <SignInScreen />;
   if (mustChangePassword) return <ChangePasswordScreen />;
 
   const scopeLabel = admin.scopeType === "global" ? "All IPF UAE" : `${admin.scopeType === "chapter" ? "Chapter" : "Council"}: ${admin.scopeId}`;
+  const visibleItems = navItems.filter((item) => !item.requiresGlobal || isGlobalAdmin);
 
   return (
     <div className="min-h-screen bg-[var(--ipf-ivory)] lg:flex">
@@ -101,7 +103,7 @@ function AdminShell() {
         <h1 className="mt-3 text-xl font-bold">{admin.name}</h1>
         <p className="mt-1 text-sm text-white/70">{scopeLabel}</p>
         <nav className="mt-8 grid gap-1">
-          {navItems.map((item) => (
+          {visibleItems.map((item) => (
             <NavLink
               key={item.to}
               to={item.to}

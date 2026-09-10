@@ -13,6 +13,40 @@ const MAX_PAGE_SIZE = 100;
 const OTP_TTL_MS = 10 * 60 * 1000;
 const VERIFIED_PHONE_TTL_MS = 30 * 60 * 1000;
 
+// The 10 locale ids from src/i18n/locales.ts — kept as a plain list here (rather than importing
+// the frontend module) since this is the one place server code needs to validate a locale param.
+const SUPPORTED_LOCALES = ["en", "hi", "ml", "ta", "te", "kn", "gu", "mr", "pa", "bn"];
+
+function normalizeLocale(value: string | null) {
+  return value && SUPPORTED_LOCALES.includes(value) ? value : "en";
+}
+
+/** Merges a base row with its translation rows for the requested locale, falling back to English
+ * for any field the requested locale doesn't have a value for — same fallback semantics as the
+ * frontend's LocaleProvider.t(). `rows` is one entity's full set of _i18n rows (all locales). */
+function pickLocale<T extends Record<string, unknown>>(rows: T[], locale: string, fields: (keyof T)[]): Partial<T> {
+  const en = rows.find((row) => row.locale === "en");
+  const current = rows.find((row) => row.locale === locale);
+  const merged: Partial<T> = {};
+  for (const field of fields) {
+    merged[field] = ((current?.[field] as string) || (en?.[field] as string) || "") as T[typeof field];
+  }
+  return merged;
+}
+
+/** Reshapes a flat array of _i18n rows into { en: {...}, hi: {...} } for admin editing UIs, which
+ * need to see/edit every locale at once rather than just the one the current visitor is using. */
+function translationsMap<T extends Record<string, unknown>>(rows: T[], fields: (keyof T)[]) {
+  const map: Record<string, Partial<T>> = {};
+  for (const row of rows) {
+    const locale = row.locale as string;
+    const entry: Partial<T> = {};
+    for (const field of fields) entry[field] = row[field];
+    map[locale] = entry;
+  }
+  return map;
+}
+
 type PersonRow = {
   id: string;
   membership_no: string;
@@ -635,6 +669,240 @@ export async function handleRequest(req: AppRequest): Promise<AppResponse> {
       });
     }
 
+    if (method === "GET" && path === "/api/admin/org/chapters") {
+      const admin = await adminFromRequest(req);
+      if (!admin || !isGlobalAdmin(admin)) return json(403, { error: "Global administrator access required" });
+      const [{ data: chapters }, { data: i18n }] = await Promise.all([
+        supabase.from("chapters").select("*").order("id"),
+        supabase.from("chapters_i18n").select("*"),
+      ]);
+      const byChapter = new Map<string, Record<string, unknown>[]>();
+      for (const row of i18n ?? []) {
+        const list = byChapter.get(row.chapter_id as string) ?? [];
+        list.push(row);
+        byChapter.set(row.chapter_id as string, list);
+      }
+      return json(200, {
+        chapters: (chapters ?? []).map((chapter) => ({ ...chapter, translations: translationsMap(byChapter.get(chapter.id) ?? [], ["name", "description"]) })),
+      });
+    }
+
+    const adminChapter = path.match(/^\/api\/admin\/org\/chapters\/([^/]+)$/);
+    if ((method === "PUT" || method === "POST") && (adminChapter || path === "/api/admin/org/chapters")) {
+      const admin = await adminFromRequest(req);
+      if (!admin || !isGlobalAdmin(admin)) return json(403, { error: "Global administrator access required" });
+      const body = await readJson<{
+        id?: string;
+        emirateCode?: string;
+        establishedDate?: string | null;
+        contactEmail?: string;
+        contactPhone?: string;
+        facebookUrl?: string;
+        image?: string;
+        active?: boolean;
+        translations?: Record<string, { name?: string; description?: string }>;
+      }>(req);
+      const id = adminChapter ? decodeURIComponent(adminChapter[1]) : body.id?.trim();
+      if (!id) return json(400, { error: "A chapter id is required" });
+      const { error } = await supabase.from("chapters").upsert({
+        id,
+        emirate_code: body.emirateCode ?? "",
+        established_date: body.establishedDate || null,
+        contact_email: body.contactEmail ?? "",
+        contact_phone: body.contactPhone ?? "",
+        facebook_url: body.facebookUrl ?? "",
+        image: body.image ?? "",
+        active: body.active !== false,
+        updated_at: new Date().toISOString(),
+      });
+      if (error) throw error;
+      for (const [locale, fields] of Object.entries(body.translations ?? {})) {
+        if (!SUPPORTED_LOCALES.includes(locale)) continue;
+        await supabase.from("chapters_i18n").upsert({ chapter_id: id, locale, name: fields.name ?? "", description: fields.description ?? "" });
+      }
+      await supabase.from("audit_logs").insert({ actor_id: admin.id, action: "org.chapter.update", entity_type: "chapter", entity_id: id });
+      return json(200, { ok: true });
+    }
+
+    if (method === "GET" && path === "/api/admin/org/councils") {
+      const admin = await adminFromRequest(req);
+      if (!admin || !isGlobalAdmin(admin)) return json(403, { error: "Global administrator access required" });
+      const [{ data: councils }, { data: i18n }] = await Promise.all([
+        supabase.from("councils").select("*").order("id"),
+        supabase.from("councils_i18n").select("*"),
+      ]);
+      const byCouncil = new Map<string, Record<string, unknown>[]>();
+      for (const row of i18n ?? []) {
+        const list = byCouncil.get(row.council_id as string) ?? [];
+        list.push(row);
+        byCouncil.set(row.council_id as string, list);
+      }
+      return json(200, {
+        councils: (councils ?? []).map((council) => ({ ...council, translations: translationsMap(byCouncil.get(council.id) ?? [], ["name", "description"]) })),
+      });
+    }
+
+    const adminCouncil = path.match(/^\/api\/admin\/org\/councils\/([^/]+)$/);
+    if ((method === "PUT" || method === "POST") && (adminCouncil || path === "/api/admin/org/councils")) {
+      const admin = await adminFromRequest(req);
+      if (!admin || !isGlobalAdmin(admin)) return json(403, { error: "Global administrator access required" });
+      const body = await readJson<{
+        id?: string;
+        kind?: string;
+        region?: string;
+        contactEmail?: string;
+        image?: string;
+        active?: boolean;
+        translations?: Record<string, { name?: string; description?: string }>;
+      }>(req);
+      const id = adminCouncil ? decodeURIComponent(adminCouncil[1]) : body.id?.trim();
+      if (!id) return json(400, { error: "A council id is required" });
+      if (body.kind && !["state", "special"].includes(body.kind)) return json(400, { error: "kind must be 'state' or 'special'" });
+      const { error } = await supabase.from("councils").upsert({
+        id,
+        kind: body.kind ?? "state",
+        region: body.region ?? "",
+        contact_email: body.contactEmail ?? "",
+        image: body.image ?? "",
+        active: body.active !== false,
+        updated_at: new Date().toISOString(),
+      });
+      if (error) throw error;
+      for (const [locale, fields] of Object.entries(body.translations ?? {})) {
+        if (!SUPPORTED_LOCALES.includes(locale)) continue;
+        await supabase.from("councils_i18n").upsert({ council_id: id, locale, name: fields.name ?? "", description: fields.description ?? "" });
+      }
+      await supabase.from("audit_logs").insert({ actor_id: admin.id, action: "org.council.update", entity_type: "council", entity_id: id });
+      return json(200, { ok: true });
+    }
+
+    if (method === "GET" && path === "/api/admin/org/positions") {
+      const admin = await adminFromRequest(req);
+      if (!admin || !isGlobalAdmin(admin)) return json(403, { error: "Global administrator access required" });
+      const [{ data: positions }, { data: i18n }] = await Promise.all([
+        supabase.from("positions").select("*").order("display_order"),
+        supabase.from("positions_i18n").select("*"),
+      ]);
+      const byPosition = new Map<string, Record<string, unknown>[]>();
+      for (const row of i18n ?? []) {
+        const list = byPosition.get(row.position_id as string) ?? [];
+        list.push(row);
+        byPosition.set(row.position_id as string, list);
+      }
+      return json(200, {
+        positions: (positions ?? []).map((position) => ({ ...position, translations: translationsMap(byPosition.get(position.id) ?? [], ["title"]) })),
+      });
+    }
+
+    const adminPosition = path.match(/^\/api\/admin\/org\/positions\/([^/]+)$/);
+    if ((method === "PUT" || method === "POST") && (adminPosition || path === "/api/admin/org/positions")) {
+      const admin = await adminFromRequest(req);
+      if (!admin || !isGlobalAdmin(admin)) return json(403, { error: "Global administrator access required" });
+      const body = await readJson<{ slug?: string; level?: string; displayOrder?: number; translations?: Record<string, { title?: string }> }>(req);
+      if (!body.level || !["central", "chapter", "council"].includes(body.level)) return json(400, { error: "A valid level is required" });
+      let positionId = adminPosition ? decodeURIComponent(adminPosition[1]) : undefined;
+      if (positionId) {
+        const { error } = await supabase
+          .from("positions")
+          .update({ level: body.level, display_order: body.displayOrder ?? 0, slug: body.slug })
+          .eq("id", positionId);
+        if (error) throw error;
+      } else {
+        if (!body.slug?.trim()) return json(400, { error: "A slug is required" });
+        const { data, error } = await supabase.from("positions").insert({ slug: body.slug.trim(), level: body.level, display_order: body.displayOrder ?? 0 }).select("id").single();
+        if (error) throw error;
+        positionId = data.id;
+      }
+      for (const [locale, fields] of Object.entries(body.translations ?? {})) {
+        if (!SUPPORTED_LOCALES.includes(locale)) continue;
+        await supabase.from("positions_i18n").upsert({ position_id: positionId, locale, title: fields.title ?? "" });
+      }
+      await supabase.from("audit_logs").insert({ actor_id: admin.id, action: "org.position.update", entity_type: "position", entity_id: positionId ?? "" });
+      return json(200, { ok: true, id: positionId });
+    }
+
+    if (method === "GET" && path === "/api/admin/org/appointments") {
+      const admin = await adminFromRequest(req);
+      if (!admin || !isGlobalAdmin(admin)) return json(403, { error: "Global administrator access required" });
+      const url = new URL(req.url, "http://localhost");
+      const scopeType = url.searchParams.get("scopeType") ?? "";
+      let query = supabase.from("appointments").select("*, positions(slug, level)").order("display_order");
+      if (scopeType) query = query.eq("scope_type", scopeType);
+      const { data, error } = await query;
+      if (error) throw error;
+      return json(200, { appointments: data ?? [] });
+    }
+
+    const adminAppointment = path.match(/^\/api\/admin\/org\/appointments\/([^/]+)$/);
+    if (method === "POST" && path === "/api/admin/org/appointments") {
+      const admin = await adminFromRequest(req);
+      if (!admin || !isGlobalAdmin(admin)) return json(403, { error: "Global administrator access required" });
+      const body = await readJson<{
+        personId?: string | null;
+        personName?: string;
+        personImage?: string;
+        positionId?: string;
+        scopeType?: string;
+        scopeId?: string | null;
+        startedAt?: string | null;
+        displayOrder?: number;
+      }>(req);
+      if (!body.positionId) return json(400, { error: "A position is required" });
+      if (!body.personName?.trim() && !body.personId) return json(400, { error: "A person name or linked member is required" });
+      if (!body.scopeType || !["global", "chapter", "council"].includes(body.scopeType)) return json(400, { error: "A valid scope is required" });
+      const { data, error } = await supabase
+        .from("appointments")
+        .insert({
+          person_id: body.personId || null,
+          person_name: body.personName?.trim() ?? "",
+          person_image: body.personImage ?? "",
+          position_id: body.positionId,
+          scope_type: body.scopeType,
+          scope_id: body.scopeType === "global" ? null : body.scopeId,
+          started_at: body.startedAt || new Date().toISOString().slice(0, 10),
+          display_order: body.displayOrder ?? 0,
+        })
+        .select("id")
+        .single();
+      if (error) throw error;
+      await supabase.from("audit_logs").insert({ actor_id: admin.id, action: "org.appointment.create", entity_type: "appointment", entity_id: data.id });
+      return json(200, { ok: true, id: data.id });
+    }
+
+    if (method === "PUT" && adminAppointment) {
+      const admin = await adminFromRequest(req);
+      if (!admin || !isGlobalAdmin(admin)) return json(403, { error: "Global administrator access required" });
+      const id = decodeURIComponent(adminAppointment[1]);
+      const body = await readJson<{ personName?: string; personImage?: string; displayOrder?: number; status?: string }>(req);
+      const update: Record<string, unknown> = { updated_at: new Date().toISOString() };
+      if (body.personName !== undefined) update.person_name = body.personName;
+      if (body.personImage !== undefined) update.person_image = body.personImage;
+      if (body.displayOrder !== undefined) update.display_order = body.displayOrder;
+      if (body.status === "completed") {
+        update.status = "completed";
+        update.ended_at = new Date().toISOString().slice(0, 10);
+      } else if (body.status === "active") {
+        update.status = "active";
+        update.ended_at = null;
+      }
+      const { error } = await supabase.from("appointments").update(update).eq("id", id);
+      if (error) throw error;
+      await supabase.from("audit_logs").insert({ actor_id: admin.id, action: "org.appointment.update", entity_type: "appointment", entity_id: id });
+      return json(200, { ok: true });
+    }
+
+    if (method === "DELETE" && adminAppointment) {
+      // Soft-delete: an appointment is institutional history, not disposable data — ending it
+      // preserves the record (status='completed') rather than removing who held the position.
+      const admin = await adminFromRequest(req);
+      if (!admin || !isGlobalAdmin(admin)) return json(403, { error: "Global administrator access required" });
+      const id = decodeURIComponent(adminAppointment[1]);
+      const { error } = await supabase.from("appointments").update({ status: "completed", ended_at: new Date().toISOString().slice(0, 10) }).eq("id", id);
+      if (error) throw error;
+      await supabase.from("audit_logs").insert({ actor_id: admin.id, action: "org.appointment.end", entity_type: "appointment", entity_id: id });
+      return json(200, { ok: true });
+    }
+
     if (method === "POST" && path === "/api/admin/upload") {
       const admin = await adminFromRequest(req);
       if (!admin) return json(401, { error: "Administrator sign-in required" });
@@ -706,6 +974,82 @@ export async function handleRequest(req: AppRequest): Promise<AppResponse> {
         volunteerCount: volunteerCount.count ?? 0,
         upcomingEventCount: upcomingEventCount.count ?? 0,
       }, undefined, PUBLIC_CACHE_HEADERS);
+    }
+
+    if (method === "GET" && path === "/api/org/chapters") {
+      const locale = normalizeLocale(new URL(req.url, "http://localhost").searchParams.get("locale"));
+      const [{ data: chapters }, { data: i18n }] = await Promise.all([
+        supabase.from("chapters").select("*").eq("active", true).order("id"),
+        supabase.from("chapters_i18n").select("*"),
+      ]);
+      const byChapter = new Map<string, Record<string, unknown>[]>();
+      for (const row of i18n ?? []) {
+        const list = byChapter.get(row.chapter_id) ?? [];
+        list.push(row);
+        byChapter.set(row.chapter_id, list);
+      }
+      const result = (chapters ?? []).map((chapter) => ({
+        id: chapter.id,
+        emirateCode: chapter.emirate_code,
+        establishedDate: chapter.established_date,
+        contactEmail: chapter.contact_email,
+        contactPhone: chapter.contact_phone,
+        facebookUrl: chapter.facebook_url,
+        image: chapter.image,
+        ...pickLocale(byChapter.get(chapter.id) ?? [], locale, ["name", "description"]),
+      }));
+      return json(200, { chapters: result }, undefined, PUBLIC_CACHE_HEADERS);
+    }
+
+    if (method === "GET" && path === "/api/org/councils") {
+      const locale = normalizeLocale(new URL(req.url, "http://localhost").searchParams.get("locale"));
+      const [{ data: councils }, { data: i18n }] = await Promise.all([
+        supabase.from("councils").select("*").eq("active", true).order("id"),
+        supabase.from("councils_i18n").select("*"),
+      ]);
+      const byCouncil = new Map<string, Record<string, unknown>[]>();
+      for (const row of i18n ?? []) {
+        const list = byCouncil.get(row.council_id) ?? [];
+        list.push(row);
+        byCouncil.set(row.council_id, list);
+      }
+      const result = (councils ?? []).map((council) => ({
+        id: council.id,
+        kind: council.kind,
+        region: council.region,
+        contactEmail: council.contact_email,
+        image: council.image,
+        ...pickLocale(byCouncil.get(council.id) ?? [], locale, ["name", "description"]),
+      }));
+      return json(200, { councils: result }, undefined, PUBLIC_CACHE_HEADERS);
+    }
+
+    if (method === "GET" && path === "/api/org/leadership") {
+      const url = new URL(req.url, "http://localhost");
+      const locale = normalizeLocale(url.searchParams.get("locale"));
+      const scopeType = url.searchParams.get("scopeType") || "global";
+      const scopeId = url.searchParams.get("scopeId") ?? "";
+      let query = supabase.from("appointments").select("*").eq("status", "active").eq("scope_type", scopeType).order("display_order");
+      query = scopeType === "global" ? query.is("scope_id", null) : query.eq("scope_id", scopeId);
+      const [{ data: appointments }, { data: positionsI18n }] = await Promise.all([
+        query,
+        supabase.from("positions_i18n").select("*"),
+      ]);
+      const byPosition = new Map<string, Record<string, unknown>[]>();
+      for (const row of positionsI18n ?? []) {
+        const list = byPosition.get(row.position_id) ?? [];
+        list.push(row);
+        byPosition.set(row.position_id, list);
+      }
+      const result = (appointments ?? []).map((item) => ({
+        id: item.id,
+        personId: item.person_id,
+        personName: item.person_name,
+        personImage: item.person_image,
+        startedAt: item.started_at,
+        positionTitle: pickLocale(byPosition.get(item.position_id) ?? [], locale, ["title"]).title || "",
+      }));
+      return json(200, { leadership: result }, undefined, PUBLIC_CACHE_HEADERS);
     }
 
     if (method === "GET" && path === "/api/events") {

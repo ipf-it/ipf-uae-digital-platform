@@ -3,14 +3,16 @@ import { Link } from "react-router-dom";
 import { Search } from "lucide-react";
 import { useCms } from "../cms/ContentProvider";
 import { useLocale } from "../i18n/LocaleProvider";
-import { chapters } from "../data/platformContent";
 import { catalogSeedEvents } from "../data/eventCatalog";
-import { specialCouncils, stateCouncils } from "../data/orgNav";
+import { useLeadership, useOrgChapters, useOrgCouncils } from "../hooks/useOrgDirectory";
 import { cn } from "../lib/utils";
 
 export function SearchDialog() {
   const { t } = useLocale();
   const { content } = useCms();
+  const { chapters } = useOrgChapters();
+  const { councils } = useOrgCouncils();
+  const { leadership } = useLeadership("global");
   const [open, setOpen] = useState(false);
   const [q, setQ] = useState("");
 
@@ -28,11 +30,10 @@ export function SearchDialog() {
       ...content.news.map((item) => ({ title: item.title, to: `/news/${item.slug}`, kind: "News" })),
       ...content.eventHighlights.map((item) => ({ title: item.title, to: `/events/${item.id}`, kind: "Event" })),
       ...catalogSeedEvents.map((item) => ({ title: item.title, to: `/events/${item.id}`, kind: "Event" })),
-      ...content.leadership.map((item) => ({ title: `${item.name} — ${item.role}`, to: "/leadership", kind: "Leadership" })),
+      ...leadership.map((item) => ({ title: `${item.personName} — ${item.positionTitle}`, to: "/leadership", kind: "Leadership" })),
       ...content.galleryImages.map((item) => ({ title: item.alt, to: "/gallery", kind: "Gallery" })),
       ...chapters.map((item) => ({ title: `${item.name} ${t("nav.chapters")}`, to: `/chapters/${item.id}`, kind: t("nav.chapters") })),
-      ...stateCouncils.map((item) => ({ title: item.name, to: item.to, kind: t("nav.councils") })),
-      ...specialCouncils.map((item) => ({ title: item.name, to: item.to, kind: t("nav.councils") })),
+      ...councils.map((item) => ({ title: item.name, to: `/councils/${item.id}`, kind: t("nav.councils") })),
       { title: t("nav.councils"), to: "/councils", kind: t("nav.councils") },
       { title: t("nav.yuva"), to: "/yuva", kind: t("nav.yuva") },
       { title: t("nav.resources"), to: "/resources", kind: t("nav.resources") },
@@ -40,7 +41,7 @@ export function SearchDialog() {
       { title: t("nav.membership"), to: "/membership", kind: t("nav.join") },
     ];
     return items.filter((item) => item.title.toLowerCase().includes(query)).slice(0, 8);
-  }, [content, q, t]);
+  }, [content, q, t, chapters, councils, leadership]);
 
   return (
     <>

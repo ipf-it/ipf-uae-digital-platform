@@ -16,13 +16,12 @@ function newId() {
   return `section-${Date.now()}`;
 }
 
-type Section = "hero" | "gallery" | "news" | "leadership" | "sections";
+type Section = "hero" | "gallery" | "news" | "sections";
 
 const sectionItems: { value: Section; label: string }[] = [
   { value: "hero", label: "Home hero" },
   { value: "gallery", label: "Gallery" },
   { value: "news", label: "News" },
-  { value: "leadership", label: "Leadership" },
   { value: "sections", label: "Page sections" },
 ];
 
@@ -190,61 +189,6 @@ export default function ContentTab() {
               </div>
             </Card>
           ))}
-        </div>
-      ) : null}
-
-      {section === "leadership" ? (
-        <div className="space-y-4">
-          <p className="text-sm leading-7 text-[var(--ipf-muted)]">Central Committee photographs and roles shown on the home page and Leadership page.</p>
-          {content.leadership.map((member, index) => (
-            <Card key={`${member.name}-${index}`} size="sm">
-              <div className="grid gap-2">
-                <Input
-                  value={member.name}
-                  placeholder="Name"
-                  onChange={(e) => {
-                    const leadership = [...content.leadership];
-                    leadership[index] = { ...member, name: e.target.value };
-                    setContent({ ...content, leadership });
-                  }}
-                />
-                <Input
-                  value={member.role}
-                  placeholder="Role"
-                  onChange={(e) => {
-                    const leadership = [...content.leadership];
-                    leadership[index] = { ...member, role: e.target.value };
-                    setContent({ ...content, leadership });
-                  }}
-                />
-                <Input
-                  value={member.image}
-                  placeholder="Image path"
-                  onChange={(e) => {
-                    const leadership = [...content.leadership];
-                    leadership[index] = { ...member, image: e.target.value };
-                    setContent({ ...content, leadership });
-                  }}
-                />
-                <Input
-                  type="file"
-                  accept="image/*"
-                  onChange={(e) => {
-                    const file = e.target.files?.[0];
-                    if (file)
-                      void upload(file, (src) => {
-                        const leadership = [...content.leadership];
-                        leadership[index] = { ...member, image: src };
-                        setContent({ ...content, leadership });
-                      });
-                  }}
-                />
-              </div>
-            </Card>
-          ))}
-          <Button type="button" variant="outline" onClick={() => setContent({ ...content, leadership: [...content.leadership, { name: "", role: "", image: "" }] })}>
-            Add member
-          </Button>
         </div>
       ) : null}
 

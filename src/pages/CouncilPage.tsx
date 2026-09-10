@@ -5,14 +5,15 @@ import { EventCard } from "../components/EventCard";
 import { Button } from "../components/ui/Button";
 import { Card, CardGrid } from "../components/ui/Card";
 import { Container } from "../components/ui/Container";
+import { PersonIdentity } from "../components/ui/PersonIdentity";
 import { Section } from "../components/ui/Section";
 import { StatPill } from "../components/ui/StatPill";
-import { getCouncil, publishedCouncilPeople, specialCouncilRecords, stateCouncilRecords } from "../data/orgNav";
 import { site } from "../data/site";
 import { useLocale } from "../i18n/LocaleProvider";
 import { useScopeStats } from "../hooks/useScopeStats";
 import { useTenantContent } from "../hooks/useTenantContent";
 import { usePublicEvents } from "../hooks/usePublicEvents";
+import { useLeadership, useOrgCouncils } from "../hooks/useOrgDirectory";
 import NotFoundPage from "./NotFoundPage";
 import { councilTheme } from "../data/orgThemes";
 import { CouncilJourneyHero } from "../components/CouncilJourneyHero";
@@ -21,29 +22,26 @@ import type { CSSProperties } from "react";
 export default function CouncilPage() {
   const { t } = useLocale();
   const { councilId = "" } = useParams();
-  const council = getCouncil(councilId);
+  const { councils, ready: councilsReady } = useOrgCouncils();
+  const council = councils.find((item) => item.id === councilId);
   const { content: tenantContent } = useTenantContent("council", councilId);
   const { stats } = useScopeStats("council", councilId);
   const { events: upcomingEvents } = usePublicEvents({ tab: "upcoming", scopeType: "council", scopeId: councilId });
-  if (!council) return <NotFoundPage />;
+  const { leadership: officers } = useLeadership("council", councilId);
+  if (councilsReady && !council) return <NotFoundPage />;
+  if (!council) return null;
 
-  const people = publishedCouncilPeople(council.id);
-  const theme = councilTheme(council.id, council.region);
-  const peers = council.kind === "state" ? stateCouncilRecords : specialCouncilRecords;
-  const noteKey = `page.council.note.${council.id}`;
-  const note = t(noteKey);
+  const peers = councils.filter((item) => item.kind === council.kind && item.id !== council.id);
   const highlights = tenantContent?.highlights.filter(Boolean) ?? [];
   const intro =
     tenantContent?.intro ||
-    (council.kind === "state"
-      ? t("page.council.stateIntro", { name: council.name, state: council.region })
-      : note !== noteKey
-        ? note
-        : t("page.councils.specialBody"));
+    council.description ||
+    (council.kind === "state" ? t("page.council.stateIntro", { name: council.name, state: council.region }) : t("page.councils.specialBody"));
   const heroIntro = council.kind === "state"
     ? "Connecting our community through culture and service across the UAE."
     : "Focused community programmes connecting people across the UAE.";
 
+  const theme = councilTheme(council.id, council.region);
   const pageStyle = { "--org-primary": theme.primary, "--org-secondary": theme.secondary, "--org-accent": theme.accent } as CSSProperties;
   return (
     <div className={`council-journey-page state-council-${council.id} council-motion-${theme.motion}`} data-state-council={council.kind === "state" ? council.id : undefined} data-cultural-motif={theme.motif} style={pageStyle}>
@@ -69,16 +67,12 @@ export default function CouncilPage() {
                   <li>{t("page.council.stateWork3")}</li>
                 </>
               ) : (
-                <>
-                  <li>{t(`page.council.${council.id}Work1`)}</li>
-                  <li>{t(`page.council.${council.id}Work2`)}</li>
-                  <li>{t(`page.council.${council.id}Work3`)}</li>
-                </>
+                <li>{t("page.councils.specialBody")}</li>
               )}
             </ul>
             <div className="flex flex-wrap gap-3 pt-2">
               <Button asChild>
-                <a href={`mailto:${council.email}`}>{t("page.council.writeDesk")}</a>
+                <a href={`mailto:${council.contactEmail || site.email}`}>{t("page.council.writeDesk")}</a>
               </Button>
               <Button asChild variant="outline">
                 <Link to="/membership">{t("nav.membership")}</Link>
@@ -98,21 +92,18 @@ export default function CouncilPage() {
               <p className="text-sm leading-7 text-[var(--ipf-muted)]">{t("page.council.contactBody")}</p>
               <p className="mt-3 text-sm leading-7 text-[var(--ipf-muted)]">{site.office}</p>
               <p className="mt-3 text-sm">
-                <a className="break-all font-semibold text-[var(--ipf-navy)]" href={`mailto:${council.email}`}>
-                  {council.email}
+                <a className="break-all font-semibold text-[var(--ipf-navy)]" href={`mailto:${council.contactEmail || site.email}`}>
+                  {council.contactEmail || site.email}
                 </a>
               </p>
             </Card>
             <Card tone="ivory" title={t("page.council.officersTitle")}>
-              {people.length > 0 ? (
-                <ul className="space-y-2 text-sm leading-6 text-[var(--ipf-muted)]">
-                  {people.map((person) => (
-                    <li key={`${person.name}-${person.role}`}>
-                      <span className="font-semibold text-[var(--ipf-navy)]">{person.name}</span>
-                      <span className="block text-xs">{person.role}</span>
-                    </li>
+              {officers.length > 0 ? (
+                <div className="grid gap-3">
+                  {officers.map((officer) => (
+                    <PersonIdentity key={officer.id} src={officer.personImage} alt={officer.personName} name={officer.personName} role={officer.positionTitle} />
                   ))}
-                </ul>
+                </div>
               ) : (
                 <p className="text-sm leading-7 text-[var(--ipf-muted)]">{t("page.council.officersEmpty")}</p>
               )}
@@ -141,11 +132,9 @@ export default function CouncilPage() {
         <Container className="space-y-4">
           <h2 className="text-2xl font-bold text-[var(--ipf-navy)]">{t("page.council.other")}</h2>
           <CardGrid columns={3}>
-            {peers
-              .filter((item) => item.id !== council.id)
-              .map((item) => (
-                <Card key={item.id} size="sm" tone="ivory" to={`/councils/${item.id}`} title={item.name} />
-              ))}
+            {peers.map((item) => (
+              <Card key={item.id} size="sm" tone="ivory" to={`/councils/${item.id}`} title={item.name} />
+            ))}
           </CardGrid>
           <p className="text-sm">
             <Link className="font-semibold text-[var(--ipf-navy)]" to="/councils">

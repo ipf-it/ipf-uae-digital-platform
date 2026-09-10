@@ -14,13 +14,15 @@ import { Section } from "../components/ui/Section";
 import { SimpleSelect } from "../components/ui/Select";
 import { useToast } from "../components/ui/Toast";
 import { emirates } from "../data/forms";
-import { homeStateOptions } from "../data/orgNav";
+import { useOrgCouncils } from "../hooks/useOrgDirectory";
 import { useLocale } from "../i18n/LocaleProvider";
 
 type Step = "phone" | "code" | "details" | "check-email";
 
 export default function RegisterPage() {
   const { t } = useLocale();
+  const { councils } = useOrgCouncils();
+  const homeStateOptions = councils.filter((council) => council.kind === "state").map((council) => ({ value: council.id, label: council.region }));
   const { member, ready, requestPhoneOtp, verifyPhoneOtp, register } = useMember();
   const navigate = useNavigate();
   const toast = useToast();

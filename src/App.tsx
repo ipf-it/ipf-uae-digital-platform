@@ -38,6 +38,7 @@ const YuvaPage = lazy(() => import("./pages/YuvaPage"));
 const JobsPage = lazy(() => import("./pages/JobsPage"));
 const DashboardTab = lazy(() => import("./admin/tabs/DashboardTab"));
 const OperationsTab = lazy(() => import("./admin/tabs/OperationsTab"));
+const OrganisationTab = lazy(() => import("./admin/tabs/OrganisationTab"));
 const CmsTab = lazy(() => import("./admin/tabs/CmsTab"));
 const SupportTab = lazy(() => import("./admin/tabs/SupportTab"));
 const PeopleTab = lazy(() => import("./admin/tabs/PeopleTab"));
@@ -52,6 +53,7 @@ function App() {
         <Route path="admin" element={<AdminLayout />}>
           <Route index element={<DashboardTab />} />
           <Route path="operations" element={<OperationsTab />} />
+          <Route path="organisation" element={<OrganisationTab />} />
           <Route path="cms" element={<CmsTab />} />
           <Route path="support" element={<SupportTab />} />
           <Route path="people" element={<PeopleTab />} />
