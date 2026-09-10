@@ -1,14 +1,19 @@
 import { Link, useParams } from "react-router-dom";
 import { DocumentTitle } from "../components/layout/DocumentTitle";
 import { ChapterJourneyHero } from "../components/ChapterJourneyHero";
+import { EventCard } from "../components/EventCard";
 import { Button } from "../components/ui/Button";
 import { Card, CardGrid } from "../components/ui/Card";
 import { Container } from "../components/ui/Container";
 import { Section } from "../components/ui/Section";
+import { StatPill } from "../components/ui/StatPill";
 import { chapterPath, emirateChapterOrder, getChapter } from "../data/orgNav";
 import { chapters } from "../data/platformContent";
 import { site } from "../data/site";
 import { useLocale } from "../i18n/LocaleProvider";
+import { useScopeStats } from "../hooks/useScopeStats";
+import { useTenantContent } from "../hooks/useTenantContent";
+import { usePublicEvents } from "../hooks/usePublicEvents";
 import NotFoundPage from "./NotFoundPage";
 import { chapterTheme } from "../data/orgThemes";
 import type { CSSProperties } from "react";
@@ -17,6 +22,9 @@ export default function ChapterPage() {
   const { t } = useLocale();
   const { chapterId = "" } = useParams();
   const chapter = getChapter(chapterId);
+  const { content: tenantContent } = useTenantContent("chapter", chapterId);
+  const { stats } = useScopeStats("chapter", chapterId);
+  const { events: upcomingEvents } = usePublicEvents({ tab: "upcoming", emirate: chapterId });
   if (!chapter) return <NotFoundPage />;
 
   const email = chapter.email ?? site.email;
@@ -26,6 +34,7 @@ export default function ChapterPage() {
   const peers = emirateChapterOrder
     .map((id) => chapters.find((item) => item.id === id))
     .filter((item): item is (typeof chapters)[number] => Boolean(item && item.id !== chapter.id));
+  const highlights = tenantContent?.highlights.filter(Boolean) ?? [];
 
   return (
     <div className={`chapter-theme-page org-motion-${theme.motion}`} style={pageStyle}>
@@ -39,13 +48,24 @@ export default function ChapterPage() {
       <Section tone="white" className="chapter-theme-section chapter-theme-section--story">
         <Container className="grid gap-10 lg:grid-cols-[1.15fr,0.85fr] lg:items-start">
           <div className="space-y-5 text-sm leading-7 text-[var(--ipf-muted)]">
-            <p>{t("page.chapter.intro", { name: chapter.name })}</p>
-            <p>{note}</p>
+            <div className="grid gap-3 sm:grid-cols-3">
+              <StatPill label="Members" value={String(stats.memberCount)} />
+              <StatPill label="Volunteers" value={String(stats.volunteerCount)} />
+              <StatPill label="Upcoming events" value={String(stats.upcomingEventCount)} />
+            </div>
+            {tenantContent?.intro ? <p>{tenantContent.intro}</p> : <p>{t("page.chapter.intro", { name: chapter.name })}</p>}
+            {tenantContent?.intro ? null : <p>{note}</p>}
             <p>{t("page.chapter.workLead")}</p>
             <ul className="list-disc space-y-2 pl-5">
-              <li>{t("page.chapter.work1")}</li>
-              <li>{t("page.chapter.work2")}</li>
-              <li>{t("page.chapter.work3")}</li>
+              {highlights.length > 0 ? (
+                highlights.map((line, index) => <li key={index}>{line}</li>)
+              ) : (
+                <>
+                  <li>{t("page.chapter.work1")}</li>
+                  <li>{t("page.chapter.work2")}</li>
+                  <li>{t("page.chapter.work3")}</li>
+                </>
+              )}
             </ul>
             <div className="flex flex-wrap gap-3 pt-2">
               <Button asChild>
@@ -90,6 +110,18 @@ export default function ChapterPage() {
           </aside>
         </Container>
       </Section>
+      {upcomingEvents.length > 0 ? (
+        <Section tone="white" className="chapter-theme-section">
+          <Container className="space-y-4">
+            <h2 className="text-2xl font-bold text-[var(--ipf-navy)]">What {chapter.name} is organising</h2>
+            <CardGrid columns={3}>
+              {upcomingEvents.slice(0, 6).map((event) => (
+                <EventCard key={event.id} event={event} />
+              ))}
+            </CardGrid>
+          </Container>
+        </Section>
+      ) : null}
       <Section className="chapter-theme-section chapter-theme-section--network">
         <Container className="space-y-4">
           <h2 className="text-2xl font-bold text-[var(--ipf-navy)]">{t("page.chapter.other")}</h2>

@@ -4,12 +4,10 @@ import type { Member } from "../cms/MemberProvider";
 
 export function DigitalIdCard({ member }: { member: Member }) {
   const yuva = member.isVolunteer;
-  const payload = JSON.stringify({
-    org: "IPF UAE",
-    id: member.membershipNo,
-    name: member.name,
-    chapter: member.chapter || member.emirate,
-  });
+  // Deliberately just the membership number — an event-desk admin looks the rest up via the
+  // check-in flow (server-side, authenticated), so the code itself doesn't need to carry a copy
+  // of the member's name/chapter.
+  const payload = member.membershipNo;
 
   return (
     <div

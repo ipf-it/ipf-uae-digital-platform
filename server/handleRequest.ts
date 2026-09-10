@@ -505,9 +505,134 @@ export async function handleRequest(req: AppRequest): Promise<AppResponse> {
       const { data: approval } = await supabase.from("approval_requests").select("*").eq("id", requestId).maybeSingle();
       if (!approval) return json(404, { error: "Approval request not found" });
       await supabase.from("approval_requests").update({ status: body.decision, reviewed_by: admin.id, review_note: body.note ?? "", updated_at: new Date().toISOString() }).eq("id", requestId);
-      if (approval.entity_type === "event") await supabase.from("events").update({ workflow_status: body.decision === "approved" ? "published" : body.decision, published: body.decision === "approved", updated_at: new Date().toISOString() }).eq("id", approval.entity_id);
+      if (approval.entity_type === "event") {
+        await supabase.from("events").update({ workflow_status: body.decision === "approved" ? "published" : body.decision, published: body.decision === "approved", updated_at: new Date().toISOString() }).eq("id", approval.entity_id);
+      } else if (approval.entity_type === "tenant_content") {
+        await supabase
+          .from("tenant_content")
+          .update({ workflow_status: body.decision === "approved" ? "published" : body.decision, updated_at: new Date().toISOString() })
+          .eq("scope_type", approval.scope_type)
+          .eq("scope_id", approval.scope_id);
+      }
       await supabase.from("audit_logs").insert({ actor_id: admin.id, action: `approval.${body.decision}`, entity_type: approval.entity_type, entity_id: approval.entity_id, new_value: { note: body.note ?? "" } });
       return json(200, { ok: true });
+    }
+
+    if (method === "GET" && path === "/api/admin/tenant-content") {
+      const admin = await adminFromRequest(req);
+      if (!admin) return json(401, { error: "Administrator sign-in required" });
+      const url = new URL(req.url, "http://localhost");
+      const scopeType = isGlobalAdmin(admin) ? (url.searchParams.get("scopeType") ?? "") : admin.scope_type;
+      const scopeId = isGlobalAdmin(admin) ? (url.searchParams.get("scopeId") ?? "") : (admin.scope_id ?? "");
+      if (scopeType !== "chapter" && scopeType !== "council") return json(400, { error: "A chapter or council scope is required" });
+      if (!scopeId) return json(400, { error: "A scope id is required" });
+      const { data } = await supabase.from("tenant_content").select("*").eq("scope_type", scopeType).eq("scope_id", scopeId).maybeSingle();
+      return json(200, {
+        content: data ?? { scope_type: scopeType, scope_id: scopeId, workflow_status: "draft", intro: "", highlights: [], hero_image: "", gallery: [] },
+      });
+    }
+
+    if (method === "PUT" && path === "/api/admin/tenant-content") {
+      const admin = await adminFromRequest(req);
+      if (!admin) return json(401, { error: "Administrator sign-in required" });
+      const body = await readJson<{ scopeType?: string; scopeId?: string; intro?: string; highlights?: unknown; heroImage?: string; gallery?: unknown }>(req);
+      const scopeType = isGlobalAdmin(admin) ? body.scopeType : admin.scope_type;
+      const scopeId = isGlobalAdmin(admin) ? body.scopeId : admin.scope_id;
+      if (scopeType !== "chapter" && scopeType !== "council") return json(400, { error: "A chapter or council scope is required" });
+      if (!scopeId) return json(400, { error: "A scope id is required" });
+      // Non-global admins may only ever touch their own assigned scope; a global admin (who has
+      // no scope of their own) may touch any chapter/council via the scopeType/scopeId body fields.
+      if (!isGlobalAdmin(admin) && (admin.scope_type !== scopeType || admin.scope_id !== scopeId)) {
+        return json(403, { error: "This page is outside your assigned scope" });
+      }
+      const { data: current } = await supabase.from("tenant_content").select("*").eq("scope_type", scopeType).eq("scope_id", scopeId).maybeSingle();
+      const { data, error } = await supabase
+        .from("tenant_content")
+        .upsert(
+          {
+            scope_type: scopeType,
+            scope_id: scopeId,
+            intro: body.intro ?? current?.intro ?? "",
+            highlights: body.highlights ?? current?.highlights ?? [],
+            hero_image: body.heroImage ?? current?.hero_image ?? "",
+            gallery: body.gallery ?? current?.gallery ?? [],
+            // A non-global admin's edit always reverts to draft (even if it was previously
+            // approved/published) — mirrors PUT /api/admin/events/:id exactly.
+            workflow_status: isGlobalAdmin(admin) ? "published" : "draft",
+            updated_by: admin.id,
+            updated_at: new Date().toISOString(),
+          },
+          { onConflict: "scope_type,scope_id" },
+        )
+        .select("*")
+        .single();
+      if (error) throw error;
+      await supabase.from("audit_logs").insert({
+        actor_id: admin.id,
+        action: "tenant_content.update",
+        entity_type: "tenant_content",
+        entity_id: `${scopeType}:${scopeId}`,
+        old_value: current ?? null,
+        new_value: data,
+      });
+      return json(200, { content: data });
+    }
+
+    if (method === "POST" && path === "/api/admin/tenant-content/submit") {
+      const admin = await adminFromRequest(req);
+      if (!admin) return json(401, { error: "Administrator sign-in required" });
+      if (isGlobalAdmin(admin)) return json(400, { error: "Global administrators publish directly" });
+      const scopeType = admin.scope_type;
+      const scopeId = admin.scope_id;
+      if ((scopeType !== "chapter" && scopeType !== "council") || !scopeId) return json(400, { error: "A chapter or council scope is required" });
+      const { data: current } = await supabase.from("tenant_content").select("id").eq("scope_type", scopeType).eq("scope_id", scopeId).maybeSingle();
+      if (!current) return json(404, { error: "Save your page before submitting it for approval" });
+      await supabase.from("tenant_content").update({ workflow_status: "submitted", updated_at: new Date().toISOString() }).eq("scope_type", scopeType).eq("scope_id", scopeId);
+      const entityId = `${scopeType}:${scopeId}`;
+      const { error } = await supabase.from("approval_requests").upsert(
+        { entity_type: "tenant_content", entity_id: entityId, scope_type: scopeType, scope_id: scopeId, status: "submitted", submitted_by: admin.id, reviewed_by: null, review_note: "", updated_at: new Date().toISOString() },
+        { onConflict: "entity_type,entity_id" },
+      );
+      if (error) throw error;
+      await supabase.from("audit_logs").insert({ actor_id: admin.id, action: "tenant_content.submit", entity_type: "tenant_content", entity_id: entityId });
+      return json(200, { ok: true });
+    }
+
+    if (method === "POST" && path === "/api/admin/check-in") {
+      const admin = await adminFromRequest(req);
+      if (!admin) return json(401, { error: "Administrator sign-in required" });
+      const checkInLimit = await rateLimit("admin-check-in", clientIp(req.headers), 60, 300);
+      if (!checkInLimit.allowed) return json(429, { error: "Too many lookups. Try again shortly." });
+      const body = await readJson<{ code?: string; eventId?: string; markAttended?: boolean }>(req);
+      const code = body.code?.trim();
+      if (!code) return json(400, { error: "Enter a membership number or mobile number" });
+      // Same dual lookup (and legacy IPFM-/IPFY- tolerant regex) as /api/events/:id/register.
+      const column = /^IPF[A-Z]?-/i.test(code) ? "membership_no" : "phone";
+      const { data: person } = await supabase.from("people").select("*").eq(column, code).maybeSingle();
+      if (!person) return json(404, { error: "No member found for that ID or number" });
+      let registration: { registration_no: string; participation_as: string; status: string } | null = null;
+      let volunteer: { status: string } | null = null;
+      if (body.eventId) {
+        const [registrationRes, volunteerRes] = await Promise.all([
+          supabase.from("event_registrations").select("registration_no, participation_as, status").eq("event_id", body.eventId).eq("person_id", person.id).maybeSingle(),
+          supabase.from("event_volunteers").select("status").eq("event_id", body.eventId).eq("person_id", person.id).maybeSingle(),
+        ]);
+        registration = registrationRes.data ?? null;
+        volunteer = volunteerRes.data ?? null;
+        if (body.markAttended) {
+          await Promise.all([
+            registration ? supabase.from("event_registrations").update({ status: "attended" }).eq("event_id", body.eventId).eq("person_id", person.id) : null,
+            volunteer ? supabase.from("event_volunteers").update({ status: "attended" }).eq("event_id", body.eventId).eq("person_id", person.id) : null,
+          ]);
+          if (registration) registration = { ...registration, status: "attended" };
+          if (volunteer) volunteer = { ...volunteer, status: "attended" };
+        }
+      }
+      return json(200, {
+        member: { id: person.id, membershipNo: person.membership_no, name: person.name, emirate: person.emirate, homeState: person.home_state, isVolunteer: person.is_volunteer },
+        registration,
+        volunteer,
+      });
     }
 
     if (method === "POST" && path === "/api/admin/upload") {
@@ -548,6 +673,41 @@ export async function handleRequest(req: AppRequest): Promise<AppResponse> {
       }, undefined, PUBLIC_CACHE_HEADERS);
     }
 
+    const tenantContentPublic = path.match(/^\/api\/tenant-content\/(chapter|council)\/([^/]+)$/);
+    if (method === "GET" && tenantContentPublic) {
+      const scopeType = tenantContentPublic[1];
+      const scopeId = decodeURIComponent(tenantContentPublic[2]);
+      const { data } = await supabase
+        .from("tenant_content")
+        .select("intro, highlights, hero_image, gallery, updated_at")
+        .eq("scope_type", scopeType)
+        .eq("scope_id", scopeId)
+        .eq("workflow_status", "published")
+        .maybeSingle();
+      return json(200, { content: data ?? null }, undefined, PUBLIC_CACHE_HEADERS);
+    }
+
+    if (method === "GET" && path === "/api/public/scope-stats") {
+      const url = new URL(req.url, "http://localhost");
+      const scopeType = url.searchParams.get("scopeType") ?? "";
+      const scopeId = url.searchParams.get("scopeId")?.trim() ?? "";
+      if ((scopeType !== "chapter" && scopeType !== "council") || !scopeId) return json(400, { error: "A chapter or council scope is required" });
+      const peopleColumn = scopeType === "chapter" ? "emirate" : "home_state";
+      const todayIso = startOfToday().toISOString();
+      const [memberCount, volunteerCount, upcomingEventCount] = await Promise.all([
+        supabase.from("people").select("*", { count: "exact", head: true }).eq(peopleColumn, scopeId),
+        supabase.from("people").select("*", { count: "exact", head: true }).eq(peopleColumn, scopeId).eq("is_volunteer", true),
+        scopeType === "chapter"
+          ? supabase.from("events").select("*", { count: "exact", head: true }).eq("published", true).eq("emirate", scopeId).gte("starts_at", todayIso)
+          : supabase.from("events").select("*", { count: "exact", head: true }).eq("published", true).eq("scope_type", "council").eq("scope_id", scopeId).gte("starts_at", todayIso),
+      ]);
+      return json(200, {
+        memberCount: memberCount.count ?? 0,
+        volunteerCount: volunteerCount.count ?? 0,
+        upcomingEventCount: upcomingEventCount.count ?? 0,
+      }, undefined, PUBLIC_CACHE_HEADERS);
+    }
+
     if (method === "GET" && path === "/api/events") {
       const url = new URL(req.url, "http://localhost");
       const tab = url.searchParams.get("tab") === "past" ? "past" : "upcoming";
@@ -555,6 +715,12 @@ export async function handleRequest(req: AppRequest): Promise<AppResponse> {
       const emirate = url.searchParams.get("emirate")?.trim() ?? "";
       const free = url.searchParams.get("free") ?? "";
       const after = url.searchParams.get("after") ?? "";
+      // Chapter-scoped events already carry their chapter as `emirate` (see POST
+      // /api/admin/events), so chapter pages can keep using the `emirate` filter above.
+      // Council-scoped events always have emirate="uae" and are only distinguishable by
+      // scope_type/scope_id — this pair lets a council's public page find its own events.
+      const scopeType = url.searchParams.get("scopeType")?.trim() ?? "";
+      const scopeId = url.searchParams.get("scopeId")?.trim() ?? "";
       const limit = Math.min(Math.max(Number(url.searchParams.get("limit")) || DEFAULT_PAGE_SIZE, 1), MAX_PAGE_SIZE);
       const upcoming = tab === "upcoming";
 
@@ -567,6 +733,10 @@ export async function handleRequest(req: AppRequest): Promise<AppResponse> {
       }
       if (category && category !== "All" && (eventCategories as readonly string[]).includes(category)) query = query.eq("category", category);
       if (emirate) query = query.eq("emirate", emirate);
+      if (scopeType === "chapter" || scopeType === "council") {
+        query = query.eq("scope_type", scopeType);
+        if (scopeId) query = query.eq("scope_id", scopeId);
+      }
       if (free === "1" || free === "true") query = query.eq("is_free", true);
       query = query.order("starts_at", { ascending: upcoming }).limit(limit + 1);
 

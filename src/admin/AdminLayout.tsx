@@ -1,6 +1,6 @@
 import { useState, type FormEvent, type ReactNode } from "react";
 import { NavLink, Navigate, Outlet } from "react-router-dom";
-import { LayoutDashboard, CalendarDays, Layers, Inbox as InboxIcon, ClipboardCheck, LogOut, ExternalLink } from "lucide-react";
+import { LayoutDashboard, CalendarDays, Layers, Inbox as InboxIcon, ClipboardCheck, LogOut, ExternalLink, FileEdit, ScanLine } from "lucide-react";
 import { AdminProvider, useAdmin } from "./AdminProvider";
 import { AuthScreen } from "../components/ui/AuthScreen";
 import { Field } from "../components/ui/Field";
@@ -77,13 +77,23 @@ function ChangePasswordScreen() {
   );
 }
 
-const navItems = [
-  { to: "/admin", label: "Dashboard", icon: LayoutDashboard, end: true, requires: "any" as const },
-  { to: "/admin/events", label: "Events", icon: CalendarDays, end: false, requires: "any" as const },
-  { to: "/admin/content", label: "Content", icon: Layers, end: false, requires: "global" as const },
-  { to: "/admin/inbox", label: "Inbox", icon: InboxIcon, end: false, requires: "any" as const },
-  { to: "/admin/approvals", label: "Approvals", icon: ClipboardCheck, end: false, requires: "super" as const },
-];
+function navItems(scopeType: "global" | "chapter" | "council") {
+  return [
+    { to: "/admin", label: "Dashboard", icon: LayoutDashboard, end: true, requires: "any" as const },
+    { to: "/admin/events", label: "Events", icon: CalendarDays, end: false, requires: "any" as const },
+    { to: "/admin/content", label: "Content", icon: Layers, end: false, requires: "global" as const },
+    {
+      to: "/admin/my-page",
+      label: scopeType === "council" ? "My Council Page" : "My Chapter Page",
+      icon: FileEdit,
+      end: false,
+      requires: "scoped" as const,
+    },
+    { to: "/admin/check-in", label: "Check-in", icon: ScanLine, end: false, requires: "any" as const },
+    { to: "/admin/inbox", label: "Inbox", icon: InboxIcon, end: false, requires: "any" as const },
+    { to: "/admin/approvals", label: "Approvals", icon: ClipboardCheck, end: false, requires: "super" as const },
+  ];
+}
 
 function AdminShell() {
   const { admin, ready, mustChangePassword, isGlobalAdmin, isSuperAdmin, signOut } = useAdmin();
@@ -93,7 +103,13 @@ function AdminShell() {
   if (mustChangePassword) return <ChangePasswordScreen />;
 
   const scopeLabel = admin.scopeType === "global" ? "All IPF UAE" : `${admin.scopeType === "chapter" ? "Chapter" : "Council"}: ${admin.scopeId}`;
-  const visibleItems = navItems.filter((item) => item.requires === "any" || (item.requires === "global" && isGlobalAdmin) || (item.requires === "super" && isSuperAdmin));
+  const visibleItems = navItems(admin.scopeType).filter(
+    (item) =>
+      item.requires === "any" ||
+      (item.requires === "global" && isGlobalAdmin) ||
+      (item.requires === "scoped" && !isGlobalAdmin) ||
+      (item.requires === "super" && isSuperAdmin),
+  );
 
   return (
     <div className="min-h-screen bg-[var(--ipf-ivory)] lg:flex">
@@ -163,5 +179,11 @@ export function RequireGlobalAdmin({ children }: { children: ReactNode }) {
 export function RequireSuperAdmin({ children }: { children: ReactNode }) {
   const { isSuperAdmin } = useAdmin();
   if (!isSuperAdmin) return <Navigate to="/admin" replace />;
+  return <>{children}</>;
+}
+
+export function RequireScopedAdmin({ children }: { children: ReactNode }) {
+  const { isGlobalAdmin } = useAdmin();
+  if (isGlobalAdmin) return <Navigate to="/admin" replace />;
   return <>{children}</>;
 }

@@ -1,13 +1,18 @@
 import { Link, useParams } from "react-router-dom";
 import { DocumentTitle } from "../components/layout/DocumentTitle";
 import { CommunityLandingHero } from "../components/CommunityLandingHero";
+import { EventCard } from "../components/EventCard";
 import { Button } from "../components/ui/Button";
 import { Card, CardGrid } from "../components/ui/Card";
 import { Container } from "../components/ui/Container";
 import { Section } from "../components/ui/Section";
+import { StatPill } from "../components/ui/StatPill";
 import { getCouncil, publishedCouncilPeople, specialCouncilRecords, stateCouncilRecords } from "../data/orgNav";
 import { site } from "../data/site";
 import { useLocale } from "../i18n/LocaleProvider";
+import { useScopeStats } from "../hooks/useScopeStats";
+import { useTenantContent } from "../hooks/useTenantContent";
+import { usePublicEvents } from "../hooks/usePublicEvents";
 import NotFoundPage from "./NotFoundPage";
 import { councilTheme } from "../data/orgThemes";
 import { CouncilJourneyHero } from "../components/CouncilJourneyHero";
@@ -17,6 +22,9 @@ export default function CouncilPage() {
   const { t } = useLocale();
   const { councilId = "" } = useParams();
   const council = getCouncil(councilId);
+  const { content: tenantContent } = useTenantContent("council", councilId);
+  const { stats } = useScopeStats("council", councilId);
+  const { events: upcomingEvents } = usePublicEvents({ tab: "upcoming", scopeType: "council", scopeId: councilId });
   if (!council) return <NotFoundPage />;
 
   const people = publishedCouncilPeople(council.id);
@@ -24,12 +32,14 @@ export default function CouncilPage() {
   const peers = council.kind === "state" ? stateCouncilRecords : specialCouncilRecords;
   const noteKey = `page.council.note.${council.id}`;
   const note = t(noteKey);
+  const highlights = tenantContent?.highlights.filter(Boolean) ?? [];
   const intro =
-    council.kind === "state"
+    tenantContent?.intro ||
+    (council.kind === "state"
       ? t("page.council.stateIntro", { name: council.name, state: council.region })
       : note !== noteKey
         ? note
-        : t("page.councils.specialBody");
+        : t("page.councils.specialBody"));
   const heroIntro = council.kind === "state"
     ? "Connecting our community through culture and service across the UAE."
     : "Focused community programmes connecting people across the UAE.";
@@ -42,10 +52,17 @@ export default function CouncilPage() {
       <Section tone="white" className="council-theme-section council-theme-section--story">
         <Container className="grid gap-10 lg:grid-cols-[1.15fr,0.85fr] lg:items-start">
           <div className="space-y-5 text-sm leading-7 text-[var(--ipf-muted)]">
+            <div className="grid gap-3 sm:grid-cols-3">
+              <StatPill label="Members" value={String(stats.memberCount)} />
+              <StatPill label="Volunteers" value={String(stats.volunteerCount)} />
+              <StatPill label="Upcoming events" value={String(stats.upcomingEventCount)} />
+            </div>
             <p>{intro}</p>
             <p>{t("page.council.workLead")}</p>
             <ul className="list-disc space-y-2 pl-5">
-              {council.kind === "state" ? (
+              {highlights.length > 0 ? (
+                highlights.map((line, index) => <li key={index}>{line}</li>)
+              ) : council.kind === "state" ? (
                 <>
                   <li>{t("page.council.stateWork1", { state: council.region })}</li>
                   <li>{t("page.council.stateWork2")}</li>
@@ -108,6 +125,18 @@ export default function CouncilPage() {
           </aside>
         </Container>
       </Section>
+      {upcomingEvents.length > 0 ? (
+        <Section tone="white" className="council-theme-section">
+          <Container className="space-y-4">
+            <h2 className="text-2xl font-bold text-[var(--ipf-navy)]">What {council.name} is organising</h2>
+            <CardGrid columns={3}>
+              {upcomingEvents.slice(0, 6).map((event) => (
+                <EventCard key={event.id} event={event} />
+              ))}
+            </CardGrid>
+          </Container>
+        </Section>
+      ) : null}
       <Section className="council-theme-section council-theme-section--network">
         <Container className="space-y-4">
           <h2 className="text-2xl font-bold text-[var(--ipf-navy)]">{t("page.council.other")}</h2>

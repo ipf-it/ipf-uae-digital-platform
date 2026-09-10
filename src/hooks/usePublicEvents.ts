@@ -17,7 +17,8 @@ export function usePublicEvents(query: EventListQuery) {
     // matches usePublicEvent's single-event precedence below.
     for (const event of [...catalogSeedEvents, ...fromCms]) byId.set(event.id, event);
     return filterPublicEvents([...byId.values()], query);
-  }, [content.eventHighlights, query.tab, query.category, query.emirate, query.free]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [content.eventHighlights, query.tab, query.category, query.emirate, query.free, query.scopeType, query.scopeId]);
 
   function buildParams(after?: string | null) {
     const params = new URLSearchParams();
@@ -25,6 +26,10 @@ export function usePublicEvents(query: EventListQuery) {
     if (query.category && query.category !== "All") params.set("category", query.category);
     if (query.emirate) params.set("emirate", query.emirate);
     if (query.free) params.set("free", "1");
+    if (query.scopeType && query.scopeId) {
+      params.set("scopeType", query.scopeType);
+      params.set("scopeId", query.scopeId);
+    }
     if (after) params.set("after", after);
     return params;
   }
@@ -49,7 +54,7 @@ export function usePublicEvents(query: EventListQuery) {
       active = false;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [fallback, query.tab, query.category, query.emirate, query.free]);
+  }, [fallback, query.tab, query.category, query.emirate, query.free, query.scopeType, query.scopeId]);
 
   async function loadMore() {
     if (!nextCursor || loadingMore) return;

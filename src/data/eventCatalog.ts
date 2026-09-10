@@ -43,6 +43,11 @@ export type EventListQuery = {
   category?: string;
   emirate?: string;
   free?: string | boolean;
+  /** Council-scoped events aren't distinguishable via `emirate` (they're always tagged "uae") —
+   * this pair lets a council's public page find only its own events. Chapter pages should keep
+   * using `emirate` instead, since chapter-scoped events already carry it. */
+  scopeType?: "chapter" | "council";
+  scopeId?: string;
 };
 
 export function startOfToday() {

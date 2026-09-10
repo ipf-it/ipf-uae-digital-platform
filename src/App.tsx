@@ -2,7 +2,7 @@ import { lazy, Suspense } from "react";
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import { SiteLayout } from "./components/layout/SiteLayout";
 import { PageLoader } from "./components/layout/PageLoader";
-import { AdminLayout, RequireGlobalAdmin, RequireSuperAdmin } from "./admin/AdminLayout";
+import { AdminLayout, RequireGlobalAdmin, RequireScopedAdmin, RequireSuperAdmin } from "./admin/AdminLayout";
 import { ToastProvider } from "./components/ui/Toast";
 import HomePage from "./pages/HomePage";
 
@@ -41,6 +41,8 @@ const EventsTab = lazy(() => import("./admin/tabs/EventsTab"));
 const ContentTab = lazy(() => import("./admin/tabs/ContentTab"));
 const InboxTab = lazy(() => import("./admin/tabs/InboxTab"));
 const ApprovalsTab = lazy(() => import("./admin/tabs/ApprovalsTab"));
+const TenantContentTab = lazy(() => import("./admin/tabs/TenantContentTab"));
+const CheckInTab = lazy(() => import("./admin/tabs/CheckInTab"));
 const NotFoundPage = lazy(() => import("./pages/NotFoundPage"));
 
 function App() {
@@ -60,6 +62,15 @@ function App() {
               </RequireGlobalAdmin>
             }
           />
+          <Route
+            path="my-page"
+            element={
+              <RequireScopedAdmin>
+                <TenantContentTab />
+              </RequireScopedAdmin>
+            }
+          />
+          <Route path="check-in" element={<CheckInTab />} />
           <Route path="inbox" element={<InboxTab />} />
           <Route
             path="approvals"
