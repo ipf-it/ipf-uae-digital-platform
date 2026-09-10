@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import { api } from "../../lib/api";
+import { Button } from "../../components/ui/Button";
 import { Card } from "../../components/ui/Card";
 import { StatPill } from "../../components/ui/StatPill";
 import { useToast } from "../../components/ui/Toast";
@@ -48,6 +50,21 @@ export default function DashboardTab() {
         <StatPill label="Events" value={String(dashboard?.counts.events ?? "—")} />
         <StatPill label="People" value={String(dashboard?.counts.people ?? "—")} />
         <StatPill label="Pending approvals" value={String(dashboard?.counts.approvals ?? "—")} />
+      </div>
+
+      <div className="flex flex-wrap gap-3">
+        <Button asChild>
+          <Link to="/admin/operations">Run events</Link>
+        </Button>
+        <Button asChild variant="outline">
+          <Link to="/admin/cms">Edit content</Link>
+        </Button>
+        <Button asChild variant="outline">
+          <Link to="/admin/support">View submissions</Link>
+        </Button>
+        <Button asChild variant="outline">
+          <Link to="/admin/people">View people</Link>
+        </Button>
       </div>
 
       {isGlobalAdmin ? (

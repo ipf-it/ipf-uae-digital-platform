@@ -842,8 +842,12 @@ export async function handleRequest(req: AppRequest): Promise<AppResponse> {
         supabase.from("event_volunteers").select("*, people(name, email, membership_no, emirate, home_state), events(title)").order("created_at", { ascending: false }).limit(300),
         supabase.from("donations").select("*").order("created_at", { ascending: false }).limit(200),
       ]);
+      // inquiries only ever carries `emirate` (the public contact/support forms don't collect a
+      // home state) — a council admin's scopeColumn is "home_state", which no inquiry row has, so
+      // scoping by scopeColumn here would silently show a council admin zero inquiries ever.
+      // Inquiries aren't state-affiliated, so council admins see the same full list central does.
       const inquiryRows = (inquiries.data ?? []).filter(
-        (item) => session.role === "central" || item[scopeColumn] === session.scopeId,
+        (item) => session.role === "central" || session.scopeType === "council" || item.emirate === session.scopeId,
       );
       const registrationRows = (registrations.data ?? []).filter((item) => session.role === "central" || emails.has(String(item.email)));
       const volunteerRows = (volunteers.data ?? []).filter((item) => {
@@ -861,6 +865,7 @@ export async function handleRequest(req: AppRequest): Promise<AppResponse> {
           phone: item.phone,
           emirate: item.emirate,
           message: item.message,
+          status: item.status ?? "new",
         })),
         rsvps: registrationRows.map((item) => ({
           id: item.id,
@@ -915,6 +920,27 @@ export async function handleRequest(req: AppRequest): Promise<AppResponse> {
         peopleQuery: safeQuery,
         peopleMayBeTruncated: !safeQuery && (peopleRes.data ?? []).length >= 500,
       });
+    }
+
+    const inquiryStatus = path.match(/^\/api\/admin\/inquiries\/([^/]+)$/);
+    if (method === "PATCH" && inquiryStatus) {
+      const session = await cmsFromRequest(req);
+      if (!session) return json(401, { error: "Sign in required" });
+      const body = await readJson<{ status?: string }>(req);
+      if (!body.status || !["new", "in_progress", "resolved"].includes(body.status)) {
+        return json(400, { error: "A valid status is required" });
+      }
+      const id = decodeURIComponent(inquiryStatus[1]);
+      const { data: current } = await supabase.from("inquiries").select("id, emirate").eq("id", id).maybeSingle();
+      if (!current) return json(404, { error: "Inquiry not found" });
+      // Same scoping rule as GET /api/cms/inbox: council admins see/manage the full list (inquiries
+      // aren't state-affiliated), chapter admins only their own emirate's inquiries.
+      if (session.role !== "central" && session.scopeType !== "council" && current.emirate !== session.scopeId) {
+        return json(403, { error: "This inquiry is outside your assigned scope" });
+      }
+      const { error } = await supabase.from("inquiries").update({ status: body.status }).eq("id", id);
+      if (error) throw error;
+      return json(200, { ok: true });
     }
 
     if (method === "POST" && path === "/api/inquiries") {

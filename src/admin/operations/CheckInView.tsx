@@ -12,7 +12,7 @@ type CheckInResult = {
   volunteer: { status: string } | null;
 };
 
-export default function CheckInTab() {
+export default function CheckInView() {
   const toast = useToast();
   const [code, setCode] = useState("");
   const [eventId, setEventId] = useState("");
@@ -40,9 +40,8 @@ export default function CheckInTab() {
   return (
     <div className="space-y-6">
       <div>
-        <p className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--ipf-green)]">Event desk</p>
-        <h2 className="mt-2 text-3xl font-bold text-[var(--ipf-navy)]">Check-in</h2>
-        <p className="mt-2 max-w-2xl text-sm leading-7 text-[var(--ipf-muted)]">
+        <h3 className="text-xl font-bold text-[var(--ipf-navy)]">Check-in</h3>
+        <p className="mt-1 max-w-2xl text-sm leading-6 text-[var(--ipf-muted)]">
           Look up a member by their membership number or mobile number (scan their digital ID's QR code, or type it in), confirm their identity, and mark them attended for an event.
         </p>
       </div>

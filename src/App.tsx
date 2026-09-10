@@ -2,7 +2,7 @@ import { lazy, Suspense } from "react";
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import { SiteLayout } from "./components/layout/SiteLayout";
 import { PageLoader } from "./components/layout/PageLoader";
-import { AdminLayout, RequireGlobalAdmin, RequireScopedAdmin, RequireSuperAdmin } from "./admin/AdminLayout";
+import { AdminLayout } from "./admin/AdminLayout";
 import { ToastProvider } from "./components/ui/Toast";
 import HomePage from "./pages/HomePage";
 
@@ -37,12 +37,10 @@ const PortalPage = lazy(() => import("./pages/PortalPage"));
 const YuvaPage = lazy(() => import("./pages/YuvaPage"));
 const JobsPage = lazy(() => import("./pages/JobsPage"));
 const DashboardTab = lazy(() => import("./admin/tabs/DashboardTab"));
-const EventsTab = lazy(() => import("./admin/tabs/EventsTab"));
-const ContentTab = lazy(() => import("./admin/tabs/ContentTab"));
-const InboxTab = lazy(() => import("./admin/tabs/InboxTab"));
-const ApprovalsTab = lazy(() => import("./admin/tabs/ApprovalsTab"));
-const TenantContentTab = lazy(() => import("./admin/tabs/TenantContentTab"));
-const CheckInTab = lazy(() => import("./admin/tabs/CheckInTab"));
+const OperationsTab = lazy(() => import("./admin/tabs/OperationsTab"));
+const CmsTab = lazy(() => import("./admin/tabs/CmsTab"));
+const SupportTab = lazy(() => import("./admin/tabs/SupportTab"));
+const PeopleTab = lazy(() => import("./admin/tabs/PeopleTab"));
 const NotFoundPage = lazy(() => import("./pages/NotFoundPage"));
 
 function App() {
@@ -53,35 +51,19 @@ function App() {
       <Routes>
         <Route path="admin" element={<AdminLayout />}>
           <Route index element={<DashboardTab />} />
-          <Route path="events" element={<EventsTab />} />
-          <Route
-            path="content"
-            element={
-              <RequireGlobalAdmin>
-                <ContentTab />
-              </RequireGlobalAdmin>
-            }
-          />
-          <Route
-            path="my-page"
-            element={
-              <RequireScopedAdmin>
-                <TenantContentTab />
-              </RequireScopedAdmin>
-            }
-          />
-          <Route path="check-in" element={<CheckInTab />} />
-          <Route path="inbox" element={<InboxTab />} />
-          <Route
-            path="approvals"
-            element={
-              <RequireSuperAdmin>
-                <ApprovalsTab />
-              </RequireSuperAdmin>
-            }
-          />
+          <Route path="operations" element={<OperationsTab />} />
+          <Route path="cms" element={<CmsTab />} />
+          <Route path="support" element={<SupportTab />} />
+          <Route path="people" element={<PeopleTab />} />
+          {/* Redirects from the pre-redesign admin tab layout, so old bookmarks keep working. */}
+          <Route path="events" element={<Navigate to="/admin/operations" replace />} />
+          <Route path="check-in" element={<Navigate to="/admin/operations?tab=checkin" replace />} />
+          <Route path="approvals" element={<Navigate to="/admin/operations?tab=approvals" replace />} />
+          <Route path="content" element={<Navigate to="/admin/cms" replace />} />
+          <Route path="my-page" element={<Navigate to="/admin/cms" replace />} />
+          <Route path="inbox" element={<Navigate to="/admin/support" replace />} />
         </Route>
-        <Route path="cms" element={<Navigate to="/admin" replace />} />
+        <Route path="cms" element={<Navigate to="/admin/cms" replace />} />
         <Route element={<SiteLayout />}>
           <Route index element={<HomePage />} />
           <Route path="about" element={<AboutPage />} />
