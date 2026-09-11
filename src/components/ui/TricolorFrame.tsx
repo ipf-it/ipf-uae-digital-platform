@@ -36,7 +36,10 @@ export function FramedPhoto({
   className = "",
   imgClassName = "",
   fit = "cover",
-  loading,
+  // Below-the-fold by default (galleries, cards, leadership grids — the common case for this
+  // component); pages with a hero image that IS the page's first paint should pass loading="eager"
+  // explicitly so it isn't held back waiting for scroll.
+  loading = "lazy",
 }: FramedPhotoProps) {
   return (
     <TricolorFrame className={cn("w-full min-w-0", className)}>
@@ -44,6 +47,7 @@ export function FramedPhoto({
         src={src}
         alt={alt}
         loading={loading}
+        decoding="async"
         className={cn(
           "block h-full w-full max-w-none",
           fit === "contain"

@@ -214,6 +214,10 @@ export function ImageCarousel({
       <img
         src={slide.src}
         alt={slide.alt}
+        // Only the current slide is ever in the DOM (single <img>, src swaps on index change) —
+        // it's always the visible one, so eager+async decode is correct here, not wasteful.
+        loading="eager"
+        decoding="async"
         className={cn(
           "absolute inset-0 h-full w-full max-w-none",
           fit === "contain"

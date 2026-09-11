@@ -38,6 +38,7 @@ export default function LeadershipPage() {
               src={img.president}
               alt={`${site.president}, ${site.presidentRole}`}
               imgClassName="h-72 w-full bg-[var(--ipf-navy)] object-top"
+              loading="eager"
             />
             <figcaption className="mt-4">
               <p className="text-lg font-bold text-[var(--ipf-navy)]">{site.president}</p>

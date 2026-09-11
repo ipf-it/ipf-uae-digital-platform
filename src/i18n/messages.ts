@@ -1,3 +1,8 @@
+// This file is the source of truth for every translated string, but the app itself no longer
+// imports it directly — LocaleProvider loads the generated per-locale JSON files in ./dict/
+// instead (English eager, every other language only fetched once selected), so a visitor never
+// downloads all 10 languages' text just to read one. After editing anything below, regenerate
+// those files with `npm run i18n:build` (scripts/split-messages.mjs).
 import { localeIds, type Locale } from "./locales";
 
 function row(...parts: string[]): Record<Locale, string> {

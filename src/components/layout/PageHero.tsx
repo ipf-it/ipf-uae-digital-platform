@@ -25,7 +25,7 @@ export function PageHero({ eyebrow, title, description, crumbs = [], image, acti
       <div className="page-hero-mandala" aria-hidden="true" />
       <div className="page-hero-weave" aria-hidden="true" />
       {image ? (
-        <img src={image} alt="" className="absolute inset-0 h-full w-full object-cover object-center opacity-35" />
+        <img src={image} alt="" loading="eager" fetchPriority="high" className="absolute inset-0 h-full w-full object-cover object-center opacity-35" />
       ) : null}
       <div
         className={

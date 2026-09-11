@@ -45,7 +45,7 @@ export function PersonIdentity({
       )}
     >
       <TricolorFrame inset="sm" className={cn("shrink-0", frameWidth[size])}>
-        <img src={src} alt={alt} className={cn("w-full object-cover object-top", photoSize[size])} />
+        <img src={src} alt={alt} loading="lazy" decoding="async" className={cn("w-full object-cover object-top", photoSize[size])} />
       </TricolorFrame>
       <div className={cn("min-w-0", stacked && "mt-3")}>
         <p className={cn("font-bold leading-6 break-words", tone === "dark" ? "text-white" : "text-[var(--ipf-navy)]")}>

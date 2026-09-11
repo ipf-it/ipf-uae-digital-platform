@@ -15,7 +15,7 @@ export function EventCard({ event }: { event: PublicEvent }) {
     <article className="flex h-full min-w-0 flex-col overflow-hidden rounded-xl border border-[var(--ipf-line)] bg-[var(--ipf-paper)] shadow-[0_8px_24px_rgba(11,31,58,0.06)] transition group-hover:-translate-y-0.5 group-hover:border-[var(--ipf-navy)]/40 group-hover:shadow-[0_14px_32px_rgba(11,31,58,0.1)]">
         <div className="relative aspect-[16/10] bg-[var(--ipf-navy)]">
           {event.image ? (
-            <img src={event.image} alt={event.title} className="h-full w-full object-cover" />
+            <img src={event.image} alt={event.title} loading="lazy" decoding="async" className="h-full w-full object-cover" />
           ) : null}
           <span className="absolute left-3 top-3 rounded-full bg-[var(--ipf-navy)] px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.14em] text-white">
             {event.category}

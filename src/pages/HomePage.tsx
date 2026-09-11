@@ -155,6 +155,7 @@ export default function HomePage() {
                 <img
                   src={img.president}
                   alt={`${site.president}, ${site.presidentRole}`}
+                  decoding="async"
                   className="h-full w-full object-contain object-[center_22%] lg:absolute lg:inset-0 lg:object-cover"
                 />
                 <div className="pointer-events-none absolute inset-x-0 bottom-0 h-14 bg-gradient-to-t from-[var(--ipf-navy)] to-transparent lg:hidden" />
