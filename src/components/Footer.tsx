@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { footerGroups, socialLinks } from "../data/navigation";
 import { useLocale } from "../i18n/LocaleProvider";
+import { usePageTheme } from "../lib/PageTheme";
 import { site } from "../data/site";
 import { Container } from "./ui/Container";
 
@@ -31,8 +32,12 @@ const footerLinkKeys: Record<string, string> = {
 
 export function Footer() {
   const { t } = useLocale();
+  const { theme } = usePageTheme();
   return (
-    <footer className="site-footer relative z-10 overflow-hidden bg-[var(--ipf-navy)] text-white/80">
+    <footer
+      className="site-footer relative z-10 overflow-hidden bg-[var(--ipf-navy)] text-white/80 transition-colors duration-300"
+      style={theme ? { backgroundColor: theme.primary } : undefined}
+    >
       <div className="ipf-tricolor" />
       <Container className="grid gap-10 py-12 md:grid-cols-2 lg:grid-cols-4">
         <div>

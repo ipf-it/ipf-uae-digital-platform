@@ -7,6 +7,7 @@ import { TricolorWaves } from "../TricolorWaves";
 import { ContentProvider } from "../../cms/ContentProvider";
 import { MemberProvider } from "../../cms/MemberProvider";
 import { LocaleProvider, useLocale } from "../../i18n/LocaleProvider";
+import { PageThemeProvider } from "../../lib/PageTheme";
 import { img } from "../../data/site";
 import { markMobileIntroPlayed } from "../../lib/mobileIntro";
 import { MobileTabBar } from "./MobileTabBar";
@@ -57,7 +58,9 @@ export function SiteLayout() {
     <LocaleProvider>
       <MemberProvider>
         <ContentProvider>
-          <LayoutShell />
+          <PageThemeProvider>
+            <LayoutShell />
+          </PageThemeProvider>
         </ContentProvider>
       </MemberProvider>
     </LocaleProvider>

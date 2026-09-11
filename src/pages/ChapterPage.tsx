@@ -17,6 +17,7 @@ import { usePublicEvents } from "../hooks/usePublicEvents";
 import { useLeadership, useOrgChapters } from "../hooks/useOrgDirectory";
 import NotFoundPage from "./NotFoundPage";
 import { chapterTheme } from "../data/orgThemes";
+import { useSetPageTheme } from "../lib/PageTheme";
 import type { CSSProperties } from "react";
 
 export default function ChapterPage() {
@@ -28,11 +29,15 @@ export default function ChapterPage() {
   const { stats } = useScopeStats("chapter", chapterId);
   const { events: upcomingEvents } = usePublicEvents({ tab: "upcoming", emirate: chapterId });
   const { leadership: officers } = useLeadership("chapter", chapterId);
+  // Computed from the URL param alone (chapterTheme() falls back safely for an unknown id) so the
+  // footer picks up the right colour immediately, without waiting on the chapter list to load —
+  // and called unconditionally, before the early returns below, per the rules of hooks.
+  const theme = chapterTheme(chapterId);
+  useSetPageTheme(theme);
   if (chaptersReady && !chapter) return <NotFoundPage />;
   if (!chapter) return null;
 
   const email = chapter.contactEmail || site.email;
-  const theme = chapterTheme(chapter.id);
   const pageStyle = { "--org-primary": theme.primary, "--org-secondary": theme.secondary, "--org-accent": theme.accent } as CSSProperties;
   const peers = chapters.filter((item) => item.id !== chapter.id);
   const highlights = tenantContent?.highlights.filter(Boolean) ?? [];

@@ -16,6 +16,7 @@ import { usePublicEvents } from "../hooks/usePublicEvents";
 import { useLeadership, useOrgCouncils } from "../hooks/useOrgDirectory";
 import NotFoundPage from "./NotFoundPage";
 import { councilTheme } from "../data/orgThemes";
+import { useSetPageTheme } from "../lib/PageTheme";
 import { CouncilJourneyHero } from "../components/CouncilJourneyHero";
 import type { CSSProperties } from "react";
 
@@ -28,6 +29,11 @@ export default function CouncilPage() {
   const { stats } = useScopeStats("council", councilId);
   const { events: upcomingEvents } = usePublicEvents({ tab: "upcoming", scopeType: "council", scopeId: councilId });
   const { leadership: officers } = useLeadership("council", councilId);
+  // Computed from the URL param alone (region only affects display text, not colour) so the
+  // footer picks up the right colour immediately — called unconditionally, before the early
+  // returns below, per the rules of hooks.
+  const theme = councilTheme(councilId, council?.region ?? "");
+  useSetPageTheme(theme);
   if (councilsReady && !council) return <NotFoundPage />;
   if (!council) return null;
 
@@ -41,7 +47,6 @@ export default function CouncilPage() {
     ? "Connecting our community through culture and service across the UAE."
     : "Focused community programmes connecting people across the UAE.";
 
-  const theme = councilTheme(council.id, council.region);
   const pageStyle = { "--org-primary": theme.primary, "--org-secondary": theme.secondary, "--org-accent": theme.accent } as CSSProperties;
   return (
     <div className={`council-journey-page state-council-${council.id} council-motion-${theme.motion}`} data-state-council={council.kind === "state" ? council.id : undefined} data-cultural-motif={theme.motif} style={pageStyle}>
