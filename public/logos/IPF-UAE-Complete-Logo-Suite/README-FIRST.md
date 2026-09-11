@@ -1,37 +1,7 @@
-# IPF UAE Complete Logo Suite
+# IPF UAE Professional Logo Suite
 
-This package contains 39 unified organisational lockups:
+This replacement suite contains 39 unified identities: 8 UAE Chapters with the relevant emirate highlighted on a vector UAE map, 28 State Councils with individual vector state silhouettes, and 3 Special Councils with distinct minimal vector symbols.
 
-- 8 UAE Chapters
-- 28 State Councils
-- 3 Special Councils
+Each identity is supplied as resolution-independent SVG and 3600 × 1200 PNG in light-background, dark-background, transparent-light-use, and transparent-dark-use variants.
 
-Every logo is supplied in four usage variants:
-
-1. **light-background** — ivory presentation background
-2. **dark-background** — IPF navy presentation background
-3. **transparent-light-use** — transparent canvas for light surfaces
-4. **transparent-dark-use** — transparent canvas with a protective light panel behind the official master mark
-
-Each variant includes:
-
-- Editable, resolution-independent SVG
-- HD 2400 × 720 PNG
-
-## Usage rules
-
-- Do not redraw, recolour, stretch or crop the official IPF master mark.
-- Maintain clear space around the full lockup.
-- Use light-use assets on white or pale backgrounds.
-- Use dark-use assets on navy, black, photographic or dark backgrounds.
-- Do not extract the chapter/council name and present it as a separate emblem.
-- Obtain central approval before public rollout.
-
-## Core colours
-
-- IPF Navy: #0B1F3A
-- IPF Saffron: #F7931E
-- IPF Green: #168B3A
-- Ivory: #FFFDF8
-
-These are review assets and are not connected to the application UI.
+The official IPF master mark is preserved exactly from the source published by IPF UAE. Entity names, typography, rules, and territorial/special symbols are vector artwork and remain sharp at any SVG zoom level.
