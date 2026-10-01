@@ -15,6 +15,7 @@ type TenantContent = {
   scope_type: string;
   scope_id: string;
   workflow_status: string;
+  tagline: string;
   intro: string;
   highlights: string[];
   hero_image: string;
@@ -54,6 +55,7 @@ export default function TenantContentTab() {
       const result = await api<{ content: TenantContent }>("/api/admin/tenant-content", {
         method: "PUT",
         body: JSON.stringify({
+          tagline: content.tagline,
           intro: content.intro,
           highlights: content.highlights.map((item) => item.trim()).filter(Boolean),
           heroImage: content.hero_image,
@@ -119,6 +121,14 @@ export default function TenantContentTab() {
 
       <Card title="Introduction">
         <div className="grid gap-4">
+          <Field label="Hero tagline" htmlFor="tenant-tagline" hint="The one-line subtitle shown under your page's title, above the intro text.">
+            <Input
+              id="tenant-tagline"
+              value={content.tagline}
+              placeholder="e.g. Connecting our community through culture and service."
+              onChange={(e) => setContent({ ...content, tagline: e.target.value })}
+            />
+          </Field>
           <Field label="Intro text" htmlFor="tenant-intro">
             <Textarea
               id="tenant-intro"

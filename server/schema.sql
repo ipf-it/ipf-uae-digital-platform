@@ -6,19 +6,6 @@ create extension if not exists pgcrypto;
 create sequence if not exists ipf_member_number_seq start 1;
 create sequence if not exists ipf_yuva_number_seq start 1;
 
-create or replace function next_ipf_number(account_kind text)
-returns bigint
-language plpgsql
-security definer
-as $$
-begin
-  if account_kind = 'yuva' then
-    return nextval('ipf_yuva_number_seq');
-  end if;
-  return nextval('ipf_member_number_seq');
-end;
-$$;
-
 create table if not exists people (
   id uuid primary key default gen_random_uuid(),
   auth_user_id uuid unique references auth.users(id) on delete cascade,

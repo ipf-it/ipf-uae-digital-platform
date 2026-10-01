@@ -30,6 +30,11 @@ export type LeadershipEntry = {
   personImage: string;
   positionTitle: string;
   startedAt: string | null;
+  bio: string;
+  membershipNo: string;
+  contactPhone: string;
+  contactEmail: string;
+  socialLinks: { label: string; url: string }[];
 };
 
 /** Live, locale-aware chapter/council/leadership directory — replaces the old hardcoded

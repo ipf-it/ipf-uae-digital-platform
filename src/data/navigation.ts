@@ -64,6 +64,7 @@ export const footerGroups = [
     title: "Programmes",
     links: [
       { label: "Events", to: "/events" },
+      { label: "Activities", to: "/activities" },
       { label: "News", to: "/news" },
       { label: "Gallery", to: "/gallery" },
       { label: "Support", to: "/support" },
@@ -79,6 +80,7 @@ export const footerGroups = [
       { label: "IPF Yuva", to: "/yuva" },
       { label: "Donate", to: "/donate" },
       { label: "Member portal", to: "/portal" },
+      { label: "Sponsors", to: "/sponsors" },
       { label: "Contact", to: "/contact" },
     ],
   },

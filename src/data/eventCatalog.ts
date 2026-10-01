@@ -36,6 +36,10 @@ export type PublicEvent = {
   image: string;
   slides: { src: string; alt: string }[];
   published: boolean;
+  registrationUrl?: string;
+  capacity?: number | null;
+  venueMapUrl?: string;
+  eventContact?: string;
 };
 
 export type EventListQuery = {
@@ -100,6 +104,10 @@ export function mapEventRow(row: Record<string, unknown>): PublicEvent {
     image: slides[0]?.src ?? "",
     slides,
     published: row.published !== false,
+    registrationUrl: String(row.registration_url ?? ""),
+    capacity: typeof row.capacity === "number" ? row.capacity : null,
+    venueMapUrl: String(row.venue_map_url ?? ""),
+    eventContact: String(row.event_contact ?? ""),
   };
 }
 

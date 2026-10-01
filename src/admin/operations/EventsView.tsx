@@ -24,11 +24,15 @@ type AdminEvent = {
   slides?: { src: string; alt?: string }[];
   memberCount?: number;
   volunteerCount?: number;
+  registration_url?: string;
+  capacity?: number | null;
+  venue_map_url?: string;
+  event_contact?: string;
 };
 
 const categories = ["Community", "Cultural", "Welfare", "Sports", "Youth", "Religious", "National"];
 const statuses = ["draft", "submitted", "changes_requested", "rejected", "approved", "published"];
-const blankForm = { title: "", eventDate: "", location: "", body: "", category: "Community", slides: [] as { src: string; alt?: string }[] };
+const blankForm = { title: "", eventDate: "", location: "", body: "", category: "Community", slides: [] as { src: string; alt?: string }[], registrationUrl: "", capacity: "", venueMapUrl: "", eventContact: "" };
 
 const statusTone: Record<string, "navy" | "saffron" | "green" | "paper"> = {
   draft: "paper",
@@ -51,6 +55,8 @@ export default function EventsView() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState(blankForm);
+  const [allSponsors, setAllSponsors] = useState<{ id: string; name: string }[]>([]);
+  const [linkedSponsorIds, setLinkedSponsorIds] = useState<string[]>([]);
 
   async function load() {
     const result = await api<{ events: AdminEvent[]; nextCursor: string | null }>("/api/admin/events");
@@ -83,8 +89,41 @@ export default function EventsView() {
 
   function openEdit(item: AdminEvent) {
     setEditingId(item.id);
-    setForm({ title: item.title, eventDate: item.event_date, location: item.location, body: item.body, category: item.category, slides: item.slides ?? [] });
+    setForm({
+      title: item.title,
+      eventDate: item.event_date,
+      location: item.location,
+      body: item.body,
+      category: item.category,
+      slides: item.slides ?? [],
+      registrationUrl: item.registration_url ?? "",
+      capacity: item.capacity != null ? String(item.capacity) : "",
+      venueMapUrl: item.venue_map_url ?? "",
+      eventContact: item.event_contact ?? "",
+    });
     setDialogOpen(true);
+    if (isGlobalAdmin) {
+      void Promise.all([
+        api<{ sponsors: { id: string; name: string }[] }>("/api/admin/sponsors"),
+        api<{ sponsors: { id: string }[] }>(`/api/admin/events/${encodeURIComponent(item.id)}/sponsors`),
+      ])
+        .then(([all, linked]) => {
+          setAllSponsors(all.sponsors);
+          setLinkedSponsorIds(linked.sponsors.map((sponsor) => sponsor.id));
+        })
+        .catch(() => undefined);
+    }
+  }
+
+  async function toggleSponsor(sponsorId: string, checked: boolean) {
+    if (!editingId) return;
+    const next = checked ? [...linkedSponsorIds, sponsorId] : linkedSponsorIds.filter((id) => id !== sponsorId);
+    setLinkedSponsorIds(next);
+    try {
+      await api(`/api/admin/events/${encodeURIComponent(editingId)}/sponsors`, { method: "PUT", body: JSON.stringify({ sponsorIds: next }) });
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Could not update sponsors for this event");
+    }
   }
 
   async function saveEvent(event: FormEvent) {
@@ -93,7 +132,7 @@ export default function EventsView() {
     try {
       await api(editingId ? `/api/admin/events/${encodeURIComponent(editingId)}` : "/api/admin/events", {
         method: editingId ? "PUT" : "POST",
-        body: JSON.stringify(form),
+        body: JSON.stringify({ ...form, capacity: form.capacity.trim() ? Number(form.capacity) : null }),
       });
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Could not save event");
@@ -265,6 +304,20 @@ export default function EventsView() {
             <Field label="Description" htmlFor="event-body">
               <Textarea id="event-body" className="min-h-24" value={form.body} onChange={(e) => setForm({ ...form, body: e.target.value })} />
             </Field>
+            <Field label="Registration / RSVP link (optional)" htmlFor="event-registration-url">
+              <Input id="event-registration-url" value={form.registrationUrl} onChange={(e) => setForm({ ...form, registrationUrl: e.target.value })} placeholder="https://" />
+            </Field>
+            <div className="grid gap-4 sm:grid-cols-2">
+              <Field label="Capacity (optional)" htmlFor="event-capacity">
+                <Input id="event-capacity" type="number" min={0} value={form.capacity} onChange={(e) => setForm({ ...form, capacity: e.target.value })} />
+              </Field>
+              <Field label="Event contact (optional)" htmlFor="event-contact">
+                <Input id="event-contact" value={form.eventContact} onChange={(e) => setForm({ ...form, eventContact: e.target.value })} placeholder="Phone or email" />
+              </Field>
+            </div>
+            <Field label="Venue map link (optional)" htmlFor="event-venue-map">
+              <Input id="event-venue-map" value={form.venueMapUrl} onChange={(e) => setForm({ ...form, venueMapUrl: e.target.value })} placeholder="Google Maps link" />
+            </Field>
             <Field label="Event pictures" htmlFor="event-image">
               <Input
                 id="event-image"
@@ -277,6 +330,22 @@ export default function EventsView() {
               />
             </Field>
             {form.slides.length > 0 ? <p className="text-xs text-[var(--ipf-muted)]">{form.slides.length} image(s) attached</p> : null}
+            {editingId && isGlobalAdmin && allSponsors.length > 0 ? (
+              <Field label="Sponsors shown on this event's page" htmlFor="event-sponsors">
+                <div id="event-sponsors" className="grid gap-2 rounded-lg border border-[var(--ipf-line)] p-3">
+                  {allSponsors.map((sponsor) => (
+                    <label key={sponsor.id} className="flex items-center gap-2 text-sm text-[var(--ipf-navy)]">
+                      <input
+                        type="checkbox"
+                        checked={linkedSponsorIds.includes(sponsor.id)}
+                        onChange={(e) => void toggleSponsor(sponsor.id, e.target.checked)}
+                      />
+                      {sponsor.name}
+                    </label>
+                  ))}
+                </div>
+              </Field>
+            ) : null}
             <div className="flex justify-end gap-3">
               <Button type="button" variant="outline" onClick={() => setDialogOpen(false)}>
                 Cancel

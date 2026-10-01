@@ -22,8 +22,10 @@ import { img, site } from "../data/site";
 import { useLocale } from "../i18n/LocaleProvider";
 import { usePublicEvents } from "../hooks/usePublicEvents";
 import { useLeadership } from "../hooks/useOrgDirectory";
+import { useHomeContent } from "../hooks/useHomeContent";
 import { markMobileIntroPlayed, shouldPlayMobileIntro } from "../lib/mobileIntro";
 import { PageExtras } from "../cms/PageExtras";
+import { PageSectionRenderer } from "../components/PageSectionRenderer";
 
 export default function HomePage() {
   const { t } = useLocale();
@@ -39,6 +41,8 @@ export default function HomePage() {
   const galleryPreview = content.galleryImages.slice(0, 6);
   const { events: upcomingEvents } = usePublicEvents({ tab: "upcoming" });
   const eventsPreview = upcomingEvents.slice(0, 3);
+  const home = useHomeContent();
+  const h = (key: keyof NonNullable<typeof home>, fallbackKey: string) => home?.[key] || t(fallbackKey);
 
   return (
     <div className="home-theme-page">
@@ -59,13 +63,13 @@ export default function HomePage() {
               )}
             >
               <div className="mt-5">
-                <Badge>{t("home.badge")}</Badge>
+                <Badge>{h("hero_badge", "home.badge")}</Badge>
               </div>
               <h1 className="home-hero-title-mobile mt-4 font-bold leading-[1.15] text-white">
-                {t("home.title")}
-                <span className="mt-2 block text-xl font-semibold text-[var(--ipf-gold)]">{t("home.uae")}</span>
+                {h("hero_title", "home.title")}
+                <span className="mt-2 block text-xl font-semibold text-[var(--ipf-gold)]">{h("hero_subtitle", "home.uae")}</span>
               </h1>
-              <p className="mt-4 max-w-md text-pretty text-sm leading-7 text-white/85">{t("home.intro")}</p>
+              <p className="mt-4 max-w-md text-pretty text-sm leading-7 text-white/85">{h("hero_intro", "home.intro")}</p>
               <div className="mt-5 flex flex-wrap justify-center gap-3">
                 <Button asChild variant="gold">
                   <Link to="/membership">{t("nav.join")}</Link>
@@ -102,11 +106,11 @@ export default function HomePage() {
             <div className="max-w-5xl">
               <p className="text-xs font-bold uppercase tracking-[0.28em] text-[var(--ipf-gold)]">सेवा · संस्कृति · समुदाय</p>
               <h1 className="home-hero-title-desktop mt-5 font-bold leading-[1.04] text-white">
-                {t("home.title")}
-                <span className="mt-3 block text-2xl font-semibold tracking-wide text-[var(--ipf-gold)]">{t("home.uae")}</span>
+                {h("hero_title", "home.title")}
+                <span className="mt-3 block text-2xl font-semibold tracking-wide text-[var(--ipf-gold)]">{h("hero_subtitle", "home.uae")}</span>
               </h1>
               <div className="mt-5 h-1 w-28 bg-[linear-gradient(90deg,var(--ipf-saffron)_0_33%,#fff_33%_66%,var(--ipf-green)_66%)]" />
-              <p className="mt-5 max-w-lg text-pretty text-base leading-8 text-white/85">{t("home.intro")}</p>
+              <p className="mt-5 max-w-lg text-pretty text-base leading-8 text-white/85">{h("hero_intro", "home.intro")}</p>
               <div className="mt-6 flex flex-wrap gap-3">
                 <Button asChild variant="gold">
                   <Link to="/membership">{t("nav.joinLong")}</Link>
@@ -134,16 +138,18 @@ export default function HomePage() {
         <CommunityStats />
       </div>
 
+      <PageSectionRenderer pageId="home-extras" startTone="ivory" />
+
       <Section tone="ivory" className="py-10 sm:py-12 lg:py-14">
         <Container>
           <Card tone="navy" flush className="h-auto overflow-hidden">
             <div className="flex flex-col lg:min-h-[22rem] lg:flex-row lg:items-stretch">
               <div className="order-2 flex min-w-0 flex-1 flex-col justify-center px-5 py-7 sm:px-10 sm:py-9 lg:order-1">
                 <p className="text-xs font-bold uppercase tracking-[0.16em] text-[var(--ipf-gold)]">
-                  {t("home.presidentMsg")}
+                  {h("president_quote_title", "home.presidentMsg")}
                 </p>
                 <Quote className="mt-5" attribution={site.president}>
-                  {t("home.presidentQuote")}
+                  {h("president_quote_body", "home.presidentQuote")}
                 </Quote>
                 <div className="mt-6 flex justify-center">
                   <Button asChild variant="secondary" size="sm">
@@ -197,7 +203,7 @@ export default function HomePage() {
       <Section tone="white" className="py-10 sm:py-12 lg:py-14">
         <Container className="grid gap-8 lg:grid-cols-[1.1fr,0.9fr] lg:items-center">
           <div>
-            <SectionTitle eyebrow={t("home.whoEyebrow")} title={t("home.whoTitle")} description={t("home.whoBody")} />
+            <SectionTitle eyebrow={h("who_eyebrow", "home.whoEyebrow")} title={h("who_title", "home.whoTitle")} description={h("who_body", "home.whoBody")} />
             <div className="mt-6 flex flex-wrap gap-3">
               <Button asChild>
                 <Link to="/about">{t("home.aboutCta")}</Link>
@@ -210,8 +216,8 @@ export default function HomePage() {
           <FramedPhoto
             src={img.indiaUae}
             alt={t("page.discover.photoAlt")}
-            fit="contain"
-            imgClassName="aspect-[4/3] h-auto w-full bg-[var(--ipf-navy)]"
+            fit="cover"
+            imgClassName="aspect-[4/3] h-auto w-full"
           />
         </Container>
       </Section>
@@ -225,14 +231,14 @@ export default function HomePage() {
                 key={item.src}
                 src={item.src}
                 alt={item.alt}
-                fit="contain"
-                imgClassName="h-36 w-full bg-[var(--ipf-navy)] sm:h-44"
+                fit="cover"
+                imgClassName="h-36 w-full sm:h-44"
               />
             ))}
           </div>
           <div className="mt-6">
             <Button asChild variant="outline">
-              <Link to="/gallery">{t("home.openGallery")}</Link>
+              <Link to="/events#ipf-gallery">{t("home.openGallery")}</Link>
             </Button>
           </div>
         </Container>
@@ -268,7 +274,7 @@ export default function HomePage() {
 
       <Section tone="navy" className="py-10 sm:py-12 lg:py-14">
         <Container>
-          <Card size="lg" tone="navy" eyebrow={t("home.getInvolved")} title={t("home.joinTitle")} description={t("home.joinDesc")}>
+          <Card size="lg" tone="navy" eyebrow={h("join_eyebrow", "home.getInvolved")} title={h("join_title", "home.joinTitle")} description={h("join_desc", "home.joinDesc")}>
             <div className="flex flex-wrap gap-3">
               <Button asChild variant="gold">
                 <Link to="/membership">{t("nav.joinLong")}</Link>

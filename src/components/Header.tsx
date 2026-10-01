@@ -3,7 +3,7 @@ import { Link, NavLink, useLocation } from "react-router-dom";
 import { ChevronDown, Menu, X } from "lucide-react";
 import { useMember } from "../cms/MemberProvider";
 import { LanguageToggle } from "./LanguageToggle";
-import { primaryNav, utilityLinks } from "../data/navigation";
+import { useNav } from "../hooks/useNav";
 import { site } from "../data/site";
 import { cn } from "../lib/utils";
 import { ChaptersMegaMenu, ChaptersMobileList, CouncilsMegaMenu, CouncilsMobileList, MegaColumn, MegaLink } from "./OrgMegaMenu";
@@ -57,6 +57,7 @@ export function Header({ logoSrc }: HeaderProps) {
   const { member } = useMember();
   const { t } = useLocale();
   const { content } = useCms();
+  const { primaryNav, utilityLinks } = useNav();
   const headlines = content.news.map((item) => item.title).filter(Boolean);
   const navLabel = (label: string) => t(navKeys[label] ?? label);
   const [open, setOpen] = useState(false);

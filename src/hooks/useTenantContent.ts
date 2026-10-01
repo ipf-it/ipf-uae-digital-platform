@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { api } from "../lib/api";
 
 export type TenantContent = {
+  tagline: string;
   intro: string;
   highlights: string[];
   hero_image: string;

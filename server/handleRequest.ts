@@ -1,17 +1,47 @@
 import { randomUUID, randomInt, createHash } from "node:crypto";
 import { extname } from "node:path";
+import sharp from "sharp";
+import type { User } from "@supabase/supabase-js";
 import { ensureDatabase, getSupabase, uploadBucket } from "./db.js";
 import { chapterDesks, eventRegistrationNo } from "./crypto.js";
 import { header, json, readJson, type AppRequest, type AppResponse } from "./http.js";
 import { mapEventRow, catalogSeedEvents, isUpcomingEvent, startOfToday, eventCategories, type PublicEvent } from "../src/data/eventCatalog.js";
 import { rateLimit, clientIp } from "./rateLimit.js";
 import { sendOtpSms } from "./sms.js";
+import { autoTranslateMissingLocales } from "./translate.js";
 
 const PUBLIC_CACHE_HEADERS = { "Cache-Control": "public, s-maxage=60, stale-while-revalidate=300" };
 const DEFAULT_PAGE_SIZE = 24;
 const MAX_PAGE_SIZE = 100;
 const OTP_TTL_MS = 10 * 60 * 1000;
 const VERIFIED_PHONE_TTL_MS = 30 * 60 * 1000;
+const MAX_UPLOAD_BYTES = 15 * 1024 * 1024;
+const MAX_UPLOAD_WIDTH = 1920;
+
+// Every upload (event posters, committee photos, tenant galleries, media library) lands here
+// before hitting storage, so a 5MB phone-camera photo doesn't become the file every site visitor
+// downloads. Same resize/quality settings as scripts/optimize-images.mjs for consistency. Only
+// touches the two formats browsers actually produce from a file picker/camera roll; anything else
+// (webp, gif, svg) passes through untouched so content-type/extension never drift out of sync.
+async function compressUploadImage(buffer: Buffer, contentType: string): Promise<Buffer> {
+  const isJpeg = contentType === "image/jpeg" || contentType === "image/jpg";
+  const isPng = contentType === "image/png";
+  if (!isJpeg && !isPng) return buffer;
+  try {
+    const image = sharp(buffer, { failOn: "none" });
+    const metadata = await image.metadata();
+    let pipeline = image.rotate();
+    if (metadata.width && metadata.width > MAX_UPLOAD_WIDTH) {
+      pipeline = pipeline.resize({ width: MAX_UPLOAD_WIDTH, withoutEnlargement: true });
+    }
+    const out = isJpeg
+      ? await pipeline.jpeg({ quality: 80, mozjpeg: true }).toBuffer()
+      : await pipeline.png({ quality: 80, compressionLevel: 9, palette: true }).toBuffer();
+    return out.length < buffer.length ? out : buffer;
+  } catch {
+    return buffer;
+  }
+}
 
 // The 10 locale ids from src/i18n/locales.ts — kept as a plain list here (rather than importing
 // the frontend module) since this is the one place server code needs to validate a locale param.
@@ -96,11 +126,27 @@ function bearerToken(req: AppRequest) {
   return value.startsWith("Bearer ") ? value.slice(7).trim() : "";
 }
 
+// supabase.auth.getUser() makes a live network round-trip to the Auth server on every call — with
+// no local verification path available (this project signs JWTs with the legacy symmetric secret,
+// not the newer asymmetric keys getClaims() needs to verify offline). A warm serverless instance
+// handling several admin requests back to back (dashboard load firing multiple API calls, a quick
+// sequence of page navigations) was re-paying that round-trip every single time for the same
+// still-valid token. Cached per-instance for a short window — short enough that revoking access
+// (deactivating an admin) still takes effect within seconds, long enough to collapse the repeat
+// lookups that actually happen during one person's active session.
+const AUTH_CACHE_TTL_MS = 15_000;
+const authCache = new Map<string, { user: User | null; expiresAt: number }>();
+
 async function authenticatedUser(req: AppRequest) {
   const token = bearerToken(req);
   if (!token) return null;
+  const cached = authCache.get(token);
+  if (cached && cached.expiresAt > Date.now()) return cached.user;
   const { data, error } = await getSupabase().auth.getUser(token);
-  return error ? null : data.user;
+  const user = error ? null : data.user;
+  if (authCache.size > 500) authCache.clear();
+  authCache.set(token, { user, expiresAt: Date.now() + AUTH_CACHE_TTL_MS });
+  return user;
 }
 
 async function ensureAdminSeed() {
@@ -443,11 +489,28 @@ export async function handleRequest(req: AppRequest): Promise<AppResponse> {
         approvalsQuery = approvalsQuery.eq("scope_type", "council").eq("scope_id", scope);
         pendingQuery = pendingQuery.eq("scope_type", "council").eq("scope_id", scope);
       }
-      const [eventsCount, peopleCount, approvalsCount, pending] = await Promise.all([
+      // A scoped admin's own recent submissions, including the super admin's review note when a
+      // submission was sent back for changes or rejected — previously saved but never shown
+      // anywhere, so an admin had no way to see *why* their submission wasn't approved.
+      const mySubmissionsQuery = isGlobalAdmin(admin)
+        ? Promise.resolve({ data: [] })
+        : supabase
+            .from("approval_requests")
+            .select("id,entity_type,entity_id,status,review_note,updated_at")
+            .eq("submitted_by", admin.id)
+            .order("updated_at", { ascending: false })
+            .limit(10);
+      const [eventsCount, peopleCount, approvalsCount, pending, mySubmissions] = await Promise.all([
         eventsQuery, peopleQuery, approvalsQuery,
         pendingQuery,
+        mySubmissionsQuery,
       ]);
-      return json(200, { counts: { events: eventsCount.count ?? 0, people: peopleCount.count ?? 0, approvals: approvalsCount.count ?? 0 }, pending: pending.data ?? [], admin: publicAdmin(admin) });
+      return json(200, {
+        counts: { events: eventsCount.count ?? 0, people: peopleCount.count ?? 0, approvals: approvalsCount.count ?? 0 },
+        pending: pending.data ?? [],
+        mySubmissions: mySubmissions.data ?? [],
+        admin: publicAdmin(admin),
+      });
     }
 
     if (method === "GET" && path === "/api/admin/events") {
@@ -480,7 +543,7 @@ export async function handleRequest(req: AppRequest): Promise<AppResponse> {
     if (method === "POST" && path === "/api/admin/events") {
       const admin = await adminFromRequest(req);
       if (!admin) return json(401, { error: "Administrator sign-in required" });
-      const body = await readJson<{ title?: string; eventDate?: string; location?: string; body?: string; category?: string; startsAt?: string; isFree?: boolean; slides?: unknown }>(req);
+      const body = await readJson<{ title?: string; eventDate?: string; location?: string; body?: string; category?: string; startsAt?: string; isFree?: boolean; slides?: unknown; registrationUrl?: string; capacity?: number | null; venueMapUrl?: string; eventContact?: string }>(req);
       if (!body.title?.trim()) return json(400, { error: "Event title is required" });
       const id = `${body.title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 48)}-${randomUUID().slice(0, 8)}`;
       const scopeType = isGlobalAdmin(admin) ? "global" : admin.scope_type;
@@ -489,6 +552,7 @@ export async function handleRequest(req: AppRequest): Promise<AppResponse> {
         id, title: body.title.trim(), event_date: body.eventDate ?? "", location: body.location ?? "", body: body.body ?? "",
         category: body.category ?? "Community", starts_at: body.startsAt || null, is_free: body.isFree !== false,
         slides: body.slides ?? [],
+        registration_url: body.registrationUrl ?? "", capacity: body.capacity ?? null, venue_map_url: body.venueMapUrl ?? "", event_contact: body.eventContact ?? "",
         emirate: scopeType === "chapter" ? scopeId : "uae", scope_type: scopeType, scope_id: scopeId,
         workflow_status: isGlobalAdmin(admin) ? "published" : "draft", published: isGlobalAdmin(admin), created_by: admin.id,
       }).select("*").single();
@@ -505,8 +569,12 @@ export async function handleRequest(req: AppRequest): Promise<AppResponse> {
       const { data: current } = await supabase.from("events").select("*").eq("id", id).maybeSingle();
       if (!current) return json(404, { error: "Event not found" });
       if (!eventInScope(admin, current)) return json(403, { error: "This event is outside your assigned scope" });
-      const body = await readJson<{ title?: string; eventDate?: string; location?: string; body?: string; category?: string; startsAt?: string; isFree?: boolean; slides?: unknown }>(req);
-      const update = { title: body.title?.trim() || current.title, event_date: body.eventDate ?? current.event_date, location: body.location ?? current.location, body: body.body ?? current.body, category: body.category ?? current.category, starts_at: body.startsAt || null, is_free: body.isFree ?? current.is_free, slides: body.slides ?? current.slides, updated_at: new Date().toISOString(), workflow_status: isGlobalAdmin(admin) ? current.workflow_status : "draft", published: isGlobalAdmin(admin) ? current.published : false };
+      const body = await readJson<{ title?: string; eventDate?: string; location?: string; body?: string; category?: string; startsAt?: string; isFree?: boolean; slides?: unknown; registrationUrl?: string; capacity?: number | null; venueMapUrl?: string; eventContact?: string }>(req);
+      const update = {
+        title: body.title?.trim() || current.title, event_date: body.eventDate ?? current.event_date, location: body.location ?? current.location, body: body.body ?? current.body, category: body.category ?? current.category, starts_at: body.startsAt || null, is_free: body.isFree ?? current.is_free, slides: body.slides ?? current.slides,
+        registration_url: body.registrationUrl ?? current.registration_url, capacity: body.capacity !== undefined ? body.capacity : current.capacity, venue_map_url: body.venueMapUrl ?? current.venue_map_url, event_contact: body.eventContact ?? current.event_contact,
+        updated_at: new Date().toISOString(), workflow_status: isGlobalAdmin(admin) ? current.workflow_status : "draft", published: isGlobalAdmin(admin) ? current.published : false,
+      };
       const { data, error } = await supabase.from("events").update(update).eq("id", id).select("*").single();
       if (error) throw error;
       await supabase.from("audit_logs").insert({ actor_id: admin.id, action: "event.update", entity_type: "event", entity_id: id, old_value: current, new_value: data });
@@ -529,6 +597,105 @@ export async function handleRequest(req: AppRequest): Promise<AppResponse> {
       return json(200, { ok: true });
     }
 
+    // Activities & Initiatives: recurring programmes/campaigns distinct from one-off Events — same
+    // scoping/approval rules as events (eventInScope works unchanged since the shape matches), just
+    // without RSVP/capacity/volunteer duty.
+    if (method === "GET" && path === "/api/admin/activities") {
+      const admin = await adminFromRequest(req);
+      if (!admin) return json(401, { error: "Administrator sign-in required" });
+      let query = supabase.from("activities").select("*").order("start_date", { ascending: false });
+      if (!isGlobalAdmin(admin)) query = query.eq("scope_type", admin.scope_type).eq("scope_id", admin.scope_id ?? "");
+      if (admin.role === "editor") query = query.eq("created_by", admin.id);
+      const { data, error } = await query;
+      if (error) throw error;
+      return json(200, { activities: data ?? [] });
+    }
+
+    if (method === "POST" && path === "/api/admin/activities") {
+      const admin = await adminFromRequest(req);
+      if (!admin) return json(401, { error: "Administrator sign-in required" });
+      const body = await readJson<{ title?: string; summary?: string; body?: string; image?: string; startDate?: string | null; endDate?: string | null; featuredOnHomepage?: boolean }>(req);
+      if (!body.title?.trim()) return json(400, { error: "Activity title is required" });
+      const scopeType = isGlobalAdmin(admin) ? "global" : admin.scope_type;
+      const scopeId = isGlobalAdmin(admin) ? null : admin.scope_id;
+      const { data, error } = await supabase
+        .from("activities")
+        .insert({
+          title: body.title.trim(), summary: body.summary ?? "", body: body.body ?? "", image: body.image ?? "",
+          start_date: body.startDate || null, end_date: body.endDate || null, featured_on_homepage: body.featuredOnHomepage ?? false,
+          scope_type: scopeType, scope_id: scopeId,
+          workflow_status: isGlobalAdmin(admin) ? "published" : "draft", created_by: admin.id,
+        })
+        .select("id")
+        .single();
+      if (error) throw error;
+      await supabase.from("audit_logs").insert({ actor_id: admin.id, action: "activity.create", entity_type: "activity", entity_id: data.id });
+      return json(200, { ok: true, id: data.id });
+    }
+
+    const adminActivity = path.match(/^\/api\/admin\/activities\/([^/]+)$/);
+    if (method === "PUT" && adminActivity) {
+      const admin = await adminFromRequest(req);
+      if (!admin) return json(401, { error: "Administrator sign-in required" });
+      const id = decodeURIComponent(adminActivity[1]);
+      const { data: current } = await supabase.from("activities").select("*").eq("id", id).maybeSingle();
+      if (!current) return json(404, { error: "Activity not found" });
+      if (!eventInScope(admin, current)) return json(403, { error: "This activity is outside your assigned scope" });
+      const body = await readJson<{ title?: string; summary?: string; body?: string; image?: string; startDate?: string | null; endDate?: string | null; featuredOnHomepage?: boolean }>(req);
+      const update = {
+        title: body.title?.trim() || current.title, summary: body.summary ?? current.summary, body: body.body ?? current.body, image: body.image ?? current.image,
+        start_date: body.startDate !== undefined ? body.startDate || null : current.start_date, end_date: body.endDate !== undefined ? body.endDate || null : current.end_date,
+        featured_on_homepage: body.featuredOnHomepage ?? current.featured_on_homepage,
+        updated_at: new Date().toISOString(), workflow_status: isGlobalAdmin(admin) ? current.workflow_status : "draft",
+      };
+      const { error } = await supabase.from("activities").update(update).eq("id", id);
+      if (error) throw error;
+      await supabase.from("audit_logs").insert({ actor_id: admin.id, action: "activity.update", entity_type: "activity", entity_id: id });
+      return json(200, { ok: true });
+    }
+
+    if (method === "DELETE" && adminActivity) {
+      const admin = await adminFromRequest(req);
+      if (!admin) return json(401, { error: "Administrator sign-in required" });
+      const id = decodeURIComponent(adminActivity[1]);
+      const { data: current } = await supabase.from("activities").select("scope_type, scope_id, created_by").eq("id", id).maybeSingle();
+      if (!current) return json(404, { error: "Activity not found" });
+      if (!eventInScope(admin, current)) return json(403, { error: "This activity is outside your assigned scope" });
+      const { error } = await supabase.from("activities").delete().eq("id", id);
+      if (error) throw error;
+      await supabase.from("audit_logs").insert({ actor_id: admin.id, action: "activity.delete", entity_type: "activity", entity_id: id });
+      return json(200, { ok: true });
+    }
+
+    const submitActivity = path.match(/^\/api\/admin\/activities\/([^/]+)\/submit$/);
+    if (method === "POST" && submitActivity) {
+      const admin = await adminFromRequest(req);
+      if (!admin) return json(401, { error: "Administrator sign-in required" });
+      const id = decodeURIComponent(submitActivity[1]);
+      const { data: activity } = await supabase.from("activities").select("*").eq("id", id).maybeSingle();
+      if (!activity) return json(404, { error: "Activity not found" });
+      if (!eventInScope(admin, activity)) return json(403, { error: "This activity is outside your assigned scope" });
+      if (isGlobalAdmin(admin)) return json(400, { error: "Global administrators publish directly" });
+      await supabase.from("activities").update({ workflow_status: "submitted", updated_at: new Date().toISOString() }).eq("id", id);
+      const { error } = await supabase.from("approval_requests").upsert(
+        { entity_type: "activity", entity_id: id, scope_type: admin.scope_type, scope_id: admin.scope_id, status: "submitted", submitted_by: admin.id, reviewed_by: null, review_note: "", updated_at: new Date().toISOString() },
+        { onConflict: "entity_type,entity_id" },
+      );
+      if (error) throw error;
+      await supabase.from("audit_logs").insert({ actor_id: admin.id, action: "activity.submit", entity_type: "activity", entity_id: id });
+      return json(200, { ok: true });
+    }
+
+    if (method === "GET" && path === "/api/activities") {
+      const url = new URL(req.url, "http://localhost");
+      const homepageOnly = url.searchParams.get("homepage") === "1";
+      let query = supabase.from("activities").select("*").eq("workflow_status", "published").order("start_date", { ascending: false });
+      if (homepageOnly) query = query.eq("featured_on_homepage", true);
+      const { data, error } = await query;
+      if (error) throw error;
+      return json(200, { activities: data ?? [] }, undefined, PUBLIC_CACHE_HEADERS);
+    }
+
     const approvalDecision = path.match(/^\/api\/admin\/approvals\/([^/]+)\/decision$/);
     if (method === "POST" && approvalDecision) {
       const admin = await adminFromRequest(req);
@@ -547,9 +714,51 @@ export async function handleRequest(req: AppRequest): Promise<AppResponse> {
           .update({ workflow_status: body.decision === "approved" ? "published" : body.decision, updated_at: new Date().toISOString() })
           .eq("scope_type", approval.scope_type)
           .eq("scope_id", approval.scope_id);
+      } else if (approval.entity_type === "page_section") {
+        await supabase.from("page_sections").update({ workflow_status: body.decision === "approved" ? "published" : body.decision, updated_at: new Date().toISOString() }).eq("id", approval.entity_id);
+      } else if (approval.entity_type === "activity") {
+        await supabase.from("activities").update({ workflow_status: body.decision === "approved" ? "published" : body.decision, updated_at: new Date().toISOString() }).eq("id", approval.entity_id);
+      } else if (approval.entity_type === "appointment") {
+        await supabase.from("appointments").update({ workflow_status: body.decision === "approved" ? "published" : body.decision, updated_at: new Date().toISOString() }).eq("id", approval.entity_id);
       }
       await supabase.from("audit_logs").insert({ actor_id: admin.id, action: `approval.${body.decision}`, entity_type: approval.entity_type, entity_id: approval.entity_id, new_value: { note: body.note ?? "" } });
       return json(200, { ok: true });
+    }
+
+    // Every create/update/delete/approval/login across the app writes here, but nothing ever read
+    // it back — a super admin had no way to see who did what. Cursor-paginated by id (monotonic,
+    // collision-free, unlike paginating by created_at where two rows can share a timestamp).
+    if (method === "GET" && path === "/api/admin/audit-logs") {
+      const admin = await adminFromRequest(req);
+      if (!admin || admin.role !== "super_admin") return json(403, { error: "Super-admin access required" });
+      const url = new URL(req.url, "http://localhost");
+      const after = url.searchParams.get("after") ?? "";
+      const limit = Math.min(Math.max(Number(url.searchParams.get("limit")) || DEFAULT_PAGE_SIZE, 1), MAX_PAGE_SIZE);
+      let query = supabase
+        .from("audit_logs")
+        .select("id, action, entity_type, entity_id, created_at, admin_users(display_name, email)")
+        .order("id", { ascending: false })
+        .limit(limit + 1);
+      if (after) query = query.lt("id", after);
+      const { data, error } = await query;
+      if (error) throw error;
+      const rows = data ?? [];
+      const hasMore = rows.length > limit;
+      const page = rows.slice(0, limit);
+      const logs = page.map((row) => {
+        const actor = row.admin_users as { display_name?: string; email?: string } | null;
+        return {
+          id: row.id as number,
+          action: row.action as string,
+          entityType: row.entity_type as string,
+          entityId: row.entity_id as string,
+          createdAt: row.created_at as string,
+          actorName: actor?.display_name ?? null,
+          actorEmail: actor?.email ?? null,
+        };
+      });
+      const nextCursor = hasMore ? String(page[page.length - 1]?.id ?? "") : null;
+      return json(200, { logs, nextCursor });
     }
 
     if (method === "GET" && path === "/api/admin/tenant-content") {
@@ -562,14 +771,14 @@ export async function handleRequest(req: AppRequest): Promise<AppResponse> {
       if (!scopeId) return json(400, { error: "A scope id is required" });
       const { data } = await supabase.from("tenant_content").select("*").eq("scope_type", scopeType).eq("scope_id", scopeId).maybeSingle();
       return json(200, {
-        content: data ?? { scope_type: scopeType, scope_id: scopeId, workflow_status: "draft", intro: "", highlights: [], hero_image: "", gallery: [] },
+        content: data ?? { scope_type: scopeType, scope_id: scopeId, workflow_status: "draft", tagline: "", intro: "", highlights: [], hero_image: "", gallery: [] },
       });
     }
 
     if (method === "PUT" && path === "/api/admin/tenant-content") {
       const admin = await adminFromRequest(req);
       if (!admin) return json(401, { error: "Administrator sign-in required" });
-      const body = await readJson<{ scopeType?: string; scopeId?: string; intro?: string; highlights?: unknown; heroImage?: string; gallery?: unknown }>(req);
+      const body = await readJson<{ scopeType?: string; scopeId?: string; tagline?: string; intro?: string; highlights?: unknown; heroImage?: string; gallery?: unknown }>(req);
       const scopeType = isGlobalAdmin(admin) ? body.scopeType : admin.scope_type;
       const scopeId = isGlobalAdmin(admin) ? body.scopeId : admin.scope_id;
       if (scopeType !== "chapter" && scopeType !== "council") return json(400, { error: "A chapter or council scope is required" });
@@ -586,6 +795,7 @@ export async function handleRequest(req: AppRequest): Promise<AppResponse> {
           {
             scope_type: scopeType,
             scope_id: scopeId,
+            tagline: body.tagline ?? current?.tagline ?? "",
             intro: body.intro ?? current?.intro ?? "",
             highlights: body.highlights ?? current?.highlights ?? [],
             hero_image: body.heroImage ?? current?.hero_image ?? "",
@@ -640,6 +850,16 @@ export async function handleRequest(req: AppRequest): Promise<AppResponse> {
       const body = await readJson<{ code?: string; eventId?: string; markAttended?: boolean }>(req);
       const code = body.code?.trim();
       if (!code) return json(400, { error: "Enter a membership number or mobile number" });
+      // A scoped (chapter/council) admin may only look up members in the context of one of their
+      // own events — without that, this route would let any admin enumerate any member's PII by
+      // guessing membership numbers. A global admin can look up anyone, with or without an event.
+      if (!isGlobalAdmin(admin)) {
+        if (!body.eventId) return json(403, { error: "Select an event to check members in against" });
+        const { data: eventRow } = await supabase.from("events").select("scope_type, scope_id, created_by").eq("id", body.eventId).maybeSingle();
+        if (!eventRow || !eventInScope(admin, eventRow as { scope_type?: string; scope_id?: string | null; created_by?: string | null })) {
+          return json(403, { error: "This event is outside your assigned scope" });
+        }
+      }
       // Same dual lookup (and legacy IPFM-/IPFY- tolerant regex) as /api/events/:id/register.
       const column = /^IPF[A-Z]?-/i.test(code) ? "membership_no" : "phone";
       const { data: person } = await supabase.from("people").select("*").eq(column, code).maybeSingle();
@@ -716,7 +936,8 @@ export async function handleRequest(req: AppRequest): Promise<AppResponse> {
         updated_at: new Date().toISOString(),
       });
       if (error) throw error;
-      for (const [locale, fields] of Object.entries(body.translations ?? {})) {
+      const chapterTranslations = await autoTranslateMissingLocales(body.translations ?? {}, ["name", "description"]);
+      for (const [locale, fields] of Object.entries(chapterTranslations)) {
         if (!SUPPORTED_LOCALES.includes(locale)) continue;
         await supabase.from("chapters_i18n").upsert({ chapter_id: id, locale, name: fields.name ?? "", description: fields.description ?? "" });
       }
@@ -768,7 +989,8 @@ export async function handleRequest(req: AppRequest): Promise<AppResponse> {
         updated_at: new Date().toISOString(),
       });
       if (error) throw error;
-      for (const [locale, fields] of Object.entries(body.translations ?? {})) {
+      const councilTranslations = await autoTranslateMissingLocales(body.translations ?? {}, ["name", "description"]);
+      for (const [locale, fields] of Object.entries(councilTranslations)) {
         if (!SUPPORTED_LOCALES.includes(locale)) continue;
         await supabase.from("councils_i18n").upsert({ council_id: id, locale, name: fields.name ?? "", description: fields.description ?? "" });
       }
@@ -778,7 +1000,10 @@ export async function handleRequest(req: AppRequest): Promise<AppResponse> {
 
     if (method === "GET" && path === "/api/admin/org/positions") {
       const admin = await adminFromRequest(req);
-      if (!admin || !isGlobalAdmin(admin)) return json(403, { error: "Global administrator access required" });
+      // Any signed-in admin can read the position list (a chapter/council admin needs it to pick a
+      // role when adding their own committee member) — only creating/editing a position definition
+      // itself is global-admin-only, enforced below.
+      if (!admin) return json(401, { error: "Administrator sign-in required" });
       const [{ data: positions }, { data: i18n }] = await Promise.all([
         supabase.from("positions").select("*").order("display_order"),
         supabase.from("positions_i18n").select("*"),
@@ -813,7 +1038,8 @@ export async function handleRequest(req: AppRequest): Promise<AppResponse> {
         if (error) throw error;
         positionId = data.id;
       }
-      for (const [locale, fields] of Object.entries(body.translations ?? {})) {
+      const positionTranslations = await autoTranslateMissingLocales(body.translations ?? {}, ["title"]);
+      for (const [locale, fields] of Object.entries(positionTranslations)) {
         if (!SUPPORTED_LOCALES.includes(locale)) continue;
         await supabase.from("positions_i18n").upsert({ position_id: positionId, locale, title: fields.title ?? "" });
       }
@@ -821,13 +1047,27 @@ export async function handleRequest(req: AppRequest): Promise<AppResponse> {
       return json(200, { ok: true, id: positionId });
     }
 
+    // A chapter/council admin manages committee members for their own scope only; a global admin
+    // manages any scope. Mirrors eventInScope()'s pattern but appointments have no created_by, so
+    // there's no further per-editor restriction to apply.
+    function appointmentInScope(admin: AdminRow, appointment: { scope_type: string; scope_id: string | null }) {
+      if (isGlobalAdmin(admin)) return true;
+      return appointment.scope_type === admin.scope_type && appointment.scope_id === admin.scope_id;
+    }
+
     if (method === "GET" && path === "/api/admin/org/appointments") {
       const admin = await adminFromRequest(req);
-      if (!admin || !isGlobalAdmin(admin)) return json(403, { error: "Global administrator access required" });
+      if (!admin) return json(401, { error: "Administrator sign-in required" });
       const url = new URL(req.url, "http://localhost");
       const scopeType = url.searchParams.get("scopeType") ?? "";
       let query = supabase.from("appointments").select("*, positions(slug, level)").order("display_order");
-      if (scopeType) query = query.eq("scope_type", scopeType);
+      if (isGlobalAdmin(admin)) {
+        if (scopeType) query = query.eq("scope_type", scopeType);
+      } else {
+        // Non-global admins only ever see their own chapter/council's committee, regardless of
+        // what scopeType/scopeId query params are passed.
+        query = query.eq("scope_type", admin.scope_type).eq("scope_id", admin.scope_id);
+      }
       const { data, error } = await query;
       if (error) throw error;
       return json(200, { appointments: data ?? [] });
@@ -836,7 +1076,7 @@ export async function handleRequest(req: AppRequest): Promise<AppResponse> {
     const adminAppointment = path.match(/^\/api\/admin\/org\/appointments\/([^/]+)$/);
     if (method === "POST" && path === "/api/admin/org/appointments") {
       const admin = await adminFromRequest(req);
-      if (!admin || !isGlobalAdmin(admin)) return json(403, { error: "Global administrator access required" });
+      if (!admin) return json(401, { error: "Administrator sign-in required" });
       const body = await readJson<{
         personId?: string | null;
         personName?: string;
@@ -846,10 +1086,20 @@ export async function handleRequest(req: AppRequest): Promise<AppResponse> {
         scopeId?: string | null;
         startedAt?: string | null;
         displayOrder?: number;
+        bio?: string;
+        contactPhone?: string;
+        contactEmail?: string;
+        socialLinks?: unknown;
+        showContact?: boolean;
+        membershipNo?: string;
       }>(req);
       if (!body.positionId) return json(400, { error: "A position is required" });
       if (!body.personName?.trim() && !body.personId) return json(400, { error: "A person name or linked member is required" });
       if (!body.scopeType || !["global", "chapter", "council"].includes(body.scopeType)) return json(400, { error: "A valid scope is required" });
+      const scopeId = body.scopeType === "global" ? null : body.scopeId ?? null;
+      if (!appointmentInScope(admin, { scope_type: body.scopeType, scope_id: scopeId })) {
+        return json(403, { error: "You can only add committee members to your own chapter or council" });
+      }
       const { data, error } = await supabase
         .from("appointments")
         .insert({
@@ -858,9 +1108,19 @@ export async function handleRequest(req: AppRequest): Promise<AppResponse> {
           person_image: body.personImage ?? "",
           position_id: body.positionId,
           scope_type: body.scopeType,
-          scope_id: body.scopeType === "global" ? null : body.scopeId,
+          scope_id: scopeId,
           started_at: body.startedAt || new Date().toISOString().slice(0, 10),
           display_order: body.displayOrder ?? 0,
+          bio: body.bio ?? "",
+          contact_phone: body.contactPhone ?? "",
+          contact_email: body.contactEmail ?? "",
+          social_links: body.socialLinks ?? [],
+          show_contact: body.showContact ?? false,
+          membership_no: body.membershipNo ?? "",
+          // A global admin's committee changes go live instantly (same as every other content
+          // type); a chapter/council admin's go to draft and need central approval before they're
+          // visible on the public site.
+          workflow_status: isGlobalAdmin(admin) ? "published" : "draft",
         })
         .select("id")
         .single();
@@ -871,13 +1131,37 @@ export async function handleRequest(req: AppRequest): Promise<AppResponse> {
 
     if (method === "PUT" && adminAppointment) {
       const admin = await adminFromRequest(req);
-      if (!admin || !isGlobalAdmin(admin)) return json(403, { error: "Global administrator access required" });
+      if (!admin) return json(401, { error: "Administrator sign-in required" });
       const id = decodeURIComponent(adminAppointment[1]);
-      const body = await readJson<{ personName?: string; personImage?: string; displayOrder?: number; status?: string }>(req);
+      const { data: existing } = await supabase.from("appointments").select("scope_type, scope_id").eq("id", id).maybeSingle();
+      if (!existing) return json(404, { error: "Appointment not found" });
+      if (!appointmentInScope(admin, existing as { scope_type: string; scope_id: string | null })) {
+        return json(403, { error: "You can only edit committee members in your own chapter or council" });
+      }
+      const body = await readJson<{
+        personName?: string;
+        personImage?: string;
+        positionId?: string;
+        displayOrder?: number;
+        status?: string;
+        bio?: string;
+        contactPhone?: string;
+        contactEmail?: string;
+        socialLinks?: unknown;
+        showContact?: boolean;
+        membershipNo?: string;
+      }>(req);
       const update: Record<string, unknown> = { updated_at: new Date().toISOString() };
       if (body.personName !== undefined) update.person_name = body.personName;
       if (body.personImage !== undefined) update.person_image = body.personImage;
+      if (body.positionId !== undefined) update.position_id = body.positionId;
       if (body.displayOrder !== undefined) update.display_order = body.displayOrder;
+      if (body.bio !== undefined) update.bio = body.bio;
+      if (body.contactPhone !== undefined) update.contact_phone = body.contactPhone;
+      if (body.contactEmail !== undefined) update.contact_email = body.contactEmail;
+      if (body.socialLinks !== undefined) update.social_links = body.socialLinks;
+      if (body.showContact !== undefined) update.show_contact = body.showContact;
+      if (body.membershipNo !== undefined) update.membership_no = body.membershipNo;
       if (body.status === "completed") {
         update.status = "completed";
         update.ended_at = new Date().toISOString().slice(0, 10);
@@ -885,9 +1169,33 @@ export async function handleRequest(req: AppRequest): Promise<AppResponse> {
         update.status = "active";
         update.ended_at = null;
       }
+      // A non-global admin's edit always reverts to draft (even if it was previously
+      // approved/published) — mirrors tenant_content's/page_sections' PUT exactly.
+      update.workflow_status = isGlobalAdmin(admin) ? "published" : "draft";
       const { error } = await supabase.from("appointments").update(update).eq("id", id);
       if (error) throw error;
       await supabase.from("audit_logs").insert({ actor_id: admin.id, action: "org.appointment.update", entity_type: "appointment", entity_id: id });
+      return json(200, { ok: true });
+    }
+
+    const submitAppointment = path.match(/^\/api\/admin\/org\/appointments\/([^/]+)\/submit$/);
+    if (method === "POST" && submitAppointment) {
+      const admin = await adminFromRequest(req);
+      if (!admin) return json(401, { error: "Administrator sign-in required" });
+      if (isGlobalAdmin(admin)) return json(400, { error: "Global administrators publish directly" });
+      const id = decodeURIComponent(submitAppointment[1]);
+      const { data: appointment } = await supabase.from("appointments").select("scope_type, scope_id").eq("id", id).maybeSingle();
+      if (!appointment) return json(404, { error: "Committee member not found" });
+      if (!appointmentInScope(admin, appointment as { scope_type: string; scope_id: string | null })) {
+        return json(403, { error: "This committee member is outside your assigned scope" });
+      }
+      await supabase.from("appointments").update({ workflow_status: "submitted", updated_at: new Date().toISOString() }).eq("id", id);
+      const { error } = await supabase.from("approval_requests").upsert(
+        { entity_type: "appointment", entity_id: id, scope_type: admin.scope_type, scope_id: admin.scope_id, status: "submitted", submitted_by: admin.id, reviewed_by: null, review_note: "", updated_at: new Date().toISOString() },
+        { onConflict: "entity_type,entity_id" },
+      );
+      if (error) throw error;
+      await supabase.from("audit_logs").insert({ actor_id: admin.id, action: "org.appointment.submit", entity_type: "appointment", entity_id: id });
       return json(200, { ok: true });
     }
 
@@ -895,23 +1203,535 @@ export async function handleRequest(req: AppRequest): Promise<AppResponse> {
       // Soft-delete: an appointment is institutional history, not disposable data — ending it
       // preserves the record (status='completed') rather than removing who held the position.
       const admin = await adminFromRequest(req);
-      if (!admin || !isGlobalAdmin(admin)) return json(403, { error: "Global administrator access required" });
+      if (!admin) return json(401, { error: "Administrator sign-in required" });
       const id = decodeURIComponent(adminAppointment[1]);
+      const { data: existing } = await supabase.from("appointments").select("scope_type, scope_id").eq("id", id).maybeSingle();
+      if (!existing) return json(404, { error: "Appointment not found" });
+      if (!appointmentInScope(admin, existing as { scope_type: string; scope_id: string | null })) {
+        return json(403, { error: "You can only remove committee members in your own chapter or council" });
+      }
       const { error } = await supabase.from("appointments").update({ status: "completed", ended_at: new Date().toISOString().slice(0, 10) }).eq("id", id);
       if (error) throw error;
       await supabase.from("audit_logs").insert({ actor_id: admin.id, action: "org.appointment.end", entity_type: "appointment", entity_id: id });
       return json(200, { ok: true });
     }
 
+    // Generic, i18n-aware content blocks for every informational page (About, History, Governance,
+    // etc.) — the relational generalisation of the old single-blob site_content.extras. Page
+    // sections are central content: only a global admin or an editor (their own drafts only,
+    // mirroring eventInScope's created_by restriction) may touch them — no chapter/council scope
+    // applies here, unlike tenant_content.
+    function pageSectionEditable(admin: AdminRow, section: { updated_by: string | null }) {
+      if (isGlobalAdmin(admin)) return true;
+      return admin.role === "editor" && section.updated_by === admin.id;
+    }
+
+    const adminPageSections = path.match(/^\/api\/admin\/pages\/([^/]+)\/sections$/);
+    if (method === "GET" && adminPageSections) {
+      const admin = await adminFromRequest(req);
+      if (!admin) return json(401, { error: "Administrator sign-in required" });
+      // Page content is central-only: a chapter/council admin has no business here at all (unlike
+      // tenant_content, which is their own scope). Only a global admin, or an editor restricted to
+      // sections they themselves authored, may read this.
+      if (!isGlobalAdmin(admin) && admin.role !== "editor") return json(403, { error: "You don't have permission to view page content" });
+      const pageId = decodeURIComponent(adminPageSections[1]);
+      const [{ data: sections }, { data: i18n }] = await Promise.all([
+        supabase.from("page_sections").select("*").eq("page_id", pageId).order("position"),
+        supabase.from("page_sections_i18n").select("*"),
+      ]);
+      const bySection = new Map<string, Record<string, unknown>[]>();
+      for (const row of i18n ?? []) {
+        const list = bySection.get(row.section_id as string) ?? [];
+        list.push(row);
+        bySection.set(row.section_id as string, list);
+      }
+      const visible = (sections ?? []).filter((section) => isGlobalAdmin(admin) || section.updated_by === admin.id);
+      return json(200, {
+        sections: visible.map((section) => ({ ...section, translations: translationsMap(bySection.get(section.id) ?? [], ["eyebrow", "title", "description", "body"]) })),
+      });
+    }
+
+    if (method === "POST" && adminPageSections) {
+      const admin = await adminFromRequest(req);
+      if (!admin) return json(401, { error: "Administrator sign-in required" });
+      if (!isGlobalAdmin(admin) && admin.role !== "editor") return json(403, { error: "You don't have permission to edit page content" });
+      const pageId = decodeURIComponent(adminPageSections[1]);
+      const body = await readJson<{
+        type?: string;
+        position?: number;
+        image?: string;
+        slides?: unknown;
+        buttons?: unknown;
+        stats?: unknown;
+        startsAt?: string | null;
+        endsAt?: string | null;
+        priority?: number;
+        translations?: Record<string, { eyebrow?: string; title?: string; description?: string; body?: string }>;
+      }>(req);
+      if (!body.type || !["richText", "photoGrid", "carousel", "cta", "statList", "imageText"].includes(body.type)) {
+        return json(400, { error: "A valid section type is required" });
+      }
+      const { data, error } = await supabase
+        .from("page_sections")
+        .insert({
+          page_id: pageId,
+          type: body.type,
+          position: body.position ?? 0,
+          image: body.image ?? "",
+          slides: body.slides ?? [],
+          buttons: body.buttons ?? [],
+          stats: body.stats ?? [],
+          starts_at: body.startsAt || null,
+          ends_at: body.endsAt || null,
+          priority: body.priority ?? 0,
+          workflow_status: isGlobalAdmin(admin) ? "published" : "draft",
+          updated_by: admin.id,
+        })
+        .select("id")
+        .single();
+      if (error) throw error;
+      const sectionTranslations = await autoTranslateMissingLocales(body.translations ?? {}, ["eyebrow", "title", "description", "body"]);
+      for (const [locale, fields] of Object.entries(sectionTranslations)) {
+        if (!SUPPORTED_LOCALES.includes(locale)) continue;
+        await supabase.from("page_sections_i18n").upsert({
+          section_id: data.id,
+          locale,
+          eyebrow: fields.eyebrow ?? "",
+          title: fields.title ?? "",
+          description: fields.description ?? "",
+          body: fields.body ?? "",
+        });
+      }
+      await supabase.from("audit_logs").insert({ actor_id: admin.id, action: "page_section.create", entity_type: "page_section", entity_id: data.id });
+      return json(200, { ok: true, id: data.id });
+    }
+
+    const adminPageSectionOne = path.match(/^\/api\/admin\/pages\/[^/]+\/sections\/([^/]+)$/);
+    if (method === "PUT" && adminPageSectionOne) {
+      const admin = await adminFromRequest(req);
+      if (!admin) return json(401, { error: "Administrator sign-in required" });
+      const id = decodeURIComponent(adminPageSectionOne[1]);
+      const { data: existing } = await supabase.from("page_sections").select("updated_by").eq("id", id).maybeSingle();
+      if (!existing) return json(404, { error: "Section not found" });
+      if (!pageSectionEditable(admin, existing as { updated_by: string | null })) {
+        return json(403, { error: "You can only edit your own draft sections" });
+      }
+      const body = await readJson<{
+        position?: number;
+        image?: string;
+        slides?: unknown;
+        buttons?: unknown;
+        stats?: unknown;
+        startsAt?: string | null;
+        endsAt?: string | null;
+        priority?: number;
+        translations?: Record<string, { eyebrow?: string; title?: string; description?: string; body?: string }>;
+      }>(req);
+      const update: Record<string, unknown> = { updated_at: new Date().toISOString(), updated_by: admin.id };
+      if (body.position !== undefined) update.position = body.position;
+      if (body.image !== undefined) update.image = body.image;
+      if (body.slides !== undefined) update.slides = body.slides;
+      if (body.buttons !== undefined) update.buttons = body.buttons;
+      if (body.stats !== undefined) update.stats = body.stats;
+      if (body.startsAt !== undefined) update.starts_at = body.startsAt || null;
+      if (body.endsAt !== undefined) update.ends_at = body.endsAt || null;
+      if (body.priority !== undefined) update.priority = body.priority;
+      // A non-global admin's edit always reverts to draft (even if it was previously
+      // approved/published) — mirrors tenant_content's PUT exactly.
+      update.workflow_status = isGlobalAdmin(admin) ? "published" : "draft";
+      const { error } = await supabase.from("page_sections").update(update).eq("id", id);
+      if (error) throw error;
+      const sectionUpdateTranslations = await autoTranslateMissingLocales(body.translations ?? {}, ["eyebrow", "title", "description", "body"]);
+      for (const [locale, fields] of Object.entries(sectionUpdateTranslations)) {
+        if (!SUPPORTED_LOCALES.includes(locale)) continue;
+        await supabase.from("page_sections_i18n").upsert({
+          section_id: id,
+          locale,
+          eyebrow: fields.eyebrow ?? "",
+          title: fields.title ?? "",
+          description: fields.description ?? "",
+          body: fields.body ?? "",
+        });
+      }
+      await supabase.from("audit_logs").insert({ actor_id: admin.id, action: "page_section.update", entity_type: "page_section", entity_id: id });
+      return json(200, { ok: true });
+    }
+
+    if (method === "DELETE" && adminPageSectionOne) {
+      const admin = await adminFromRequest(req);
+      if (!admin) return json(401, { error: "Administrator sign-in required" });
+      const id = decodeURIComponent(adminPageSectionOne[1]);
+      const { data: existing } = await supabase.from("page_sections").select("updated_by").eq("id", id).maybeSingle();
+      if (!existing) return json(404, { error: "Section not found" });
+      if (!pageSectionEditable(admin, existing as { updated_by: string | null })) {
+        return json(403, { error: "You can only remove your own draft sections" });
+      }
+      const { error } = await supabase.from("page_sections").delete().eq("id", id);
+      if (error) throw error;
+      await supabase.from("audit_logs").insert({ actor_id: admin.id, action: "page_section.delete", entity_type: "page_section", entity_id: id });
+      return json(200, { ok: true });
+    }
+
+    const adminPageSectionSubmit = path.match(/^\/api\/admin\/pages\/[^/]+\/sections\/([^/]+)\/submit$/);
+    if (method === "POST" && adminPageSectionSubmit) {
+      const admin = await adminFromRequest(req);
+      if (!admin) return json(401, { error: "Administrator sign-in required" });
+      if (isGlobalAdmin(admin)) return json(400, { error: "Global administrators publish directly" });
+      const id = decodeURIComponent(adminPageSectionSubmit[1]);
+      const { data: existing } = await supabase.from("page_sections").select("updated_by").eq("id", id).maybeSingle();
+      if (!existing) return json(404, { error: "Section not found" });
+      if (!pageSectionEditable(admin, existing as { updated_by: string | null })) {
+        return json(403, { error: "You can only submit your own draft sections" });
+      }
+      await supabase.from("page_sections").update({ workflow_status: "submitted" }).eq("id", id);
+      const { error } = await supabase.from("approval_requests").upsert(
+        { entity_type: "page_section", entity_id: id, scope_type: "global", scope_id: null, status: "submitted", submitted_by: admin.id, reviewed_by: null, review_note: "", updated_at: new Date().toISOString() },
+        { onConflict: "entity_type,entity_id" },
+      );
+      if (error) throw error;
+      await supabase.from("audit_logs").insert({ actor_id: admin.id, action: "page_section.submit", entity_type: "page_section", entity_id: id });
+      return json(200, { ok: true });
+    }
+
+    const publicPageSections = path.match(/^\/api\/pages\/([^/]+)\/sections$/);
+    if (method === "GET" && publicPageSections) {
+      const pageId = decodeURIComponent(publicPageSections[1]);
+      const locale = normalizeLocale(new URL(req.url, "http://localhost").searchParams.get("locale"));
+      const [{ data: sections }, { data: i18n }] = await Promise.all([
+        supabase.from("page_sections").select("*").eq("page_id", pageId).eq("workflow_status", "published").order("position"),
+        supabase.from("page_sections_i18n").select("*"),
+      ]);
+      const bySection = new Map<string, Record<string, unknown>[]>();
+      for (const row of i18n ?? []) {
+        const list = bySection.get(row.section_id as string) ?? [];
+        list.push(row);
+        bySection.set(row.section_id as string, list);
+      }
+      const now = Date.now();
+      // A scheduled section (starts_at/ends_at set — typically a homepage announcement/banner)
+      // only shows inside its window; most sections have neither set and always show.
+      const visible = (sections ?? []).filter((section) => {
+        if (section.starts_at && new Date(section.starts_at as string).getTime() > now) return false;
+        if (section.ends_at && new Date(section.ends_at as string).getTime() < now) return false;
+        return true;
+      });
+      visible.sort((a, b) => (b.priority as number) - (a.priority as number) || (a.position as number) - (b.position as number));
+      const result = visible.map((section) => ({
+        id: section.id,
+        type: section.type,
+        image: section.image,
+        slides: section.slides,
+        buttons: section.buttons,
+        stats: section.stats,
+        ...pickLocale(bySection.get(section.id) ?? [], locale, ["eyebrow", "title", "description", "body"]),
+      }));
+      return json(200, { sections: result }, undefined, PUBLIC_CACHE_HEADERS);
+    }
+
+    // Sponsors are a central relationship (organisation-level sponsors plus per-event linkage),
+    // not chapter/council-scoped — global-admin managed, same as chapters/councils/positions.
+    if (method === "GET" && path === "/api/admin/sponsors") {
+      const admin = await adminFromRequest(req);
+      if (!admin || !isGlobalAdmin(admin)) return json(403, { error: "Global administrator access required" });
+      const { data, error } = await supabase.from("sponsors").select("*").order("display_order");
+      if (error) throw error;
+      return json(200, { sponsors: data ?? [] });
+    }
+
+    const adminSponsor = path.match(/^\/api\/admin\/sponsors\/([^/]+)$/);
+    if ((method === "PUT" || method === "POST") && (adminSponsor || path === "/api/admin/sponsors")) {
+      const admin = await adminFromRequest(req);
+      if (!admin || !isGlobalAdmin(admin)) return json(403, { error: "Global administrator access required" });
+      const body = await readJson<{
+        name?: string;
+        logo?: string;
+        website?: string;
+        tier?: string;
+        contactPerson?: string;
+        contactPhone?: string;
+        contactEmail?: string;
+        description?: string;
+        active?: boolean;
+        displayOrder?: number;
+      }>(req);
+      if (!body.name?.trim()) return json(400, { error: "A sponsor name is required" });
+      const payload = {
+        name: body.name.trim(),
+        logo: body.logo ?? "",
+        website: body.website ?? "",
+        tier: body.tier ?? "",
+        contact_person: body.contactPerson ?? "",
+        contact_phone: body.contactPhone ?? "",
+        contact_email: body.contactEmail ?? "",
+        description: body.description ?? "",
+        active: body.active !== false,
+        display_order: body.displayOrder ?? 0,
+        updated_at: new Date().toISOString(),
+      };
+      const sponsorId = adminSponsor ? decodeURIComponent(adminSponsor[1]) : undefined;
+      const { data, error } = sponsorId
+        ? await supabase.from("sponsors").update(payload).eq("id", sponsorId).select("id").single()
+        : await supabase.from("sponsors").insert(payload).select("id").single();
+      if (error) throw error;
+      await supabase.from("audit_logs").insert({ actor_id: admin.id, action: sponsorId ? "sponsor.update" : "sponsor.create", entity_type: "sponsor", entity_id: data.id });
+      return json(200, { ok: true, id: data.id });
+    }
+
+    if (method === "DELETE" && adminSponsor) {
+      const admin = await adminFromRequest(req);
+      if (!admin || !isGlobalAdmin(admin)) return json(403, { error: "Global administrator access required" });
+      const id = decodeURIComponent(adminSponsor[1]);
+      const { error } = await supabase.from("sponsors").delete().eq("id", id);
+      if (error) throw error;
+      await supabase.from("audit_logs").insert({ actor_id: admin.id, action: "sponsor.delete", entity_type: "sponsor", entity_id: id });
+      return json(200, { ok: true });
+    }
+
+    const adminEventSponsors = path.match(/^\/api\/admin\/events\/([^/]+)\/sponsors$/);
+    if (method === "GET" && adminEventSponsors) {
+      const admin = await adminFromRequest(req);
+      if (!admin) return json(401, { error: "Administrator sign-in required" });
+      const eventId = decodeURIComponent(adminEventSponsors[1]);
+      const { data, error } = await supabase.from("event_sponsors").select("sponsor_id, sponsors(*)").eq("event_id", eventId);
+      if (error) throw error;
+      return json(200, { sponsors: (data ?? []).map((row) => row.sponsors) });
+    }
+
+    if (method === "PUT" && adminEventSponsors) {
+      const admin = await adminFromRequest(req);
+      if (!admin) return json(401, { error: "Administrator sign-in required" });
+      const eventId = decodeURIComponent(adminEventSponsors[1]);
+      const { data: eventRow } = await supabase.from("events").select("scope_type, scope_id, created_by").eq("id", eventId).maybeSingle();
+      if (!eventRow) return json(404, { error: "Event not found" });
+      if (!eventInScope(admin, eventRow as { scope_type?: string; scope_id?: string | null; created_by?: string | null })) {
+        return json(403, { error: "This event is outside your assigned scope" });
+      }
+      const body = await readJson<{ sponsorIds?: string[] }>(req);
+      const sponsorIds = Array.isArray(body.sponsorIds) ? body.sponsorIds : [];
+      await supabase.from("event_sponsors").delete().eq("event_id", eventId);
+      if (sponsorIds.length > 0) {
+        const { error } = await supabase.from("event_sponsors").insert(sponsorIds.map((sponsorId) => ({ event_id: eventId, sponsor_id: sponsorId })));
+        if (error) throw error;
+      }
+      await supabase.from("audit_logs").insert({ actor_id: admin.id, action: "event.sponsors.update", entity_type: "event", entity_id: eventId });
+      return json(200, { ok: true });
+    }
+
+    if (method === "GET" && path === "/api/sponsors") {
+      const { data, error } = await supabase.from("sponsors").select("*").eq("active", true).order("display_order");
+      if (error) throw error;
+      return json(200, { sponsors: data ?? [] }, undefined, PUBLIC_CACHE_HEADERS);
+    }
+
+    const publicEventSponsors = path.match(/^\/api\/events\/([^/]+)\/sponsors$/);
+    if (method === "GET" && publicEventSponsors) {
+      const eventId = decodeURIComponent(publicEventSponsors[1]);
+      const { data, error } = await supabase.from("event_sponsors").select("sponsors(*)").eq("event_id", eventId);
+      if (error) throw error;
+      const rows = (data ?? []) as unknown as { sponsors: Record<string, unknown> | null }[];
+      const sponsors = rows.map((row) => row.sponsors).filter((sponsor): sponsor is Record<string, unknown> => Boolean(sponsor?.active));
+      return json(200, { sponsors }, undefined, PUBLIC_CACHE_HEADERS);
+    }
+
+    // Publications (Drishti e-Magazine and any future publication type) — central content, same
+    // global-admin-managed pattern as sponsors/chapters/positions.
+    if (method === "GET" && path === "/api/admin/publications") {
+      const admin = await adminFromRequest(req);
+      if (!admin || !isGlobalAdmin(admin)) return json(403, { error: "Global administrator access required" });
+      const { data, error } = await supabase.from("publications").select("*").order("display_order");
+      if (error) throw error;
+      return json(200, { publications: data ?? [] });
+    }
+
+    const adminPublication = path.match(/^\/api\/admin\/publications\/([^/]+)$/);
+    if ((method === "PUT" || method === "POST") && (adminPublication || path === "/api/admin/publications")) {
+      const admin = await adminFromRequest(req);
+      if (!admin || !isGlobalAdmin(admin)) return json(403, { error: "Global administrator access required" });
+      const body = await readJson<{
+        publicationType?: string;
+        title?: string;
+        edition?: string;
+        description?: string;
+        coverImage?: string;
+        fileUrl?: string;
+        featuredOnHomepage?: boolean;
+        displayOrder?: number;
+        active?: boolean;
+      }>(req);
+      if (!body.title?.trim()) return json(400, { error: "A title is required" });
+      const payload = {
+        publication_type: body.publicationType ?? "Drishti",
+        title: body.title.trim(),
+        edition: body.edition ?? "",
+        description: body.description ?? "",
+        cover_image: body.coverImage ?? "",
+        file_url: body.fileUrl ?? "",
+        featured_on_homepage: body.featuredOnHomepage ?? false,
+        display_order: body.displayOrder ?? 0,
+        active: body.active !== false,
+        updated_at: new Date().toISOString(),
+      };
+      const id = adminPublication ? decodeURIComponent(adminPublication[1]) : undefined;
+      const { data, error } = id
+        ? await supabase.from("publications").update(payload).eq("id", id).select("id").single()
+        : await supabase.from("publications").insert(payload).select("id").single();
+      if (error) throw error;
+      await supabase.from("audit_logs").insert({ actor_id: admin.id, action: id ? "publication.update" : "publication.create", entity_type: "publication", entity_id: data.id });
+      return json(200, { ok: true, id: data.id });
+    }
+
+    if (method === "DELETE" && adminPublication) {
+      const admin = await adminFromRequest(req);
+      if (!admin || !isGlobalAdmin(admin)) return json(403, { error: "Global administrator access required" });
+      const id = decodeURIComponent(adminPublication[1]);
+      const { error } = await supabase.from("publications").delete().eq("id", id);
+      if (error) throw error;
+      await supabase.from("audit_logs").insert({ actor_id: admin.id, action: "publication.delete", entity_type: "publication", entity_id: id });
+      return json(200, { ok: true });
+    }
+
+    if (method === "GET" && path === "/api/publications") {
+      const { data, error } = await supabase.from("publications").select("*").eq("active", true).order("display_order");
+      if (error) throw error;
+      return json(200, { publications: data ?? [] }, undefined, PUBLIC_CACHE_HEADERS);
+    }
+
+    // Site navigation hierarchy — central content, global-admin only. One flat table with
+    // parent_id backs all four menus (primary/footer/mobile/utility); the public route reshapes
+    // it into exactly the NavGroup[]/NavLinkItem[]/footerGroups[] shapes the frontend already used
+    // when this was a hardcoded file, so Header/Footer only need to change their data source.
+    if (method === "GET" && path === "/api/admin/nav-items") {
+      const admin = await adminFromRequest(req);
+      if (!admin || !isGlobalAdmin(admin)) return json(403, { error: "Global administrator access required" });
+      const { data, error } = await supabase.from("nav_items").select("*").order("menu").order("position");
+      if (error) throw error;
+      return json(200, { navItems: data ?? [] });
+    }
+
+    const adminNavItem = path.match(/^\/api\/admin\/nav-items\/([^/]+)$/);
+    if ((method === "PUT" || method === "POST") && (adminNavItem || path === "/api/admin/nav-items")) {
+      const admin = await adminFromRequest(req);
+      if (!admin || !isGlobalAdmin(admin)) return json(403, { error: "Global administrator access required" });
+      const body = await readJson<{ menu?: string; parentId?: string | null; label?: string; toPath?: string; mega?: string | null; position?: number; active?: boolean }>(req);
+      if (!body.menu || !["primary", "footer", "mobile", "utility"].includes(body.menu)) return json(400, { error: "A valid menu is required" });
+      if (!body.label?.trim()) return json(400, { error: "A label is required" });
+      const payload = {
+        menu: body.menu,
+        parent_id: body.parentId || null,
+        label: body.label.trim(),
+        to_path: body.toPath ?? "",
+        mega: body.mega || null,
+        position: body.position ?? 0,
+        active: body.active !== false,
+      };
+      const id = adminNavItem ? decodeURIComponent(adminNavItem[1]) : undefined;
+      const { data, error } = id
+        ? await supabase.from("nav_items").update(payload).eq("id", id).select("id").single()
+        : await supabase.from("nav_items").insert(payload).select("id").single();
+      if (error) throw error;
+      // The label is auto-translated into every supported language, same as every other CMS
+      // content type — an admin only ever types the one label, every language stays in sync.
+      const navTranslations = await autoTranslateMissingLocales({ en: { label: payload.label } }, ["label"]);
+      for (const [locale, fields] of Object.entries(navTranslations)) {
+        if (!SUPPORTED_LOCALES.includes(locale)) continue;
+        await supabase.from("nav_items_i18n").upsert({ nav_item_id: data.id, locale, label: fields.label ?? "" });
+      }
+      await supabase.from("audit_logs").insert({ actor_id: admin.id, action: id ? "nav_item.update" : "nav_item.create", entity_type: "nav_item", entity_id: data.id });
+      return json(200, { ok: true, id: data.id });
+    }
+
+    if (method === "DELETE" && adminNavItem) {
+      const admin = await adminFromRequest(req);
+      if (!admin || !isGlobalAdmin(admin)) return json(403, { error: "Global administrator access required" });
+      const id = decodeURIComponent(adminNavItem[1]);
+      const { error } = await supabase.from("nav_items").delete().eq("id", id);
+      if (error) throw error;
+      await supabase.from("audit_logs").insert({ actor_id: admin.id, action: "nav_item.delete", entity_type: "nav_item", entity_id: id });
+      return json(200, { ok: true });
+    }
+
+    if (method === "GET" && path === "/api/nav") {
+      const locale = normalizeLocale(new URL(req.url, "http://localhost").searchParams.get("locale"));
+      const [{ data, error }, { data: navI18n }] = await Promise.all([
+        supabase.from("nav_items").select("*").eq("active", true).order("position"),
+        supabase.from("nav_items_i18n").select("*").eq("locale", locale),
+      ]);
+      if (error) throw error;
+      const translatedLabel = new Map((navI18n ?? []).map((row) => [row.nav_item_id as string, row.label as string]));
+      const rows = (data ?? []) as { id: string; menu: string; parent_id: string | null; label: string; to_path: string; mega: string | null; position: number }[];
+      const byParent = new Map<string, typeof rows>();
+      for (const row of rows) {
+        const key = row.parent_id ?? "";
+        const list = byParent.get(key) ?? [];
+        list.push(row);
+        byParent.set(key, list);
+      }
+      const labelOf = (row: { id: string; label: string }) => translatedLabel.get(row.id) || row.label;
+      const topLevel = (menu: string) => (byParent.get("") ?? []).filter((row) => row.menu === menu);
+      const children = (parentId: string) => (byParent.get(parentId) ?? []).map((row) => ({ label: labelOf(row), to: row.to_path }));
+      const primaryNav = topLevel("primary").map((row) => ({
+        label: labelOf(row),
+        to: row.to_path,
+        mega: row.mega ?? undefined,
+        children: children(row.id).length > 0 ? children(row.id) : undefined,
+      }));
+      const footerGroups = topLevel("footer").map((row) => ({ title: labelOf(row), links: children(row.id) }));
+      const mobileTabs = topLevel("mobile").map((row) => ({ label: labelOf(row), to: row.to_path }));
+      const utilityLinks = topLevel("utility").map((row) => ({ label: labelOf(row), to: row.to_path }));
+      return json(200, { primaryNav, footerGroups, mobileTabs, utilityLinks }, undefined, PUBLIC_CACHE_HEADERS);
+    }
+
+    const HOME_CONTENT_FIELDS = ["hero_badge", "hero_title", "hero_subtitle", "hero_intro", "president_quote_title", "president_quote_body", "who_eyebrow", "who_title", "who_body", "join_eyebrow", "join_title", "join_desc"] as const;
+
+    // The homepage's actual hero/key-section text — previously hardcoded i18n keys with no admin
+    // edit path at all (only the bonus "home-extras" banners were editable). Central content,
+    // global-admin only, highest visibility on the whole site.
+    if (method === "GET" && path === "/api/admin/home-content") {
+      const admin = await adminFromRequest(req);
+      if (!admin || !isGlobalAdmin(admin)) return json(403, { error: "Global administrator access required" });
+      const { data: i18n } = await supabase.from("home_content_i18n").select("*").eq("home_id", "home");
+      const translations: Record<string, Record<string, string>> = {};
+      for (const row of i18n ?? []) {
+        const { locale, ...fields } = row as Record<string, string>;
+        translations[locale] = fields;
+      }
+      return json(200, { translations });
+    }
+
+    if (method === "PUT" && path === "/api/admin/home-content") {
+      const admin = await adminFromRequest(req);
+      if (!admin || !isGlobalAdmin(admin)) return json(403, { error: "Global administrator access required" });
+      const body = await readJson<{ translations?: Record<string, Record<string, string>> }>(req);
+      const translated = await autoTranslateMissingLocales(body.translations ?? {}, [...HOME_CONTENT_FIELDS]);
+      for (const [locale, fields] of Object.entries(translated)) {
+        if (!SUPPORTED_LOCALES.includes(locale)) continue;
+        const row: Record<string, unknown> = { home_id: "home", locale };
+        for (const key of HOME_CONTENT_FIELDS) row[key] = fields[key] ?? "";
+        await supabase.from("home_content_i18n").upsert(row);
+      }
+      await supabase.from("home_content").update({ updated_at: new Date().toISOString() }).eq("id", "home");
+      await supabase.from("audit_logs").insert({ actor_id: admin.id, action: "home_content.update", entity_type: "home_content", entity_id: "home" });
+      return json(200, { ok: true });
+    }
+
+    if (method === "GET" && path === "/api/home-content") {
+      const locale = normalizeLocale(new URL(req.url, "http://localhost").searchParams.get("locale"));
+      const { data: i18n } = await supabase.from("home_content_i18n").select("*").eq("home_id", "home");
+      const result = pickLocale((i18n ?? []) as Record<string, unknown>[], locale, [...HOME_CONTENT_FIELDS]);
+      return json(200, { content: result }, undefined, PUBLIC_CACHE_HEADERS);
+    }
+
     if (method === "POST" && path === "/api/admin/upload") {
       const admin = await adminFromRequest(req);
       if (!admin) return json(401, { error: "Administrator sign-in required" });
       const type = header(req, "x-file-type") || "image/jpeg";
-      if (!type.startsWith("image/")) return json(400, { error: "Only image uploads are allowed" });
+      if (!type.startsWith("image/") && type !== "application/pdf") return json(400, { error: "Only image or PDF uploads are allowed" });
+      if (req.body.length > MAX_UPLOAD_BYTES) return json(400, { error: "File is too large (max 15MB)" });
       const name = header(req, "x-file-name") || `upload-${randomUUID()}`;
-      const ext = extname(name) || (type.includes("png") ? ".png" : ".jpg");
+      const ext = extname(name) || (type === "application/pdf" ? ".pdf" : type.includes("png") ? ".png" : ".jpg");
       const fileName = `${admin.scope_type}/${admin.scope_id ?? "global"}/${Date.now()}-${randomUUID().slice(0, 8)}${ext}`;
-      const { error } = await supabase.storage.from(uploadBucket()).upload(fileName, req.body, { contentType: type, upsert: false });
+      const body = await compressUploadImage(req.body, type);
+      const { error } = await supabase.storage.from(uploadBucket()).upload(fileName, body, { contentType: type, upsert: false });
       if (error) throw error;
       const { data } = supabase.storage.from(uploadBucket()).getPublicUrl(fileName);
       return json(200, { src: data.publicUrl });
@@ -947,7 +1767,7 @@ export async function handleRequest(req: AppRequest): Promise<AppResponse> {
       const scopeId = decodeURIComponent(tenantContentPublic[2]);
       const { data } = await supabase
         .from("tenant_content")
-        .select("intro, highlights, hero_image, gallery, updated_at")
+        .select("tagline, intro, highlights, hero_image, gallery, updated_at")
         .eq("scope_type", scopeType)
         .eq("scope_id", scopeId)
         .eq("workflow_status", "published")
@@ -1029,8 +1849,13 @@ export async function handleRequest(req: AppRequest): Promise<AppResponse> {
       const locale = normalizeLocale(url.searchParams.get("locale"));
       const scopeType = url.searchParams.get("scopeType") || "global";
       const scopeId = url.searchParams.get("scopeId") ?? "";
-      let query = supabase.from("appointments").select("*").eq("status", "active").eq("scope_type", scopeType).order("display_order");
-      query = scopeType === "global" ? query.is("scope_id", null) : query.eq("scope_id", scopeId);
+      // Central Committee reads as a seniority hierarchy (President down to committee members), so
+      // it stays ordered by display_order; a chapter/council's wider team roster is requested to
+      // display alphabetically for now (membership-number sort is a planned future step, once every
+      // office bearer has one on file) — ordering here, not client-side, keeps every consumer (this
+      // API, the public pages, search) consistent without duplicating the sort logic.
+      let query = supabase.from("appointments").select("*").eq("status", "active").eq("workflow_status", "published").eq("scope_type", scopeType);
+      query = scopeType === "global" ? query.is("scope_id", null).order("display_order") : query.eq("scope_id", scopeId).order("person_name");
       const [{ data: appointments }, { data: positionsI18n }] = await Promise.all([
         query,
         supabase.from("positions_i18n").select("*"),
@@ -1047,6 +1872,11 @@ export async function handleRequest(req: AppRequest): Promise<AppResponse> {
         personName: item.person_name,
         personImage: item.person_image,
         startedAt: item.started_at,
+        bio: item.bio,
+        membershipNo: item.membership_no,
+        socialLinks: item.show_contact ? item.social_links : [],
+        contactPhone: item.show_contact ? item.contact_phone : "",
+        contactEmail: item.show_contact ? item.contact_email : "",
         positionTitle: pickLocale(byPosition.get(item.position_id) ?? [], locale, ["title"]).title || "",
       }));
       return json(200, { leadership: result }, undefined, PUBLIC_CACHE_HEADERS);
@@ -1143,10 +1973,12 @@ export async function handleRequest(req: AppRequest): Promise<AppResponse> {
       const session = await cmsFromRequest(req);
       if (session?.role !== "central") return json(401, { error: "Sign in required" });
       const type = header(req, "x-file-type") || "image/jpeg";
+      if (req.body.length > MAX_UPLOAD_BYTES) return json(400, { error: "File is too large (max 15MB)" });
       const name = header(req, "x-file-name") || `upload-${randomUUID()}`;
       const ext = extname(name) || (type.includes("png") ? ".png" : ".jpg");
       const fileName = `${Date.now()}-${randomUUID().slice(0, 8)}${ext}`;
-      const { error } = await supabase.storage.from(uploadBucket()).upload(fileName, req.body, {
+      const body = await compressUploadImage(req.body, type);
+      const { error } = await supabase.storage.from(uploadBucket()).upload(fileName, body, {
         contentType: type,
         upsert: false,
       });

@@ -3,11 +3,12 @@ import { PageHero } from "../components/layout/PageHero";
 import { Card, CardGrid } from "../components/ui/Card";
 import { Container } from "../components/ui/Container";
 import { Section } from "../components/ui/Section";
-import { drishtiEditions } from "../data/platformContent";
+import { usePublications } from "../hooks/usePublications";
 import { useLocale } from "../i18n/LocaleProvider";
 
 export default function DrishtiPage() {
   const { t } = useLocale();
+  const { publications, ready } = usePublications();
   return (
     <>
       <DocumentTitle title={t("page.drishti.title")} />
@@ -19,22 +20,26 @@ export default function DrishtiPage() {
       />
       <Section tone="white">
         <Container>
-          <CardGrid>
-            {drishtiEditions.map((edition) => (
-              <Card
-                key={edition.period}
-                href={edition.href}
-                tone="ivory"
-                image={edition.image}
-                imageAlt={`${edition.title} ${edition.period}`}
-                imageFit="contain"
-                imageClassName="h-64"
-                eyebrow={edition.period}
-                title={edition.title}
-                description={t("common.openReader")}
-              />
-            ))}
-          </CardGrid>
+          {publications.length > 0 ? (
+            <CardGrid>
+              {publications.map((edition) => (
+                <Card
+                  key={edition.id}
+                  href={edition.file_url}
+                  tone="ivory"
+                  image={edition.cover_image}
+                  imageAlt={`${edition.title} ${edition.edition}`}
+                  imageFit="contain"
+                  imageClassName="h-64"
+                  eyebrow={edition.edition}
+                  title={edition.title}
+                  description={t("common.openReader")}
+                />
+              ))}
+            </CardGrid>
+          ) : ready ? (
+            <p className="text-sm leading-7 text-[var(--ipf-muted)]">{t("page.drishti.empty")}</p>
+          ) : null}
         </Container>
       </Section>
     </>

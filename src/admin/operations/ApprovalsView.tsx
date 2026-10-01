@@ -19,6 +19,9 @@ const decisionLabel: Record<Decision, string> = {
 const entityLabel: Record<string, string> = {
   event: "Event",
   tenant_content: "Chapter/council page",
+  page_section: "Page content block",
+  activity: "Activity / initiative",
+  appointment: "Committee member",
 };
 
 export default function ApprovalsView() {

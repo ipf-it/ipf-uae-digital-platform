@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
-import { footerGroups, socialLinks } from "../data/navigation";
+import { socialLinks } from "../data/navigation";
+import { useNav } from "../hooks/useNav";
 import { useLocale } from "../i18n/LocaleProvider";
 import { usePageTheme } from "../lib/PageTheme";
 import { site } from "../data/site";
@@ -27,11 +28,14 @@ const footerLinkKeys: Record<string, string> = {
   Membership: "nav.membership",
   Donate: "nav.donate",
   "Member portal": "nav.portal",
+  Sponsors: "nav.sponsors",
+  Activities: "nav.activities",
   Contact: "nav.contact",
 };
 
 export function Footer() {
   const { t } = useLocale();
+  const { footerGroups } = useNav();
   const { theme } = usePageTheme();
   return (
     <footer

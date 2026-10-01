@@ -1,7 +1,7 @@
 import { useEffect, useRef } from "react";
 import { House, Images, CalendarDays, Users, UserPlus } from "lucide-react";
 import { NavLink } from "react-router-dom";
-import { mobileTabs } from "../../data/navigation";
+import { useNav } from "../../hooks/useNav";
 import { useLocale } from "../../i18n/LocaleProvider";
 import { cn } from "../../lib/utils";
 
@@ -23,6 +23,7 @@ const tabKeys: Record<string, string> = {
 
 export function MobileTabBar() {
   const { t } = useLocale();
+  const { mobileTabs } = useNav();
   const navRef = useRef<HTMLElement>(null);
 
   useEffect(() => {
