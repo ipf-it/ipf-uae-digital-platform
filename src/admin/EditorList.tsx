@@ -18,7 +18,7 @@ export function EditorList({ title, hint, items, onChange, onUpload, onAdd }: Ed
       <div className="mt-4 space-y-3">
         {items.map((item, index) => (
           <div key={`${item.src}-${index}`} className="grid gap-3 overflow-hidden rounded-xl border border-[var(--ipf-line)] bg-[var(--ipf-paper)] p-3 shadow-[0_8px_24px_rgba(11,31,58,0.06)] sm:grid-cols-[96px,1fr]">
-            {item.src ? <img src={item.src} alt="" className="h-20 w-full rounded-lg object-cover" /> : <div className="h-20 rounded-lg bg-[var(--ipf-line)]" />}
+            {item.src ? <img src={item.src} alt="" loading="lazy" decoding="async" className="h-20 w-full rounded-lg object-cover" /> : <div className="h-20 rounded-lg bg-[var(--ipf-line)]" />}
             <div className="grid gap-2">
               <Input
                 placeholder="Image path"

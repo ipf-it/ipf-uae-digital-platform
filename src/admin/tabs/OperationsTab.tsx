@@ -2,28 +2,36 @@ import { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { SegmentedTabs } from "../../components/ui/Tabs";
 import { useAdmin } from "../AdminProvider";
+import ActivitiesView from "../operations/ActivitiesView";
 import ApprovalsView from "../operations/ApprovalsView";
+import AuditLogView from "../operations/AuditLogView";
 import CheckInView from "../operations/CheckInView";
 import EventsView from "../operations/EventsView";
 import RegistrationsView from "../operations/RegistrationsView";
+import SponsorsView from "../operations/SponsorsView";
 
-type SubTab = "events" | "registrations" | "checkin" | "approvals";
+type SubTab = "events" | "activities" | "registrations" | "checkin" | "approvals" | "sponsors" | "audit";
 
 export default function OperationsTab() {
-  const { isSuperAdmin } = useAdmin();
+  const { isSuperAdmin, isGlobalAdmin } = useAdmin();
   const [params, setParams] = useSearchParams();
   const requested = params.get("tab") as SubTab | null;
   const [tab, setTab] = useState<SubTab>(requested && requested !== "approvals" ? requested : requested === "approvals" && isSuperAdmin ? "approvals" : "events");
 
   useEffect(() => {
     if (tab === "approvals" && !isSuperAdmin) setTab("events");
-  }, [tab, isSuperAdmin]);
+    if (tab === "audit" && !isSuperAdmin) setTab("events");
+    if (tab === "sponsors" && !isGlobalAdmin) setTab("events");
+  }, [tab, isSuperAdmin, isGlobalAdmin]);
 
   const items = [
     { value: "events" as const, label: "Events" },
+    { value: "activities" as const, label: "Activities" },
     { value: "registrations" as const, label: "Registrations & duty" },
     { value: "checkin" as const, label: "Check-in" },
+    ...(isGlobalAdmin ? [{ value: "sponsors" as const, label: "Sponsors" }] : []),
     ...(isSuperAdmin ? [{ value: "approvals" as const, label: "Approvals" }] : []),
+    ...(isSuperAdmin ? [{ value: "audit" as const, label: "Audit log" }] : []),
   ];
 
   function onValueChange(value: SubTab) {
@@ -44,9 +52,12 @@ export default function OperationsTab() {
       <SegmentedTabs value={tab} onValueChange={onValueChange} items={items} />
 
       {tab === "events" ? <EventsView /> : null}
+      {tab === "activities" ? <ActivitiesView /> : null}
       {tab === "registrations" ? <RegistrationsView /> : null}
       {tab === "checkin" ? <CheckInView /> : null}
+      {tab === "sponsors" && isGlobalAdmin ? <SponsorsView /> : null}
       {tab === "approvals" && isSuperAdmin ? <ApprovalsView /> : null}
+      {tab === "audit" && isSuperAdmin ? <AuditLogView /> : null}
     </div>
   );
 }
