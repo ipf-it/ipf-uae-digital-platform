@@ -91,7 +91,7 @@ function AdminShell() {
     <div className="min-h-screen bg-[var(--ipf-ivory)] lg:flex">
       <aside
         className={cn(
-          "fixed inset-y-0 left-0 z-40 w-72 shrink-0 overflow-y-auto bg-[linear-gradient(180deg,var(--ipf-navy)_0%,#0a1a33_100%)] p-5 text-white transition-transform lg:static lg:translate-x-0",
+          "fixed inset-y-0 left-0 z-40 w-72 shrink-0 overflow-y-auto bg-[linear-gradient(180deg,var(--ipf-navy)_0%,#0a1a33_100%)] p-5 text-white transition-transform lg:sticky lg:top-0 lg:h-screen lg:translate-x-0 lg:self-start",
           mobileNavOpen ? "translate-x-0" : "-translate-x-full lg:flex lg:flex-col",
         )}
       >
