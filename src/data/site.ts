@@ -7,7 +7,7 @@ export const site = {
   joinCta: "Join IPF",
   emblemLabel: "Official emblem",
   utilityBar: "Registered socio-cultural organisation • Ajman, United Arab Emirates",
-  email: "info@ipf-uae.org",
+  email: "ipfuae@ipf-uae.org",
   grievanceEmail: "ipfuae@ipf-uae.org",
   abuDhabiEmail: "abudhabi@ipf-uae.org",
   businessEmail: "businesscouncil@ipf-uae.org",
