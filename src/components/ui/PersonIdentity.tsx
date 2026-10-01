@@ -45,7 +45,26 @@ export function PersonIdentity({
       )}
     >
       <TricolorFrame inset="sm" className={cn("shrink-0", frameWidth[size])}>
-        <img src={src} alt={alt} loading="lazy" decoding="async" className={cn("w-full object-cover object-top", photoSize[size])} />
+        {src ? (
+          <img src={src} alt={alt} loading="lazy" decoding="async" className={cn("w-full object-cover object-top", photoSize[size])} />
+        ) : (
+          <div
+            className={cn(
+              "flex w-full items-center justify-center bg-[var(--ipf-ivory)] font-bold text-[var(--ipf-navy)]",
+              photoSize[size],
+              size === "sm" ? "text-lg" : "text-2xl",
+            )}
+            aria-hidden="true"
+          >
+            {name
+              .split(" ")
+              .map((part) => part[0])
+              .filter(Boolean)
+              .slice(0, 2)
+              .join("")
+              .toUpperCase()}
+          </div>
+        )}
       </TricolorFrame>
       <div className={cn("min-w-0", stacked && "mt-3")}>
         <p className={cn("font-bold leading-6 break-words", tone === "dark" ? "text-white" : "text-[var(--ipf-navy)]")}>

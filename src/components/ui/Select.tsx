@@ -32,7 +32,7 @@ export function SelectContent({ className, children, position = "popper", ...pro
       <SelectPrimitive.Content
         position={position}
         className={cn(
-          "z-50 max-h-72 min-w-[var(--radix-select-trigger-width)] overflow-hidden rounded-lg border border-[var(--ipf-line)] bg-[var(--ipf-paper)] shadow-[0_12px_28px_rgba(11,31,58,0.12)]",
+          "ipf-pop-content z-50 max-h-72 min-w-[var(--radix-select-trigger-width)] overflow-hidden rounded-lg border border-[var(--ipf-line)] bg-[var(--ipf-paper)] shadow-[0_12px_28px_rgba(11,31,58,0.12)]",
           className,
         )}
         {...props}
@@ -76,9 +76,10 @@ type SimpleSelectProps = {
   options: readonly string[] | { value: string; label: string }[];
   required?: boolean;
   id?: string;
+  disabled?: boolean;
 };
 
-export function SimpleSelect({ name, value, onValueChange, placeholder, options, required, id }: SimpleSelectProps) {
+export function SimpleSelect({ name, value, onValueChange, placeholder, options, required, id, disabled }: SimpleSelectProps) {
   const items = options.map((option) =>
     typeof option === "string" ? { value: option, label: option } : option,
   );
@@ -86,7 +87,7 @@ export function SimpleSelect({ name, value, onValueChange, placeholder, options,
   return (
     <>
       {name ? <input type="hidden" name={name} value={value} required={required} /> : null}
-      <Select value={value || undefined} onValueChange={onValueChange}>
+      <Select value={value || undefined} onValueChange={onValueChange} disabled={disabled}>
         <SelectTrigger id={id} aria-required={required}>
           <SelectValue placeholder={placeholder} />
         </SelectTrigger>

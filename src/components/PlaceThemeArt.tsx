@@ -25,6 +25,6 @@ export function PlaceThemeArt({ id, kind }: { id: string; kind: "council" | "cha
     aria-hidden="true"
     data-place-art={id}
   >
-    <img src={src} alt="" />
+    <img src={src} alt="" loading="lazy" decoding="async" />
   </div>;
 }

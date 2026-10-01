@@ -5,6 +5,7 @@ import { PageHero } from "../components/layout/PageHero";
 import { Container } from "../components/ui/Container";
 import { FitImage } from "../components/ui/FitImage";
 import { Section } from "../components/ui/Section";
+import { usePageSections } from "../hooks/usePageSections";
 import { site } from "../data/site";
 import { useLocale } from "../i18n/LocaleProvider";
 
@@ -12,6 +13,9 @@ export default function SupportPage() {
   const { t } = useLocale();
   const write = t("page.support.write", { email: "EMAIL" });
   const [before, after] = write.split("EMAIL");
+  const { sections } = usePageSections("support");
+  const grievanceBody = sections[0]?.body;
+  const communityBody = sections[1]?.body;
   return (
     <>
       <DocumentTitle title={t("page.support.title")} />
@@ -29,15 +33,21 @@ export default function SupportPage() {
           <div>
             <h2 className="text-2xl font-bold text-[var(--ipf-navy)]">{t("page.support.grievTitle")}</h2>
             <div className="mt-4 space-y-4 text-sm leading-7 text-[var(--ipf-muted)]">
-              <p>
-                <strong className="text-[var(--ipf-navy)]">{t("page.support.cultural")}</strong> {t("page.support.culturalBody")}
-              </p>
-              <p>
-                <strong className="text-[var(--ipf-navy)]">{t("page.support.workers")}</strong> {t("page.support.workersBody")}
-              </p>
-              <p>
-                <strong className="text-[var(--ipf-navy)]">{t("page.support.local")}</strong> {t("page.support.localBody")}
-              </p>
+              {grievanceBody ? (
+                grievanceBody.split(/\n{2,}/).map((para, i) => <p key={i}>{para}</p>)
+              ) : (
+                <>
+                  <p>
+                    <strong className="text-[var(--ipf-navy)]">{t("page.support.cultural")}</strong> {t("page.support.culturalBody")}
+                  </p>
+                  <p>
+                    <strong className="text-[var(--ipf-navy)]">{t("page.support.workers")}</strong> {t("page.support.workersBody")}
+                  </p>
+                  <p>
+                    <strong className="text-[var(--ipf-navy)]">{t("page.support.local")}</strong> {t("page.support.localBody")}
+                  </p>
+                </>
+              )}
               <p>
                 {before}
                 <a className="font-semibold text-[var(--ipf-navy)]" href={`mailto:${site.grievanceEmail}`}>
@@ -57,7 +67,7 @@ export default function SupportPage() {
         <Container className="grid gap-8 lg:grid-cols-2 lg:items-start">
           <div>
             <h2 className="text-2xl font-bold text-[var(--ipf-navy)]">{t("page.support.communityTitle")}</h2>
-            <p className="mt-4 text-sm leading-7 text-[var(--ipf-muted)]">{t("page.support.communityBody")}</p>
+            <p className="mt-4 text-sm leading-7 text-[var(--ipf-muted)]">{communityBody || t("page.support.communityBody")}</p>
           </div>
           <FitImage className="lg:order-first" src="/legacy-assets/images/community-support.png" alt="IPF community support" />
         </Container>

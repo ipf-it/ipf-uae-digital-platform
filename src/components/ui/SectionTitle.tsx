@@ -34,7 +34,7 @@ export function SectionTitle({
       </h2>
       <div
         className={cn(
-          "mt-3 h-1 w-16 bg-[linear-gradient(90deg,var(--ipf-saffron),#fff,var(--ipf-green))]",
+          "mt-3 h-1 w-16 rounded-full bg-[linear-gradient(90deg,var(--ipf-saffron),#fff,var(--ipf-green))]",
           centered ? "mx-auto" : "",
         )}
       />

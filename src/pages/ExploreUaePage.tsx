@@ -9,7 +9,7 @@ import { Section } from "../components/ui/Section";
 import { PillNav } from "../components/ui/Tabs";
 import { galleryNavItems } from "../data/galleryNav";
 import { chapterPath } from "../data/orgNav";
-import { chapters } from "../data/platformContent";
+import { useOrgChapters } from "../hooks/useOrgDirectory";
 import { img } from "../data/site";
 import { useLocale } from "../i18n/LocaleProvider";
 
@@ -18,6 +18,7 @@ const highlightKeys = ["h1", "h2", "h3"] as const;
 export default function ExploreUaePage() {
   const { t } = useLocale();
   const { content } = useCms();
+  const { chapters } = useOrgChapters();
   const slides = content.galleryImages.slice(0, 6);
   return (
     <>

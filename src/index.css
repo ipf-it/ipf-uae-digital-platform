@@ -115,6 +115,16 @@ html:not([lang="en"]) thead th {
 .ipf-theme-mandala::after { content:""; position:absolute; inset:20%; border:1px solid rgba(255,255,255,.35); border-radius:28%; rotate:45deg; box-shadow:0 0 0 3rem rgba(255,153,51,.035),0 0 0 6rem rgba(19,136,8,.025); }
 .ipf-theme-ribbon { position:absolute; width:75vw; height:10rem; right:-15vw; bottom:12%; rotate:-9deg; background:linear-gradient(180deg,rgba(255,153,51,.16),rgba(255,255,255,.08),rgba(19,136,8,.13)); filter:blur(1px); border-radius:50%; animation:ipf-theme-breathe 8s ease-in-out infinite; }
 .ipf-theme-weave { position:absolute; inset:0 0 0 48%; opacity:.12; background-image:linear-gradient(45deg,transparent 46%,rgba(255,255,255,.35) 47% 53%,transparent 54%),linear-gradient(-45deg,transparent 46%,rgba(255,255,255,.22) 47% 53%,transparent 54%); background-size:42px 42px; animation:ipf-theme-weave 18s linear infinite; mask-image:linear-gradient(90deg,transparent,#000); }
+/* Hides the scrollbar on a horizontally-scrollable row (e.g. the events carousel) while keeping
+   native touch/trackpad scroll fully functional — no JS carousel library needed. */
+.scrollbar-hide {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
 @keyframes ipf-theme-spin { to { transform:rotate(360deg); } }
 @keyframes ipf-theme-breathe { 50% { transform:translate3d(-3%,12px,0) scaleY(1.18); opacity:.8; } }
 @keyframes ipf-theme-weave { to { background-position:84px 42px,-84px 42px; } }
@@ -293,6 +303,28 @@ html:not([lang="en"]) thead th {
 .ipf-toast[data-swipe="cancel"] { transform: translateX(0); }
 .ipf-toast[data-swipe="end"] { animation: ipf-toast-out 160ms ease-in; }
 
+/* Smooth enter/exit for every Radix-driven overlay (Dialog, DropdownMenu, Select) — same
+   data-state-attribute pattern as the toast above, applied site-wide via the shared ui/ primitives
+   rather than one-off per usage. */
+@keyframes ipf-overlay-in { from { opacity: 0; } to { opacity: 1; } }
+@keyframes ipf-overlay-out { from { opacity: 1; } to { opacity: 0; } }
+@keyframes ipf-dialog-in { from { opacity: 0; transform: translate(-50%, -50%) scale(0.96); } to { opacity: 1; transform: translate(-50%, -50%) scale(1); } }
+@keyframes ipf-dialog-out { from { opacity: 1; transform: translate(-50%, -50%) scale(1); } to { opacity: 0; transform: translate(-50%, -50%) scale(0.96); } }
+@keyframes ipf-pop-in { from { opacity: 0; transform: scale(0.96) translateY(-4px); } to { opacity: 1; transform: scale(1) translateY(0); } }
+@keyframes ipf-pop-out { from { opacity: 1; transform: scale(1) translateY(0); } to { opacity: 0; transform: scale(0.96) translateY(-4px); } }
+
+.ipf-overlay[data-state="open"] { animation: ipf-overlay-in 180ms ease-out; }
+.ipf-overlay[data-state="closed"] { animation: ipf-overlay-out 150ms ease-in; }
+.ipf-dialog-content[data-state="open"] { animation: ipf-dialog-in 180ms cubic-bezier(0.16, 1, 0.3, 1); }
+.ipf-dialog-content[data-state="closed"] { animation: ipf-dialog-out 150ms ease-in; }
+.ipf-pop-content[data-state="open"] { animation: ipf-pop-in 150ms cubic-bezier(0.16, 1, 0.3, 1); }
+.ipf-pop-content[data-state="closed"] { animation: ipf-pop-out 120ms ease-in; }
+
+@keyframes ipf-accordion-down { from { height: 0; } to { height: var(--radix-accordion-content-height); } }
+@keyframes ipf-accordion-up { from { height: var(--radix-accordion-content-height); } to { height: 0; } }
+.ipf-accordion-content[data-state="open"] { animation: ipf-accordion-down 200ms ease-out; }
+.ipf-accordion-content[data-state="closed"] { animation: ipf-accordion-up 200ms ease-out; }
+
 @media (prefers-reduced-motion: reduce) {
   .ipf-cloth svg,
   .ipf-emblem-spin,
@@ -300,7 +332,15 @@ html:not([lang="en"]) thead th {
   .ipf-splash-letter.is-on,
   .ipf-splash-rule.is-on,
   .ipf-toast[data-state="open"],
-  .ipf-toast[data-state="closed"] {
+  .ipf-toast[data-state="closed"],
+  .ipf-overlay[data-state="open"],
+  .ipf-overlay[data-state="closed"],
+  .ipf-dialog-content[data-state="open"],
+  .ipf-dialog-content[data-state="closed"],
+  .ipf-pop-content[data-state="open"],
+  .ipf-pop-content[data-state="closed"],
+  .ipf-accordion-content[data-state="open"],
+  .ipf-accordion-content[data-state="closed"] {
     animation: none;
   }
 

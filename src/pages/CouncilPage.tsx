@@ -5,9 +5,10 @@ import { EventCard } from "../components/EventCard";
 import { Button } from "../components/ui/Button";
 import { Card, CardGrid } from "../components/ui/Card";
 import { Container } from "../components/ui/Container";
-import { PersonIdentity } from "../components/ui/PersonIdentity";
+import { CommitteeList } from "../components/CommitteeHierarchy";
 import { Section } from "../components/ui/Section";
 import { StatPill } from "../components/ui/StatPill";
+import { FramedPhoto } from "../components/ui/TricolorFrame";
 import { site } from "../data/site";
 import { useLocale } from "../i18n/LocaleProvider";
 import { useScopeStats } from "../hooks/useScopeStats";
@@ -43,9 +44,11 @@ export default function CouncilPage() {
     tenantContent?.intro ||
     council.description ||
     (council.kind === "state" ? t("page.council.stateIntro", { name: council.name, state: council.region }) : t("page.councils.specialBody"));
-  const heroIntro = council.kind === "state"
-    ? "Connecting our community through culture and service across the UAE."
-    : "Focused community programmes connecting people across the UAE.";
+  const heroIntro =
+    tenantContent?.tagline ||
+    (council.kind === "state"
+      ? "Connecting our community through culture and service across the UAE."
+      : "Focused community programmes connecting people across the UAE.");
 
   const pageStyle = { "--org-primary": theme.primary, "--org-secondary": theme.secondary, "--org-accent": theme.accent } as CSSProperties;
   return (
@@ -60,6 +63,14 @@ export default function CouncilPage() {
               <StatPill label="Volunteers" value={String(stats.volunteerCount)} />
               <StatPill label="Upcoming events" value={String(stats.upcomingEventCount)} />
             </div>
+            {tenantContent?.hero_image ? (
+              <FramedPhoto
+                src={tenantContent.hero_image}
+                alt={council.name}
+                imgClassName="h-56 w-full bg-[var(--ipf-navy)] object-cover sm:h-72"
+                loading="lazy"
+              />
+            ) : null}
             <p>{intro}</p>
             <p>{t("page.council.workLead")}</p>
             <ul className="list-disc space-y-2 pl-5">
@@ -104,11 +115,7 @@ export default function CouncilPage() {
             </Card>
             <Card tone="ivory" title={t("page.council.officersTitle")}>
               {officers.length > 0 ? (
-                <div className="grid gap-3">
-                  {officers.map((officer) => (
-                    <PersonIdentity key={officer.id} src={officer.personImage} alt={officer.personName} name={officer.personName} role={officer.positionTitle} />
-                  ))}
-                </div>
+                <CommitteeList entries={officers} />
               ) : (
                 <p className="text-sm leading-7 text-[var(--ipf-muted)]">{t("page.council.officersEmpty")}</p>
               )}
@@ -121,6 +128,21 @@ export default function CouncilPage() {
           </aside>
         </Container>
       </Section>
+      {tenantContent && tenantContent.gallery.length > 0 ? (
+        <Section tone="white" className="council-theme-section">
+          <Container className="space-y-4">
+            <h2 className="text-2xl font-bold text-[var(--ipf-navy)]">{council.name} in pictures</h2>
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {tenantContent.gallery.filter((item) => item.src).map((item, index) => (
+                <figure key={`${item.src}-${index}`} className="min-w-0">
+                  <FramedPhoto src={item.src} alt={item.alt || council.name} fit="contain" loading="lazy" imgClassName="h-56 w-full bg-[var(--ipf-navy)]" />
+                  {item.caption ? <figcaption className="px-3 py-3 text-xs text-[var(--ipf-muted)]">{item.caption}</figcaption> : null}
+                </figure>
+              ))}
+            </div>
+          </Container>
+        </Section>
+      ) : null}
       {upcomingEvents.length > 0 ? (
         <Section tone="white" className="council-theme-section">
           <Container className="space-y-4">

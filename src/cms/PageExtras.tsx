@@ -48,8 +48,8 @@ export function PageExtras({ page, tone = "ivory" }: { page: CmsPageKey; tone?: 
                           key={slide.src}
                           src={slide.src}
                           alt={slide.alt}
-                          fit="contain"
-                          imgClassName="h-56 w-full bg-[var(--ipf-navy)] sm:h-64"
+                          fit="cover"
+                          imgClassName="h-56 w-full sm:h-64"
                         />
                       ))}
                     </div>

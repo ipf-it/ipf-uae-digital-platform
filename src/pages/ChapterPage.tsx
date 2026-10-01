@@ -5,9 +5,10 @@ import { EventCard } from "../components/EventCard";
 import { Button } from "../components/ui/Button";
 import { Card, CardGrid } from "../components/ui/Card";
 import { Container } from "../components/ui/Container";
-import { PersonIdentity } from "../components/ui/PersonIdentity";
+import { CommitteeList } from "../components/CommitteeHierarchy";
 import { Section } from "../components/ui/Section";
 import { StatPill } from "../components/ui/StatPill";
+import { FramedPhoto } from "../components/ui/TricolorFrame";
 import { chapterPath } from "../data/orgNav";
 import { site } from "../data/site";
 import { useLocale } from "../i18n/LocaleProvider";
@@ -48,7 +49,7 @@ export default function ChapterPage() {
       <ChapterJourneyHero
         id={chapter.id}
         title={chapter.name}
-        description="Connecting the local community through welfare, culture and service."
+        description={tenantContent?.tagline || "Connecting the local community through welfare, culture and service."}
         theme={theme}
       />
       <Section tone="white" className="chapter-theme-section chapter-theme-section--story">
@@ -59,6 +60,14 @@ export default function ChapterPage() {
               <StatPill label="Volunteers" value={String(stats.volunteerCount)} />
               <StatPill label="Upcoming events" value={String(stats.upcomingEventCount)} />
             </div>
+            {tenantContent?.hero_image ? (
+              <FramedPhoto
+                src={tenantContent.hero_image}
+                alt={chapter.name}
+                imgClassName="h-56 w-full bg-[var(--ipf-navy)] object-cover sm:h-72"
+                loading="lazy"
+              />
+            ) : null}
             <p>{tenantContent?.intro || chapter.description || t("page.chapter.intro", { name: chapter.name })}</p>
             <p>{t("page.chapter.workLead")}</p>
             <ul className="list-disc space-y-2 pl-5">
@@ -110,11 +119,7 @@ export default function ChapterPage() {
             </Card>
             <Card tone="ivory" title={t("page.council.officersTitle")}>
               {officers.length > 0 ? (
-                <div className="grid gap-3">
-                  {officers.map((officer) => (
-                    <PersonIdentity key={officer.id} src={officer.personImage} alt={officer.personName} name={officer.personName} role={officer.positionTitle} />
-                  ))}
-                </div>
+                <CommitteeList entries={officers} />
               ) : (
                 <p className="text-sm leading-7 text-[var(--ipf-muted)]">{t("page.chapter.officersEmpty")}</p>
               )}
@@ -127,6 +132,21 @@ export default function ChapterPage() {
           </aside>
         </Container>
       </Section>
+      {tenantContent && tenantContent.gallery.length > 0 ? (
+        <Section tone="white" className="chapter-theme-section">
+          <Container className="space-y-4">
+            <h2 className="text-2xl font-bold text-[var(--ipf-navy)]">{chapter.name} in pictures</h2>
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {tenantContent.gallery.filter((item) => item.src).map((item, index) => (
+                <figure key={`${item.src}-${index}`} className="min-w-0">
+                  <FramedPhoto src={item.src} alt={item.alt || chapter.name} fit="contain" loading="lazy" imgClassName="h-56 w-full bg-[var(--ipf-navy)]" />
+                  {item.caption ? <figcaption className="px-3 py-3 text-xs text-[var(--ipf-muted)]">{item.caption}</figcaption> : null}
+                </figure>
+              ))}
+            </div>
+          </Container>
+        </Section>
+      ) : null}
       {upcomingEvents.length > 0 ? (
         <Section tone="white" className="chapter-theme-section">
           <Container className="space-y-4">

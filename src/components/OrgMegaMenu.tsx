@@ -1,16 +1,17 @@
 import type { ReactNode } from "react";
 import { Link } from "react-router-dom";
 import { ArrowRight, Phone } from "lucide-react";
-import { emirateNavItems, specialCouncils, stateCouncils, type OrgNavLink } from "../data/orgNav";
+import { chapterPath, councilPath } from "../data/orgNav";
+import { useOrgChapters, useOrgCouncils } from "../hooks/useOrgDirectory";
 import { useLocale } from "../i18n/LocaleProvider";
 import { cn } from "../lib/utils";
 
-const bulletClass: Record<NonNullable<OrgNavLink["bullet"]>, string> = {
+type Bullet = "saffron" | "green" | "navy";
+
+const bulletClass: Record<Bullet, string> = {
   saffron: "bg-[var(--ipf-saffron)]",
   green: "bg-[var(--ipf-green)]",
   navy: "bg-[var(--ipf-navy)]",
-  violet: "bg-[var(--ipf-navy)]",
-  pink: "bg-[var(--ipf-navy)]",
 };
 
 type MenuProps = {
@@ -63,7 +64,7 @@ export function MegaLink({
 }: {
   to: string;
   label: string;
-  bullet?: OrgNavLink["bullet"];
+  bullet?: Bullet;
   onNavigate?: () => void;
 }) {
   return (
@@ -73,7 +74,7 @@ export function MegaLink({
         onClick={onNavigate}
         className="flex items-center gap-2.5 py-2 text-[13px] text-[var(--ipf-navy)] transition hover:text-[var(--ipf-green)]"
       >
-        <span className={cn("size-1.5 shrink-0 rounded-full", bulletClass[bullet ?? "navy"])} />
+        <span className={cn("size-1.5 shrink-0 rounded-full", bulletClass[bullet])} />
         {label}
       </Link>
     </li>
@@ -82,8 +83,9 @@ export function MegaLink({
 
 export function ChaptersMegaMenu({ onNavigate }: MenuProps) {
   const { t } = useLocale();
-  const left = emirateNavItems.slice(0, 4);
-  const right = emirateNavItems.slice(4);
+  const { chapters } = useOrgChapters();
+  const left = chapters.slice(0, 4);
+  const right = chapters.slice(4);
 
   return (
     <div className="px-4 py-5 sm:px-5">
@@ -92,12 +94,12 @@ export function ChaptersMegaMenu({ onNavigate }: MenuProps) {
       <div className="mt-2 grid grid-cols-2 divide-x divide-[var(--ipf-line)]">
         <ul className="pr-5">
           {left.map((item) => (
-            <MegaLink key={item.id} to={item.to} label={item.name} bullet="saffron" onNavigate={onNavigate} />
+            <MegaLink key={item.id} to={chapterPath(item.id)} label={item.name} bullet="saffron" onNavigate={onNavigate} />
           ))}
         </ul>
         <ul className="pl-5">
           {right.map((item) => (
-            <MegaLink key={item.id} to={item.to} label={item.name} bullet="saffron" onNavigate={onNavigate} />
+            <MegaLink key={item.id} to={chapterPath(item.id)} label={item.name} bullet="saffron" onNavigate={onNavigate} />
           ))}
         </ul>
       </div>
@@ -115,17 +117,20 @@ export function ChaptersMegaMenu({ onNavigate }: MenuProps) {
 
 export function CouncilsMegaMenu({ onNavigate }: MenuProps) {
   const { t } = useLocale();
+  const { councils } = useOrgCouncils();
+  const stateCouncils = councils.filter((item) => item.kind === "state");
+  const specialCouncils = councils.filter((item) => item.kind === "special");
 
   return (
     <NavPanel columns={3}>
       <MegaColumn title={t("nav.stateCouncils")} titleClass="text-[var(--ipf-green)]" barClass="bg-[var(--ipf-green)]">
         {stateCouncils.map((item) => (
-          <MegaLink key={item.id} to={item.to} label={item.name} bullet="green" onNavigate={onNavigate} />
+          <MegaLink key={item.id} to={councilPath(item.id)} label={item.name} bullet="green" onNavigate={onNavigate} />
         ))}
       </MegaColumn>
       <MegaColumn title={t("nav.specialCouncils")} titleClass="text-[var(--ipf-navy)]" barClass="bg-[var(--ipf-navy)]">
         {specialCouncils.map((item) => (
-          <MegaLink key={item.id} to={item.to} label={item.name} bullet="navy" onNavigate={onNavigate} />
+          <MegaLink key={item.id} to={councilPath(item.id)} label={item.name} bullet="navy" onNavigate={onNavigate} />
         ))}
       </MegaColumn>
       <MegaColumn
@@ -149,12 +154,12 @@ export function CouncilsMegaMenu({ onNavigate }: MenuProps) {
   );
 }
 
-function MobileLinks({ items, onNavigate }: { items: OrgNavLink[]; onNavigate?: () => void }) {
+function MobileLinks({ items, onNavigate }: { items: { id: string; to: string; name: string }[]; onNavigate?: () => void }) {
   return (
     <>
       {items.map((item) => (
         <Link
-          key={`${item.id}-${item.name}`}
+          key={item.id}
           to={item.to}
           className="block rounded-lg py-1.5 pl-1 text-sm text-[var(--ipf-muted)] hover:text-[var(--ipf-navy)]"
           onClick={onNavigate}
@@ -168,9 +173,10 @@ function MobileLinks({ items, onNavigate }: { items: OrgNavLink[]; onNavigate?: 
 
 export function ChaptersMobileList({ onNavigate }: MenuProps) {
   const { t } = useLocale();
+  const { chapters } = useOrgChapters();
   return (
     <div>
-      <MobileLinks items={emirateNavItems} onNavigate={onNavigate} />
+      <MobileLinks items={chapters.map((item) => ({ id: item.id, to: chapterPath(item.id), name: item.name }))} onNavigate={onNavigate} />
       <Link
         to="/chapters"
         className="mt-1 inline-flex items-center gap-1 text-sm font-semibold text-[var(--ipf-saffron)]"
@@ -185,15 +191,18 @@ export function ChaptersMobileList({ onNavigate }: MenuProps) {
 
 export function CouncilsMobileList({ onNavigate }: MenuProps) {
   const { t } = useLocale();
+  const { councils } = useOrgCouncils();
+  const stateCouncils = councils.filter((item) => item.kind === "state");
+  const specialCouncils = councils.filter((item) => item.kind === "special");
   return (
     <div className="space-y-4">
       <div>
         <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-[var(--ipf-green)]">{t("nav.stateCouncils")}</p>
-        <MobileLinks items={stateCouncils} onNavigate={onNavigate} />
+        <MobileLinks items={stateCouncils.map((item) => ({ id: item.id, to: councilPath(item.id), name: item.name }))} onNavigate={onNavigate} />
       </div>
       <div>
         <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-[var(--ipf-navy)]">{t("nav.specialCouncils")}</p>
-        <MobileLinks items={specialCouncils} onNavigate={onNavigate} />
+        <MobileLinks items={specialCouncils.map((item) => ({ id: item.id, to: councilPath(item.id), name: item.name }))} onNavigate={onNavigate} />
       </div>
       <Link
         to="/support#community"

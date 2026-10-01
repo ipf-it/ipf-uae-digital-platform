@@ -5,6 +5,7 @@ import { Button } from "../components/ui/Button";
 import { Card } from "../components/ui/Card";
 import { Container } from "../components/ui/Container";
 import { Section } from "../components/ui/Section";
+import { PageSectionRenderer } from "../components/PageSectionRenderer";
 import { useLocale } from "../i18n/LocaleProvider";
 
 export default function YuvaPage() {
@@ -19,24 +20,14 @@ export default function YuvaPage() {
         crumbs={[{ label: t("page.yuva.title") }]}
       />
       <Section tone="white">
-        <Container className="grid gap-10 lg:grid-cols-[1.1fr,0.9fr]">
-          <div className="space-y-5 text-sm leading-7 text-[var(--ipf-muted)]">
-            <p>{t("page.yuva.p1")}</p>
-            <p>{t("page.yuva.p2")}</p>
-            <ul className="list-disc space-y-2 pl-5">
-              <li>{t("page.yuva.li1")}</li>
-              <li>{t("page.yuva.li2")}</li>
-              <li>{t("page.yuva.li3")}</li>
-              <li>{t("page.yuva.li4")}</li>
-            </ul>
-            <div className="flex flex-wrap gap-3 pt-2">
-              <Button asChild>
-                <Link to="/register?kind=yuva">{t("page.yuva.registerYuva")}</Link>
-              </Button>
-              <Button asChild variant="outline">
-                <Link to="/register">{t("page.yuva.registerMember")}</Link>
-              </Button>
-            </div>
+        <Container className="grid gap-10 lg:grid-cols-[1.1fr,0.9fr] lg:items-start">
+          <div className="flex flex-wrap gap-3">
+            <Button asChild>
+              <Link to="/register?kind=yuva">{t("page.yuva.registerYuva")}</Link>
+            </Button>
+            <Button asChild variant="outline">
+              <Link to="/register">{t("page.yuva.registerMember")}</Link>
+            </Button>
           </div>
           <Card tone="ivory" title={t("page.membership.twoWays")}>
             <p className="text-sm leading-7 text-[var(--ipf-muted)]">
@@ -48,6 +39,7 @@ export default function YuvaPage() {
           </Card>
         </Container>
       </Section>
+      <PageSectionRenderer pageId="yuva" startTone="white" />
     </>
   );
 }

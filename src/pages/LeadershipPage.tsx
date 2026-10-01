@@ -2,12 +2,10 @@ import { Link } from "react-router-dom";
 import { DocumentTitle } from "../components/layout/DocumentTitle";
 import { PageHero } from "../components/layout/PageHero";
 import { Button } from "../components/ui/Button";
-import { Card, CardGrid } from "../components/ui/Card";
 import { Container } from "../components/ui/Container";
-import { PersonIdentity } from "../components/ui/PersonIdentity";
 import { Section } from "../components/ui/Section";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../components/ui/Table";
 import { FramedPhoto } from "../components/ui/TricolorFrame";
+import { CommitteeHierarchy } from "../components/CommitteeHierarchy";
 import { presidentMessageBody } from "../data/platformContent";
 import { useLeadership } from "../hooks/useOrgDirectory";
 import { img, site } from "../data/site";
@@ -16,11 +14,6 @@ import { useLocale } from "../i18n/LocaleProvider";
 export default function LeadershipPage() {
   const { t } = useLocale();
   const { leadership } = useLeadership("global");
-  // Central Committee members have a photo on file; the wider extended committee (Business
-  // Council convenors, CSR/legal/media leads, etc.) doesn't — same distinction the page has
-  // always drawn, now derived from live appointment data instead of two separate hardcoded lists.
-  const committee = leadership.filter((entry) => entry.personImage);
-  const extended = leadership.filter((entry) => !entry.personImage);
 
   return (
     <>
@@ -64,35 +57,8 @@ export default function LeadershipPage() {
           <p className="mt-3 max-w-3xl text-sm leading-7 text-[var(--ipf-muted)]">
             {t("page.leadership.committeeBody")}
           </p>
-          <CardGrid columns={2} className="mt-8">
-            {committee.map((member) => (
-              <Card key={member.id} size="sm" tone="ivory">
-                <PersonIdentity src={member.personImage} alt={member.personName} name={member.personName} role={member.positionTitle} />
-              </Card>
-            ))}
-          </CardGrid>
-        </Container>
-      </Section>
-      <Section tone="white">
-        <Container>
-          <h2 className="text-2xl font-bold text-[var(--ipf-navy)]">{t("page.leadership.extended")}</h2>
-          <div className="mt-6">
-            <Table>
-              <TableHead>
-                <tr>
-                  <TableHeader>{t("page.leadership.role")}</TableHeader>
-                  <TableHeader>{t("page.leadership.member")}</TableHeader>
-                </tr>
-              </TableHead>
-              <TableBody>
-                {extended.map((row) => (
-                  <TableRow key={row.id}>
-                    <TableCell className="font-medium text-[var(--ipf-navy)]">{row.positionTitle}</TableCell>
-                    <TableCell>{row.personName}</TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+          <div className="mt-10">
+            <CommitteeHierarchy entries={leadership} tableCaption={t("page.leadership.extended")} />
           </div>
         </Container>
       </Section>

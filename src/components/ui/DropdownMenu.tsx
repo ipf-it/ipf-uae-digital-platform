@@ -28,7 +28,7 @@ export function DropdownMenuContent({ className, sideOffset = 6, align = "end", 
         sideOffset={sideOffset}
         align={align}
         className={cn(
-          "z-50 min-w-40 overflow-hidden rounded-lg border border-[var(--ipf-line)] bg-[var(--ipf-paper)] p-1 shadow-[0_12px_28px_rgba(11,31,58,0.12)]",
+          "ipf-pop-content z-50 min-w-40 overflow-hidden rounded-lg border border-[var(--ipf-line)] bg-[var(--ipf-paper)] p-1 shadow-[0_12px_28px_rgba(11,31,58,0.12)]",
           className,
         )}
         {...props}

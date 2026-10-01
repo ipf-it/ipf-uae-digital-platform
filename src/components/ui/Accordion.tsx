@@ -30,7 +30,7 @@ export function AccordionTrigger({ className, children, ...props }: ComponentPro
 export function AccordionContent({ className, children, ...props }: ComponentProps<typeof AccordionPrimitive.Content>) {
   return (
     <AccordionPrimitive.Content
-      className={cn("overflow-hidden text-sm data-[state=closed]:animate-none", className)}
+      className={cn("ipf-accordion-content overflow-hidden text-sm", className)}
       {...props}
     >
       <div className="pb-3">{children}</div>

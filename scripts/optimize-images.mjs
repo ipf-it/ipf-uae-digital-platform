@@ -1,15 +1,17 @@
-// One-time (and repeatable) image optimization pass over public/legacy-assets/images/.
-// Many of these were migrated from the old site as full-resolution screenshots/newsletter
-// covers saved as lossless PNG — several single files were 1-3.5MB. This resizes anything wider
-// than a reasonable display max and re-compresses in place, keeping the exact same filename/
-// extension so no source reference in the app needs to change.
+// One-time (and repeatable) image optimization pass over a public assets folder. Many of these
+// were saved as full-resolution lossless PNG/JPEG (migrated screenshots, or raw AI-generated
+// illustration exports) — several single files were 1-3.5MB. This resizes anything wider than a
+// reasonable display max and re-compresses in place, keeping the exact same filename/extension so
+// no source reference in the app needs to change.
 //
-// Usage: node scripts/optimize-images.mjs
+// Usage: node scripts/optimize-images.mjs [relative-dir-under-public]
+// Defaults to public/legacy-assets/images if no argument is given.
 import { readdirSync, statSync, renameSync } from "node:fs";
 import { join, extname } from "node:path";
 import sharp from "sharp";
 
-const DIR = new URL("../public/legacy-assets/images", import.meta.url).pathname;
+const target = process.argv[2] || "legacy-assets/images";
+const DIR = new URL(`../public/${target}`, import.meta.url).pathname;
 const MAX_WIDTH = 1920;
 const SKIP_BELOW_BYTES = 60 * 1024; // not worth re-encoding already-small files
 

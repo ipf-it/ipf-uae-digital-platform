@@ -1,5 +1,5 @@
 import { lazy, Suspense } from "react";
-import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
+import { BrowserRouter, Route, Routes } from "react-router-dom";
 import { SiteLayout } from "./components/layout/SiteLayout";
 import { PageLoader } from "./components/layout/PageLoader";
 import { AdminLayout } from "./admin/AdminLayout";
@@ -14,13 +14,14 @@ const ChaptersPage = lazy(() => import("./pages/ChaptersPage"));
 const ChapterPage = lazy(() => import("./pages/ChapterPage"));
 const CouncilsPage = lazy(() => import("./pages/CouncilsPage"));
 const CouncilPage = lazy(() => import("./pages/CouncilPage"));
-const GalleryPage = lazy(() => import("./pages/GalleryPage"));
 const DiscoverIndiaPage = lazy(() => import("./pages/DiscoverIndiaPage"));
 const ExploreUaePage = lazy(() => import("./pages/ExploreUaePage"));
 const DrishtiPage = lazy(() => import("./pages/DrishtiPage"));
 const EventsPage = lazy(() => import("./pages/EventsPage"));
 const EventDetailPage = lazy(() => import("./pages/EventDetailPage"));
 const ResourcesPage = lazy(() => import("./pages/ResourcesPage"));
+const SponsorsPage = lazy(() => import("./pages/SponsorsPage"));
+const ActivitiesPage = lazy(() => import("./pages/ActivitiesPage"));
 const PortalCardPage = lazy(() => import("./pages/PortalCardPage"));
 const SupportPage = lazy(() => import("./pages/SupportPage"));
 const BlogPage = lazy(() => import("./pages/BlogPage"));
@@ -39,6 +40,9 @@ const JobsPage = lazy(() => import("./pages/JobsPage"));
 const DashboardTab = lazy(() => import("./admin/tabs/DashboardTab"));
 const OperationsTab = lazy(() => import("./admin/tabs/OperationsTab"));
 const OrganisationTab = lazy(() => import("./admin/tabs/OrganisationTab"));
+const PagesTab = lazy(() => import("./admin/tabs/PagesTab"));
+const PublicationsTab = lazy(() => import("./admin/tabs/PublicationsTab"));
+const NavigationTab = lazy(() => import("./admin/tabs/NavigationTab"));
 const CmsTab = lazy(() => import("./admin/tabs/CmsTab"));
 const SupportTab = lazy(() => import("./admin/tabs/SupportTab"));
 const PeopleTab = lazy(() => import("./admin/tabs/PeopleTab"));
@@ -54,42 +58,32 @@ function App() {
           <Route index element={<DashboardTab />} />
           <Route path="operations" element={<OperationsTab />} />
           <Route path="organisation" element={<OrganisationTab />} />
+          <Route path="pages" element={<PagesTab />} />
+          <Route path="publications" element={<PublicationsTab />} />
+          <Route path="navigation" element={<NavigationTab />} />
           <Route path="cms" element={<CmsTab />} />
           <Route path="support" element={<SupportTab />} />
           <Route path="people" element={<PeopleTab />} />
-          {/* Redirects from the pre-redesign admin tab layout, so old bookmarks keep working. */}
-          <Route path="events" element={<Navigate to="/admin/operations" replace />} />
-          <Route path="check-in" element={<Navigate to="/admin/operations?tab=checkin" replace />} />
-          <Route path="approvals" element={<Navigate to="/admin/operations?tab=approvals" replace />} />
-          <Route path="content" element={<Navigate to="/admin/cms" replace />} />
-          <Route path="my-page" element={<Navigate to="/admin/cms" replace />} />
-          <Route path="inbox" element={<Navigate to="/admin/support" replace />} />
         </Route>
-        <Route path="cms" element={<Navigate to="/admin/cms" replace />} />
         <Route element={<SiteLayout />}>
           <Route index element={<HomePage />} />
           <Route path="about" element={<AboutPage />} />
           <Route path="leadership" element={<LeadershipPage />} />
-          <Route path="president" element={<Navigate to="/leadership" replace />} />
-          <Route path="committee" element={<Navigate to="/leadership#committee" replace />} />
-          <Route path="commitee" element={<Navigate to="/leadership#committee" replace />} />
-          <Route path="president-message" element={<Navigate to="/leadership" replace />} />
           <Route path="governance" element={<GovernancePage />} />
           <Route path="history" element={<HistoryPage />} />
           <Route path="chapters" element={<ChaptersPage />} />
           <Route path="chapters/:chapterId" element={<ChapterPage />} />
           <Route path="councils" element={<CouncilsPage />} />
           <Route path="councils/:councilId" element={<CouncilPage />} />
-          <Route path="gallery" element={<GalleryPage />} />
-          <Route path="glimpses" element={<GalleryPage />} />
           <Route path="discover-india" element={<DiscoverIndiaPage />} />
           <Route path="explore-uae" element={<ExploreUaePage />} />
           <Route path="drishti" element={<DrishtiPage />} />
           <Route path="resources" element={<ResourcesPage />} />
+          <Route path="sponsors" element={<SponsorsPage />} />
+          <Route path="activities" element={<ActivitiesPage />} />
           <Route path="events" element={<EventsPage />} />
           <Route path="events/:eventId" element={<EventDetailPage />} />
           <Route path="support" element={<SupportPage />} />
-          <Route path="ipf-cares" element={<Navigate to="/support#community" replace />} />
           <Route path="blog" element={<BlogPage />} />
           <Route path="blog/:slug" element={<ArticlePage />} />
           <Route path="news" element={<NewsPage />} />
@@ -101,22 +95,10 @@ function App() {
           <Route path="register" element={<RegisterPage />} />
           <Route path="sign-in" element={<SignInPage />} />
           <Route path="donate" element={<DonatePage />} />
-          <Route path="donation" element={<Navigate to="/donate" replace />} />
-          <Route path="donations" element={<Navigate to="/donate" replace />} />
           <Route path="portal" element={<PortalPage />} />
           <Route path="portal/card" element={<PortalCardPage />} />
-          <Route path="portal/dashboard" element={<Navigate to="/portal" replace />} />
           <Route path="yuva" element={<YuvaPage />} />
           <Route path="jobs" element={<JobsPage />} />
-          <Route path="join" element={<Navigate to="/membership" replace />} />
-          <Route path="about-ipf" element={<Navigate to="/about" replace />} />
-          <Route path="drishti-e-magazine" element={<Navigate to="/drishti" replace />} />
-          <Route path="event-calendar" element={<Navigate to="/events" replace />} />
-          <Route path="support-activity" element={<Navigate to="/support" replace />} />
-          <Route path="ipf-application-form" element={<Navigate to="/membership" replace />} />
-          <Route path="testimonial" element={<Navigate to="/testimonials" replace />} />
-          <Route path="signin" element={<Navigate to="/sign-in" replace />} />
-          <Route path="login" element={<Navigate to="/sign-in" replace />} />
           <Route path="*" element={<NotFoundPage />} />
         </Route>
       </Routes>

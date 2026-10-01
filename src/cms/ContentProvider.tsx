@@ -23,7 +23,6 @@ async function loadContent(): Promise<CmsContent> {
       ...defaultCmsContent,
       ...raw,
       extras: { ...defaultCmsContent.extras, ...(raw.extras ?? {}) },
-      leadership: raw.leadership?.length ? raw.leadership : defaultCmsContent.leadership,
       heroSlides: raw.heroSlides?.length ? raw.heroSlides : defaultCmsContent.heroSlides,
       galleryImages: raw.galleryImages?.length ? raw.galleryImages : defaultCmsContent.galleryImages,
     };
