@@ -217,7 +217,7 @@ export default function HomePage() {
             src={img.indiaUae}
             alt={t("page.discover.photoAlt")}
             fit="cover"
-            imgClassName="aspect-[4/3] h-auto w-full"
+            imgClassName="aspect-[4/3] h-auto max-h-[22rem] w-full sm:max-h-[26rem]"
           />
         </Container>
       </Section>

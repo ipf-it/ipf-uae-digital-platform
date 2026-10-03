@@ -5,7 +5,7 @@ type PersonIdentityProps = {
   src: string;
   alt: string;
   name: string;
-  role: string;
+  role?: string;
   size?: "sm" | "md" | "lg";
   tone?: "light" | "dark";
   layout?: "row" | "stack";
@@ -70,9 +70,11 @@ export function PersonIdentity({
         <p className={cn("font-bold leading-6 break-words", tone === "dark" ? "text-white" : "text-[var(--ipf-navy)]")}>
           {name}
         </p>
-        <p className={cn("mt-1 text-sm leading-5 break-words", tone === "dark" ? "text-white/75" : "text-[var(--ipf-muted)]")}>
-          {role}
-        </p>
+        {role ? (
+          <p className={cn("mt-1 text-sm leading-5 break-words", tone === "dark" ? "text-white/75" : "text-[var(--ipf-muted)]")}>
+            {role}
+          </p>
+        ) : null}
       </div>
     </div>
   );
