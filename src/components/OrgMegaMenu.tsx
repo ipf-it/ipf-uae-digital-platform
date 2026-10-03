@@ -120,14 +120,31 @@ export function CouncilsMegaMenu({ onNavigate }: MenuProps) {
   const { councils } = useOrgCouncils();
   const stateCouncils = councils.filter((item) => item.kind === "state");
   const specialCouncils = councils.filter((item) => item.kind === "special");
+  // ~29 state councils in one column would run well past a typical viewport height with no way
+  // to scan it at a glance — splitting into two sub-columns (same pattern as the chapters menu)
+  // roughly halves the scroll length.
+  const half = Math.ceil(stateCouncils.length / 2);
+  const stateLeft = stateCouncils.slice(0, half);
+  const stateRight = stateCouncils.slice(half);
 
   return (
     <NavPanel columns={3}>
-      <MegaColumn title={t("nav.stateCouncils")} titleClass="text-[var(--ipf-green)]" barClass="bg-[var(--ipf-green)]">
-        {stateCouncils.map((item) => (
-          <MegaLink key={item.id} to={councilPath(item.id)} label={item.name} bullet="green" onNavigate={onNavigate} />
-        ))}
-      </MegaColumn>
+      <div className="flex min-w-0 flex-col px-4 py-5 sm:px-5">
+        <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-[var(--ipf-green)]">{t("nav.stateCouncils")}</p>
+        <div className="mt-1.5 h-0.5 w-11 rounded-full bg-[var(--ipf-green)]" />
+        <div className="mt-2 grid grid-cols-2 divide-x divide-[var(--ipf-line)]">
+          <ul className="pr-4">
+            {stateLeft.map((item) => (
+              <MegaLink key={item.id} to={councilPath(item.id)} label={item.name} bullet="green" onNavigate={onNavigate} />
+            ))}
+          </ul>
+          <ul className="pl-4">
+            {stateRight.map((item) => (
+              <MegaLink key={item.id} to={councilPath(item.id)} label={item.name} bullet="green" onNavigate={onNavigate} />
+            ))}
+          </ul>
+        </div>
+      </div>
       <MegaColumn title={t("nav.specialCouncils")} titleClass="text-[var(--ipf-navy)]" barClass="bg-[var(--ipf-navy)]">
         {specialCouncils.map((item) => (
           <MegaLink key={item.id} to={councilPath(item.id)} label={item.name} bullet="navy" onNavigate={onNavigate} />

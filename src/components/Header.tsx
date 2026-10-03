@@ -238,7 +238,7 @@ export function Header({ logoSrc }: HeaderProps) {
           </div>
         </Container>
         {mega ? (
-          <div className="absolute inset-x-0 top-full z-50 hidden border-t border-[var(--ipf-line)] bg-[var(--ipf-paper)] shadow-[0_24px_48px_rgba(11,31,58,0.14)] xl:block">
+          <div className="absolute inset-x-0 top-full z-50 hidden max-h-[calc(100vh-var(--ipf-header-h,4.85rem))] overflow-y-auto border-t border-[var(--ipf-line)] bg-[var(--ipf-paper)] shadow-[0_24px_48px_rgba(11,31,58,0.14)] xl:block">
             <Container>
               {mega === "chapters" ? (
                 <ChaptersMegaMenu onNavigate={() => setMega(null)} />
