@@ -543,7 +543,7 @@ export async function handleRequest(req: AppRequest): Promise<AppResponse> {
     if (method === "POST" && path === "/api/admin/events") {
       const admin = await adminFromRequest(req);
       if (!admin) return json(401, { error: "Administrator sign-in required" });
-      const body = await readJson<{ title?: string; eventDate?: string; location?: string; body?: string; category?: string; startsAt?: string; isFree?: boolean; slides?: unknown; registrationUrl?: string; capacity?: number | null; venueMapUrl?: string; eventContact?: string }>(req);
+      const body = await readJson<{ title?: string; eventDate?: string; location?: string; body?: string; category?: string; startsAt?: string; isFree?: boolean; slides?: unknown; registrationUrl?: string; capacity?: number | null; venueMapUrl?: string; eventContact?: string; featuredOnHomepage?: boolean }>(req);
       if (!body.title?.trim()) return json(400, { error: "Event title is required" });
       const id = `${body.title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 48)}-${randomUUID().slice(0, 8)}`;
       const scopeType = isGlobalAdmin(admin) ? "global" : admin.scope_type;
@@ -553,6 +553,7 @@ export async function handleRequest(req: AppRequest): Promise<AppResponse> {
         category: body.category ?? "Community", starts_at: body.startsAt || null, is_free: body.isFree !== false,
         slides: body.slides ?? [],
         registration_url: body.registrationUrl ?? "", capacity: body.capacity ?? null, venue_map_url: body.venueMapUrl ?? "", event_contact: body.eventContact ?? "",
+        featured_on_homepage: body.featuredOnHomepage ?? false,
         emirate: scopeType === "chapter" ? scopeId : "uae", scope_type: scopeType, scope_id: scopeId,
         workflow_status: isGlobalAdmin(admin) ? "published" : "draft", published: isGlobalAdmin(admin), created_by: admin.id,
       }).select("*").single();
@@ -569,10 +570,11 @@ export async function handleRequest(req: AppRequest): Promise<AppResponse> {
       const { data: current } = await supabase.from("events").select("*").eq("id", id).maybeSingle();
       if (!current) return json(404, { error: "Event not found" });
       if (!eventInScope(admin, current)) return json(403, { error: "This event is outside your assigned scope" });
-      const body = await readJson<{ title?: string; eventDate?: string; location?: string; body?: string; category?: string; startsAt?: string; isFree?: boolean; slides?: unknown; registrationUrl?: string; capacity?: number | null; venueMapUrl?: string; eventContact?: string }>(req);
+      const body = await readJson<{ title?: string; eventDate?: string; location?: string; body?: string; category?: string; startsAt?: string; isFree?: boolean; slides?: unknown; registrationUrl?: string; capacity?: number | null; venueMapUrl?: string; eventContact?: string; featuredOnHomepage?: boolean }>(req);
       const update = {
         title: body.title?.trim() || current.title, event_date: body.eventDate ?? current.event_date, location: body.location ?? current.location, body: body.body ?? current.body, category: body.category ?? current.category, starts_at: body.startsAt || null, is_free: body.isFree ?? current.is_free, slides: body.slides ?? current.slides,
         registration_url: body.registrationUrl ?? current.registration_url, capacity: body.capacity !== undefined ? body.capacity : current.capacity, venue_map_url: body.venueMapUrl ?? current.venue_map_url, event_contact: body.eventContact ?? current.event_contact,
+        featured_on_homepage: body.featuredOnHomepage ?? current.featured_on_homepage,
         updated_at: new Date().toISOString(), workflow_status: isGlobalAdmin(admin) ? current.workflow_status : "draft", published: isGlobalAdmin(admin) ? current.published : false,
       };
       const { data, error } = await supabase.from("events").update(update).eq("id", id).select("*").single();
@@ -1895,6 +1897,7 @@ export async function handleRequest(req: AppRequest): Promise<AppResponse> {
       // scope_type/scope_id — this pair lets a council's public page find its own events.
       const scopeType = url.searchParams.get("scopeType")?.trim() ?? "";
       const scopeId = url.searchParams.get("scopeId")?.trim() ?? "";
+      const featuredOnly = url.searchParams.get("featured") === "1";
       const limit = Math.min(Math.max(Number(url.searchParams.get("limit")) || DEFAULT_PAGE_SIZE, 1), MAX_PAGE_SIZE);
       const upcoming = tab === "upcoming";
 
@@ -1912,6 +1915,10 @@ export async function handleRequest(req: AppRequest): Promise<AppResponse> {
         if (scopeId) query = query.eq("scope_id", scopeId);
       }
       if (free === "1" || free === "true") query = query.eq("is_free", true);
+      // The homepage requests featured=1 first to show a super-admin-curated set across every
+      // scope (global/chapter/council) rather than whatever happens to be soonest chronologically;
+      // it falls back to the normal chronological list client-side if nothing is pinned yet.
+      if (featuredOnly) query = query.eq("featured_on_homepage", true);
       query = query.order("starts_at", { ascending: upcoming }).limit(limit + 1);
 
       const { data, error } = await query;

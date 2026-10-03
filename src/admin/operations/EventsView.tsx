@@ -28,11 +28,12 @@ type AdminEvent = {
   capacity?: number | null;
   venue_map_url?: string;
   event_contact?: string;
+  featured_on_homepage?: boolean;
 };
 
 const categories = ["Community", "Cultural", "Welfare", "Sports", "Youth", "Religious", "National"];
 const statuses = ["draft", "submitted", "changes_requested", "rejected", "approved", "published"];
-const blankForm = { title: "", eventDate: "", location: "", body: "", category: "Community", slides: [] as { src: string; alt?: string }[], registrationUrl: "", capacity: "", venueMapUrl: "", eventContact: "" };
+const blankForm = { title: "", eventDate: "", location: "", body: "", category: "Community", slides: [] as { src: string; alt?: string }[], registrationUrl: "", capacity: "", venueMapUrl: "", eventContact: "", featuredOnHomepage: false };
 
 const statusTone: Record<string, "navy" | "saffron" | "green" | "paper"> = {
   draft: "paper",
@@ -100,6 +101,7 @@ export default function EventsView() {
       capacity: item.capacity != null ? String(item.capacity) : "",
       venueMapUrl: item.venue_map_url ?? "",
       eventContact: item.event_contact ?? "",
+      featuredOnHomepage: item.featured_on_homepage ?? false,
     });
     setDialogOpen(true);
     if (isGlobalAdmin) {
@@ -242,7 +244,10 @@ export default function EventsView() {
               <TableCell className="font-semibold text-[var(--ipf-navy)]">{item.title}</TableCell>
               <TableCell>{item.event_date || "—"}</TableCell>
               <TableCell>
-                <Badge tone={statusTone[item.workflow_status] ?? "paper"}>{item.workflow_status}</Badge>
+                <div className="flex flex-wrap gap-1.5">
+                  <Badge tone={statusTone[item.workflow_status] ?? "paper"}>{item.workflow_status}</Badge>
+                  {item.featured_on_homepage ? <Badge tone="green">Featured</Badge> : null}
+                </div>
               </TableCell>
               <TableCell>
                 {item.memberCount ?? 0} · {item.volunteerCount ?? 0} volunteering
@@ -318,6 +323,10 @@ export default function EventsView() {
             <Field label="Venue map link (optional)" htmlFor="event-venue-map">
               <Input id="event-venue-map" value={form.venueMapUrl} onChange={(e) => setForm({ ...form, venueMapUrl: e.target.value })} placeholder="Google Maps link" />
             </Field>
+            <label className="flex items-center gap-2 text-sm text-[var(--ipf-navy)]">
+              <input type="checkbox" checked={form.featuredOnHomepage} onChange={(e) => setForm({ ...form, featuredOnHomepage: e.target.checked })} />
+              Feature on homepage
+            </label>
             <Field label="Event pictures" htmlFor="event-image">
               <Input
                 id="event-image"

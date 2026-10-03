@@ -52,6 +52,9 @@ export type EventListQuery = {
    * using `emirate` instead, since chapter-scoped events already carry it. */
   scopeType?: "chapter" | "council";
   scopeId?: string;
+  /** Homepage-only: only events a super admin has pinned, across every scope — lets the homepage
+   * show a curated set instead of whatever happens to be chronologically soonest. */
+  featured?: boolean;
 };
 
 export function startOfToday() {

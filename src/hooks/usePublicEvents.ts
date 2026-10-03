@@ -18,7 +18,7 @@ export function usePublicEvents(query: EventListQuery) {
     for (const event of [...catalogSeedEvents, ...fromCms]) byId.set(event.id, event);
     return filterPublicEvents([...byId.values()], query);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [content.eventHighlights, query.tab, query.category, query.emirate, query.free, query.scopeType, query.scopeId]);
+  }, [content.eventHighlights, query.tab, query.category, query.emirate, query.free, query.scopeType, query.scopeId, query.featured]);
 
   function buildParams(after?: string | null) {
     const params = new URLSearchParams();
@@ -30,6 +30,7 @@ export function usePublicEvents(query: EventListQuery) {
       params.set("scopeType", query.scopeType);
       params.set("scopeId", query.scopeId);
     }
+    if (query.featured) params.set("featured", "1");
     if (after) params.set("after", after);
     return params;
   }
@@ -54,7 +55,7 @@ export function usePublicEvents(query: EventListQuery) {
       active = false;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [fallback, query.tab, query.category, query.emirate, query.free, query.scopeType, query.scopeId]);
+  }, [fallback, query.tab, query.category, query.emirate, query.free, query.scopeType, query.scopeId, query.featured]);
 
   async function loadMore() {
     if (!nextCursor || loadingMore) return;

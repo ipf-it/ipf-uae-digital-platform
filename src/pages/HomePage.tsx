@@ -39,8 +39,9 @@ export default function HomePage() {
   const { leadership } = useLeadership("global");
   const leaders = leadership.filter((entry) => entry.personImage).map((entry) => ({ name: entry.personName, role: entry.positionTitle, image: entry.personImage }));
   const galleryPreview = content.galleryImages.slice(0, 6);
+  const { events: featuredEvents } = usePublicEvents({ tab: "upcoming", featured: true });
   const { events: upcomingEvents } = usePublicEvents({ tab: "upcoming" });
-  const eventsPreview = upcomingEvents.slice(0, 3);
+  const eventsPreview = (featuredEvents.length > 0 ? featuredEvents : upcomingEvents).slice(0, 3);
   const home = useHomeContent();
   const h = (key: keyof NonNullable<typeof home>, fallbackKey: string) => home?.[key] || t(fallbackKey);
 
