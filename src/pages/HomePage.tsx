@@ -63,7 +63,7 @@ export default function HomePage() {
               )}
             >
               <div className="mt-5">
-                <Badge>{h("hero_badge", "home.badge")}</Badge>
+                <Badge className="ipf-home-eyebrow-glow">{h("hero_badge", "home.badge")}</Badge>
               </div>
               <h1 className="home-hero-title-mobile mt-4 font-bold leading-[1.15] text-white">
                 {h("hero_title", "home.title")}
@@ -71,7 +71,7 @@ export default function HomePage() {
               </h1>
               <p className="mt-4 max-w-md text-pretty text-sm leading-7 text-white/85">{h("hero_intro", "home.intro")}</p>
               <div className="mt-5 flex flex-wrap justify-center gap-3">
-                <Button asChild variant="gold">
+                <Button asChild variant="gold" className="ipf-home-glow-gold">
                   <Link to="/membership">{t("nav.join")}</Link>
                 </Button>
                 <Button asChild variant="secondary">
@@ -104,7 +104,7 @@ export default function HomePage() {
         <section className="ipf-home-hero relative flex min-h-[calc(100svh-var(--ipf-header-h,6rem))] overflow-hidden text-white"><div className="ipf-theme-mandala" aria-hidden="true"/><div className="ipf-theme-ribbon" aria-hidden="true"/><div className="ipf-theme-weave" aria-hidden="true"/>
           <Container className="relative flex min-h-0 flex-1 flex-col justify-center py-10 pb-28 text-left">
             <div className="max-w-5xl">
-              <p className="text-xs font-bold uppercase tracking-[0.28em] text-[var(--ipf-gold)]">सेवा · संस्कृति · समुदाय</p>
+              <p className="ipf-home-eyebrow-glow inline-block rounded-full border border-[var(--ipf-gold)]/30 bg-white/5 px-3 py-1 text-xs font-bold uppercase tracking-[0.28em] text-[var(--ipf-gold)]">सेवा · संस्कृति · समुदाय</p>
               <h1 className="home-hero-title-desktop mt-5 font-bold leading-[1.04] text-white">
                 {h("hero_title", "home.title")}
                 <span className="mt-3 block text-2xl font-semibold tracking-wide text-[var(--ipf-gold)]">{h("hero_subtitle", "home.uae")}</span>
@@ -112,7 +112,7 @@ export default function HomePage() {
               <div className="mt-5 h-1 w-28 bg-[linear-gradient(90deg,var(--ipf-saffron)_0_33%,#fff_33%_66%,var(--ipf-green)_66%)]" />
               <p className="mt-5 max-w-lg text-pretty text-base leading-8 text-white/85">{h("hero_intro", "home.intro")}</p>
               <div className="mt-6 flex flex-wrap gap-3">
-                <Button asChild variant="gold">
+                <Button asChild variant="gold" className="ipf-home-glow-gold">
                   <Link to="/membership">{t("nav.joinLong")}</Link>
                 </Button>
                 <Button asChild variant="secondary">
@@ -148,7 +148,7 @@ export default function HomePage() {
                 <p className="text-xs font-bold uppercase tracking-[0.16em] text-[var(--ipf-gold)]">
                   {h("president_quote_title", "home.presidentMsg")}
                 </p>
-                <Quote className="mt-5" attribution={site.president}>
+                <Quote className="mt-5 [font-family:var(--font-serif-accent)]" attribution={site.president}>
                   {h("president_quote_body", "home.presidentQuote")}
                 </Quote>
                 <div className="mt-6 flex justify-center">
@@ -276,7 +276,7 @@ export default function HomePage() {
         <Container>
           <Card size="lg" tone="navy" eyebrow={h("join_eyebrow", "home.getInvolved")} title={h("join_title", "home.joinTitle")} description={h("join_desc", "home.joinDesc")}>
             <div className="flex flex-wrap gap-3">
-              <Button asChild variant="gold">
+              <Button asChild variant="gold" className="ipf-home-glow-gold">
                 <Link to="/membership">{t("nav.joinLong")}</Link>
               </Button>
               <Button asChild variant="secondary">

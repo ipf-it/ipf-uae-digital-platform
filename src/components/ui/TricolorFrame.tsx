@@ -1,4 +1,5 @@
 import type { ImgHTMLAttributes, PropsWithChildren } from "react";
+import { ImageOff } from "lucide-react";
 import { cn } from "../../lib/utils";
 
 type TricolorFrameProps = PropsWithChildren<{
@@ -43,19 +44,32 @@ export function FramedPhoto({
 }: FramedPhotoProps) {
   return (
     <TricolorFrame className={cn("w-full min-w-0", className)}>
-      <img
-        src={src}
-        alt={alt}
-        loading={loading}
-        decoding="async"
-        className={cn(
-          "block h-full w-full max-w-none",
-          fit === "contain"
-            ? "bg-[var(--ipf-navy)] object-contain object-center"
-            : "bg-[var(--ipf-navy)] object-contain object-center ipf-photo-cover-desktop md:object-top",
-          imgClassName,
-        )}
-      />
+      {src ? (
+        <img
+          src={src}
+          alt={alt}
+          loading={loading}
+          decoding="async"
+          className={cn(
+            "block h-full w-full max-w-none",
+            fit === "contain"
+              ? "bg-[var(--ipf-navy)] object-contain object-center"
+              : "bg-[var(--ipf-navy)] object-contain object-center ipf-photo-cover-desktop md:object-top",
+            imgClassName,
+          )}
+        />
+      ) : (
+        // A bare <img src=""> renders the browser's native broken-image icon at an unconstrained
+        // size instead of respecting imgClassName's aspect ratio — this is the "oversized
+        // placeholder" people were seeing wherever a slide/photo is added before its image is
+        // uploaded. A sized, neutral placeholder keeps the layout identical either way.
+        <div
+          className={cn("flex items-center justify-center bg-[var(--ipf-ivory)] text-[var(--ipf-muted)]", imgClassName)}
+          aria-hidden="true"
+        >
+          <ImageOff size={28} strokeWidth={1.5} />
+        </div>
+      )}
     </TricolorFrame>
   );
 }

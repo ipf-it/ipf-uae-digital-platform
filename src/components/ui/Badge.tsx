@@ -16,8 +16,8 @@ const badgeVariants = cva("inline-flex max-w-full items-center text-balance roun
   },
 });
 
-type BadgeProps = PropsWithChildren<VariantProps<typeof badgeVariants>>;
+type BadgeProps = PropsWithChildren<VariantProps<typeof badgeVariants> & { className?: string }>;
 
-export function Badge({ children, tone = "navy" }: BadgeProps) {
-  return <span className={cn(badgeVariants({ tone }))}>{children}</span>;
+export function Badge({ children, tone = "navy", className }: BadgeProps) {
+  return <span className={cn(badgeVariants({ tone }), className)}>{children}</span>;
 }

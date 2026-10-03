@@ -12,6 +12,7 @@
   --ipf-gold: #c4a35a;
   --ipf-line: #e4ddd0;
   --font-body: "Noto Sans", "Noto Sans Devanagari", "Noto Sans Malayalam", "Noto Sans Tamil", "Noto Sans Telugu", "Noto Sans Kannada", "Noto Sans Gujarati", "Noto Sans Gurmukhi", "Noto Sans Bengali", "Segoe UI", Roboto, Arial, sans-serif;
+  --font-serif-accent: "Playfair Display", Georgia, "Noto Sans Devanagari", serif;
   font-family: var(--font-body);
   color: var(--ipf-ink);
   background: var(--ipf-ivory);
@@ -108,7 +109,17 @@ html:not([lang="en"]) thead th {
   position: relative;
   isolation: isolate;
   background-color: var(--ipf-navy);
-  background-image:radial-gradient(circle at 78% 30%,rgba(255,153,51,.15),transparent 22%),radial-gradient(circle at 66% 70%,rgba(19,136,8,.13),transparent 26%),linear-gradient(135deg,#06162d,#0b1f3a 55%,#102d46);
+  background-image:radial-gradient(circle at 78% 30%,rgba(255,153,51,.15),transparent 22%),radial-gradient(circle at 66% 70%,rgba(19,136,8,.13),transparent 26%),linear-gradient(135deg,#030a16,#0b1f3a 55%,#102d46);
+}
+
+/* A soft brass-gold glow for the hero's primary call-to-action and eyebrow badge — scoped to the
+   homepage hero only (not the shared Button/Badge variants, which are also used on the
+   chapter/council journey pages) so it doesn't bleed into those untouched pages. */
+.ipf-home-glow-gold {
+  box-shadow: 0 0 0 1px rgba(196, 163, 90, 0.4), 0 0 18px rgba(196, 163, 90, 0.45), 0 8px 20px rgba(0, 0, 0, 0.35);
+}
+.ipf-home-eyebrow-glow {
+  box-shadow: 0 0 14px rgba(196, 163, 90, 0.3);
 }
 
 .ipf-theme-mandala { position:absolute; width:min(62vw,48rem); aspect-ratio:1; right:-8vw; top:50%; translate:0 -50%; border-radius:50%; opacity:.32; background:repeating-conic-gradient(from 0deg,rgba(255,255,255,.18) 0 2deg,transparent 2deg 12deg); mask-image:radial-gradient(circle,transparent 0 12%,#000 12% 13%,transparent 13% 22%,#000 22% 23%,transparent 23% 40%,#000 40% 41%,transparent 41% 58%,#000 58% 61%,transparent 61%); animation:ipf-theme-spin 44s linear infinite; }
