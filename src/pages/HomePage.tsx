@@ -4,6 +4,7 @@ import { ChevronDown } from "lucide-react";
 import { BrandLoader } from "../components/BrandLoader";
 import { BrandMark } from "../components/BrandMark";
 import { CommunityStats } from "../components/CommunityStats";
+import { HomeHeroVideo } from "../components/HomeHeroVideo";
 import { MobileIntro } from "../components/MobileIntro";
 import { DocumentTitle } from "../components/layout/DocumentTitle";
 import { Badge } from "../components/ui/Badge";
@@ -51,8 +52,10 @@ export default function HomePage() {
 
       <div className="lg:hidden">
         {!introReady ? <MobileIntro anchorRef={markRef} onDone={finishIntro} /> : null}
-        <section className="ipf-home-hero flex min-h-[calc(100svh-var(--ipf-header-h,4.85rem)-var(--ipf-tabbar-h,4.75rem))] flex-col overflow-hidden text-white"><div className="ipf-theme-mandala" aria-hidden="true"/><div className="ipf-theme-ribbon" aria-hidden="true"/>
-          <Container className="flex flex-col items-center py-10 text-center">
+        <section className="ipf-home-hero relative flex min-h-[calc(100svh-var(--ipf-header-h,4.85rem)-var(--ipf-tabbar-h,4.75rem))] flex-col overflow-hidden text-white">
+          {/* Approved IPF UAE mobile hero creative (1080×1440 VP9, silent). */}
+          <HomeHeroVideo />
+          <Container className="relative z-10 flex flex-col items-center py-10 text-center">
             <div ref={markRef} className={cn("flex flex-col items-center", !introReady && "invisible")}>
               <BrandLoader size={110} label={`${site.brandMark} emblem`} />
               <BrandMark className="mt-4" />
@@ -92,8 +95,10 @@ export default function HomePage() {
       </div>
 
       <div className="hidden lg:block">
-        <section className="ipf-home-hero relative flex min-h-[calc(100svh-var(--ipf-header-h,6rem))] overflow-hidden text-white"><div className="ipf-theme-mandala" aria-hidden="true"/><div className="ipf-theme-ribbon" aria-hidden="true"/><div className="ipf-theme-weave" aria-hidden="true"/>
-          <Container className="relative flex min-h-0 flex-1 flex-col justify-center py-10 pb-28 text-left">
+        <section className="ipf-home-hero relative flex min-h-[calc(100svh-var(--ipf-header-h,6rem))] overflow-hidden text-white">
+          {/* Approved IPF UAE desktop hero creative (2304×1080 VP9, silent). */}
+          <HomeHeroVideo />
+          <Container className="relative z-10 flex min-h-0 flex-1 flex-col justify-center py-10 pb-28 text-left">
             <div className="max-w-5xl">
               <p className="ipf-home-eyebrow-glow inline-block rounded-full border border-[var(--ipf-gold)]/30 bg-white/5 px-3 py-1 text-xs font-bold uppercase tracking-[0.28em] text-[var(--ipf-gold)]">सेवा · संस्कृति · समुदाय</p>
               <h1 className="home-hero-title-desktop mt-5 font-bold leading-[1.04] text-white">
