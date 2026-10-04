@@ -1,51 +1,57 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "react-router-dom";
-import { usePublicEvents } from "../hooks/usePublicEvents";
+import { useCms } from "../cms/ContentProvider";
 import { useLocale } from "../i18n/LocaleProvider";
 import { Container } from "./ui/Container";
 
 const BG_WEBP = "/images/home/events-background.webp";
 const BG_PNG = "/images/home/events-background.png";
-const AUTOPLAY_MS = 7000;
 
-/**
- * Homepage Events — premium slow horizontal carousel on the approved
- * waterfront heritage background.
+/* Autoplay cycle: 5000 ms = ~4.2 s compositional hold + ~800 ms native
+   smooth-scroll transition on each advance. The user explicitly approved
+   a slow cinematic carousel — this is content movement, not decoration. */
+const AUTOPLAY_MS = 5000;
+
+/* ─────────────────────────────────────────────────────────────────────────
+ * HomeEvents — premium editorial, seamless, slow continuous event carousel
  *
  * Data
- *   Reads from the same source of truth used by the Events page:
- *   usePublicEvents({ tab: 'upcoming', featured: true }) first; falls back
- *   to generic upcoming events if there are no featured. Reuses the live
- *   CMS architecture — no duplicate data model.
+ *   Reads `content.eventHighlights` directly from the CMS content
+ *   provider. Each entry is CMS-editable via /api/cms/content; admins
+ *   add/edit/delete/reorder/toggle without a code change. Seed data
+ *   lives in src/data/platformContent.ts → `homeEventsCarousel`.
+ *
+ * Carousel
+ *   Horizontal scroll-snap list. Six real cards are rendered TWICE back
+ *   to back so autoplay produces a truly seamless loop: when scrollLeft
+ *   crosses the width of the first copy, we instantly subtract that
+ *   width (invisible — the two halves are byte-identical content). This
+ *   avoids the fast "snap back to start" rewind that disqualifies most
+ *   naive carousels from feeling cinematic.
  *
  * Motion
- *   Scroll-snap horizontal list. Autoplay advances by one card every 7 s
- *   with a native smooth scroll (browser's own 400–600 ms curve). Pauses on
- *   pointer hover, keyboard focus within the carousel, touch interaction,
- *   and when document.hidden becomes true (tab backgrounded). Respects
- *   prefers-reduced-motion by disabling autoplay entirely while leaving
- *   the arrows and swipe fully functional.
+ *   Autoplay advances by one card every AUTOPLAY_MS using the browser's
+ *   native smooth-scroll. Pauses on pointer hover, keyboard focus-within,
+ *   touch (3 s grace), and document.hidden. prefers-reduced-motion
+ *   disables autoplay entirely; arrows + swipe remain fully usable.
  *
- * Controls
- *   Previous/Next ivory circle buttons with heritage-gold ring and
- *   burgundy inline SVG chevrons. A thin progress line underneath tracks
- *   the current card position; no fat dots.
- */
+ * Decorative animation audit
+ *   The homepage parent `.home-theme-page > section::before` CSS at
+ *   src/index.css:440-441 renders a rotating saffron/green mandala over
+ *   every DIRECT <section> child. HomeEvents is intentionally wrapped in
+ *   a <div> inside HomePage.tsx so the CSS selector never matches — the
+ *   mandala rotation does not render over or around this section. Inside
+ *   this component there are no rotations, radial pulses, parallax,
+ *   particles, reveal wrappers, IntersectionObserver effects, or
+ *   decorative keyframe animations. The ONLY motion is the approved
+ *   carousel advance.
+ * ────────────────────────────────────────────────────────────────────── */
 
 type SvgIconProps = { className?: string };
 
 function ChevronLeftIcon({ className }: SvgIconProps) {
   return (
-    <svg
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden="true"
-      className={className}
-    >
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" className={className}>
       <polyline points="15 6 9 12 15 18" />
     </svg>
   );
@@ -53,16 +59,7 @@ function ChevronLeftIcon({ className }: SvgIconProps) {
 
 function ChevronRightIcon({ className }: SvgIconProps) {
   return (
-    <svg
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden="true"
-      className={className}
-    >
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" className={className}>
       <polyline points="9 6 15 12 9 18" />
     </svg>
   );
@@ -70,16 +67,7 @@ function ChevronRightIcon({ className }: SvgIconProps) {
 
 function LocationIcon({ className }: SvgIconProps) {
   return (
-    <svg
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.6"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden="true"
-      className={className}
-    >
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" className={className}>
       <path d="M12 21s7-6.3 7-11.5A7 7 0 0 0 5 9.5C5 14.7 12 21 12 21z" />
       <circle cx="12" cy="9.5" r="2.5" />
     </svg>
@@ -101,100 +89,139 @@ function usePrefersReducedMotion(): boolean {
   return reduced;
 }
 
-/**
- * Format an ISO date (or free-form date string) as "18 OCT 2026" uppercase.
- * Falls back to the raw string if the input is not a parseable date so
- * CMS-supplied free-form dates still render.
- */
-function formatEventDate(raw: string): string {
+function formatEventDate(raw: string | undefined): string {
   if (!raw) return "";
   const parsed = new Date(raw);
   if (Number.isNaN(parsed.getTime())) return raw;
-  const parts = new Intl.DateTimeFormat("en-GB", {
-    day: "2-digit",
-    month: "short",
-    year: "numeric",
-  }).formatToParts(parsed);
+  const parts = new Intl.DateTimeFormat("en-GB", { day: "2-digit", month: "short", year: "numeric" }).formatToParts(parsed);
   const dd = parts.find((p) => p.type === "day")?.value ?? "";
   const mmm = parts.find((p) => p.type === "month")?.value?.toUpperCase() ?? "";
   const yyyy = parts.find((p) => p.type === "year")?.value ?? "";
   return `${dd} ${mmm} ${yyyy}`.trim();
 }
 
+type EventCard = {
+  id: string;
+  title: string;
+  date: string;
+  startsAt?: string;
+  location?: string;
+  category?: string;
+  image: string;
+  alt: string;
+};
+
 export function HomeEvents() {
   const { t } = useLocale();
+  const { content } = useCms();
   const reducedMotion = usePrefersReducedMotion();
 
-  const { events: featured } = usePublicEvents({ tab: "upcoming", featured: true });
-  const { events: upcoming } = usePublicEvents({ tab: "upcoming" });
-  const list = (featured.length > 0 ? featured : upcoming).slice(0, 6);
+  const cards = useMemo<EventCard[]>(() => {
+    return content.eventHighlights.slice(0, 6).map((event) => {
+      const firstSlide = event.slides?.[0];
+      return {
+        id: event.id,
+        title: event.title,
+        date: event.date,
+        startsAt: event.startsAt,
+        location: event.location,
+        category: event.category,
+        image: firstSlide?.src ?? "",
+        alt: firstSlide?.alt ?? event.title,
+      };
+    });
+  }, [content.eventHighlights]);
 
-  const scrollRef = useRef<HTMLUListElement | null>(null);
-  const [progress, setProgress] = useState<number>(0); // 0..1
+  const originalCount = cards.length;
+  const trackCards = useMemo(() => [...cards, ...cards], [cards]);
 
-  // Pause state driven by hover, focus-within, touch, and document visibility
+  const trackRef = useRef<HTMLUListElement | null>(null);
+  const [progress, setProgress] = useState<number>(0);
   const [paused, setPaused] = useState<boolean>(false);
   const touchActiveRef = useRef<boolean>(false);
+  const resettingRef = useRef<boolean>(false);
 
+  /* Returns the horizontal step for one card (card width + gap). */
   const stepPx = useCallback(() => {
-    const el = scrollRef.current;
+    const el = trackRef.current;
     if (!el) return 0;
     const first = el.firstElementChild as HTMLElement | null;
-    if (!first) return el.clientWidth;
-    // Advance by one card plus the inter-card gap (which equals the
-    // distance from the first child's right edge to the second child's
-    // left edge, i.e. offsetLeft of the second child).
-    const second = first.nextElementSibling as HTMLElement | null;
-    if (second) return second.offsetLeft - first.offsetLeft;
-    return first.offsetWidth;
+    const second = first?.nextElementSibling as HTMLElement | null;
+    if (first && second) return second.offsetLeft - first.offsetLeft;
+    return first?.offsetWidth ?? el.clientWidth;
   }, []);
 
+  /* Width of the first copy of the duplicated track — the invisible wrap point. */
+  const halfWidth = useCallback(() => stepPx() * originalCount, [stepPx, originalCount]);
+
   const next = useCallback(() => {
-    const el = scrollRef.current;
+    const el = trackRef.current;
     if (!el) return;
-    const step = stepPx();
-    const atEnd = el.scrollLeft + el.clientWidth >= el.scrollWidth - 2;
-    el.scrollTo({ left: atEnd ? 0 : el.scrollLeft + step, behavior: "smooth" });
+    el.scrollBy({ left: stepPx(), behavior: "smooth" });
   }, [stepPx]);
 
   const prev = useCallback(() => {
-    const el = scrollRef.current;
+    const el = trackRef.current;
     if (!el) return;
-    const step = stepPx();
-    const atStart = el.scrollLeft <= 2;
-    const target = atStart ? el.scrollWidth : el.scrollLeft - step;
-    el.scrollTo({ left: target, behavior: "smooth" });
-  }, [stepPx]);
+    // If we're already at the left-edge of the first copy, invisibly jump
+    // forward by one halfWidth so the smooth-scroll leftward still has
+    // room — this preserves the seamless loop in BOTH directions.
+    if (el.scrollLeft <= 2) {
+      resettingRef.current = true;
+      el.scrollLeft = halfWidth();
+      // Next frame: perform the smooth back-step.
+      requestAnimationFrame(() => {
+        resettingRef.current = false;
+        el.scrollBy({ left: -stepPx(), behavior: "smooth" });
+      });
+      return;
+    }
+    el.scrollBy({ left: -stepPx(), behavior: "smooth" });
+  }, [halfWidth, stepPx]);
 
-  // Autoplay
+  /* Autoplay */
   useEffect(() => {
-    if (reducedMotion || paused || list.length <= 1) return;
+    if (reducedMotion || paused || originalCount <= 1) return;
     const id = window.setInterval(() => {
       if (document.hidden) return;
       next();
     }, AUTOPLAY_MS);
     return () => window.clearInterval(id);
-  }, [reducedMotion, paused, list.length, next]);
+  }, [reducedMotion, paused, originalCount, next]);
 
-  // Track progress for the thin indicator
+  /* Seamless loop + progress indicator.
+     - When scrollLeft crosses the first-copy width, invisibly subtract
+       that width. User sees the content continue without a rewind. */
   useEffect(() => {
-    const el = scrollRef.current;
+    const el = trackRef.current;
     if (!el) return;
-    const update = () => {
-      const max = el.scrollWidth - el.clientWidth;
-      setProgress(max > 0 ? el.scrollLeft / max : 0);
+    const onScroll = () => {
+      if (resettingRef.current) return;
+      const half = halfWidth();
+      if (half > 0 && el.scrollLeft >= half - 1) {
+        resettingRef.current = true;
+        el.scrollLeft = el.scrollLeft - half;
+        // Give the browser one frame to settle before accepting scrolls again.
+        requestAnimationFrame(() => {
+          resettingRef.current = false;
+        });
+      }
+      // Progress reflects position within the first copy only.
+      const effectiveMax = half || el.scrollWidth - el.clientWidth;
+      const within = el.scrollLeft % Math.max(1, half || el.scrollLeft || 1);
+      setProgress(effectiveMax > 0 ? within / effectiveMax : 0);
     };
-    update();
-    el.addEventListener("scroll", update, { passive: true });
-    const ro = new ResizeObserver(update);
+    onScroll();
+    el.addEventListener("scroll", onScroll, { passive: true });
+    const ro = new ResizeObserver(onScroll);
     ro.observe(el);
     return () => {
-      el.removeEventListener("scroll", update);
+      el.removeEventListener("scroll", onScroll);
       ro.disconnect();
     };
-  }, [list.length]);
+  }, [halfWidth, originalCount]);
 
-  // Pause when tab hidden
+  /* Pause when tab backgrounded */
   useEffect(() => {
     const onVis = () => {
       if (document.hidden) setPaused(true);
@@ -211,7 +238,9 @@ export function HomeEvents() {
     >
       {/* Approved Events background — Elegant Indian-Arabian Waterfront Banner.
          object-position biased slightly left so the bottom-left tricolour
-         detail stays visible when the section is cropped horizontally. */}
+         detail stays visible when the section crops horizontally. The
+         background is NOT the newly-approved Gallery artwork — the two
+         sections intentionally sit on different approved assets. */}
       <picture aria-hidden="true">
         <source srcSet={BG_WEBP} type="image/webp" />
         <img
@@ -227,8 +256,10 @@ export function HomeEvents() {
       </picture>
 
       <Container className="relative py-12 sm:py-14 lg:py-16">
-        {/* Header */}
-        <div className="flex items-end justify-between gap-6">
+        {/* Editorial header: left = eyebrow + heading; right = supporting
+           line + 'View all events →'. Composed as a two-column grid at
+           ≥lg so the right rail doesn't swallow the heading at mid-widths. */}
+        <div className="grid gap-5 lg:grid-cols-[1.1fr_1fr] lg:items-end lg:gap-10">
           <div className="min-w-0">
             <p
               id="ipf-events-eyebrow"
@@ -237,21 +268,27 @@ export function HomeEvents() {
               Events
             </p>
             <h2 className="mt-2 font-serif text-[1.6rem] font-bold leading-[1.15] tracking-tight text-[var(--ipf-navy)] sm:text-[1.95rem] lg:text-[2.1rem]">
-              Stories of service, culture
-              <br className="hidden sm:block" /> and community.
+              Connecting our community
+              <br className="hidden sm:block" /> through meaningful experiences.
             </h2>
           </div>
-          <Link
-            to="/events"
-            className="group hidden shrink-0 items-center gap-1.5 text-[0.9rem] font-semibold text-[var(--ipf-navy)] underline-offset-[6px] transition hover:text-[#5A0F1E] hover:underline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#8B6A1F] sm:inline-flex"
-          >
-            {t("home.allEvents")}
-            <span aria-hidden="true" className="transition-transform group-hover:translate-x-0.5">&rarr;</span>
-          </Link>
+          <div className="flex flex-col gap-3 sm:items-start lg:items-end lg:text-right">
+            <p className="max-w-md text-[0.95rem] leading-relaxed text-[#2a3340]">
+              Programmes, cultural celebrations, community initiatives and
+              engagements organised across IPF UAE.
+            </p>
+            <Link
+              to="/events"
+              className="group inline-flex items-center gap-1.5 text-[0.9rem] font-semibold text-[var(--ipf-navy)] underline-offset-[6px] transition hover:text-[#5A0F1E] hover:underline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#8B6A1F]"
+            >
+              {t("home.allEvents")}
+              <span aria-hidden="true" className="transition-transform group-hover:translate-x-0.5">&rarr;</span>
+            </Link>
+          </div>
         </div>
 
         {/* Carousel */}
-        {list.length === 0 ? (
+        {originalCount === 0 ? (
           <p className="mt-8 text-sm text-[var(--ipf-muted)]">
             {t("page.events.emptyUpcoming")}
           </p>
@@ -264,9 +301,8 @@ export function HomeEvents() {
             }}
             onFocusCapture={() => setPaused(true)}
             onBlurCapture={() => {
-              // Small delay so focus moving between inner elements doesn't un-pause
               window.setTimeout(() => {
-                const el = scrollRef.current;
+                const el = trackRef.current;
                 if (el && !el.contains(document.activeElement)) {
                   if (!touchActiveRef.current) setPaused(false);
                 }
@@ -284,53 +320,65 @@ export function HomeEvents() {
             }}
           >
             <ul
-              ref={scrollRef}
+              ref={trackRef}
               role="list"
+              aria-label={t("home.allEvents")}
               className="ipf-no-scrollbar flex snap-x snap-mandatory gap-4 overflow-x-auto scroll-smooth pb-2 sm:gap-5 lg:gap-6"
               style={{ scrollbarWidth: "none" }}
-              aria-label={t("home.allEvents")}
             >
-              {list.map((event) => {
-                const img = event.image || event.slides[0]?.src;
-                const alt = event.slides[0]?.alt ?? event.title;
+              {trackCards.map((event, index) => {
                 const dateStr = formatEventDate(event.startsAt || event.date);
+                /* Mobile 85 % + lg 3 cards + xl 3.3 cards (slight 4th peek).
+                   10 % next-card peek on mobile is INTENTIONAL (user spec). */
                 return (
                   <li
-                    key={event.id}
-                    className="snap-start shrink-0 basis-[85%] sm:basis-[48%] lg:basis-[calc((100%-3rem)/3)]"
+                    key={`${event.id}-${index}`}
+                    className="snap-start shrink-0 basis-[88%] sm:basis-[48%] lg:basis-[calc((100%-3rem)/3)] xl:basis-[calc((100%-4.5rem)/3.3)]"
                   >
                     <Link
                       to={`/events/${event.id}`}
-                      className="group flex h-full flex-col overflow-hidden rounded-2xl bg-[#FFFDF8] shadow-[0_10px_28px_rgba(11,31,58,0.10)] ring-1 ring-[#D6AD60]/35 transition hover:-translate-y-0.5 hover:shadow-[0_16px_38px_rgba(11,31,58,0.14)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#8B6A1F]"
+                      className="group flex h-full flex-col overflow-hidden rounded-[16px] bg-[#FFFDF8] shadow-[0_10px_28px_rgba(11,31,58,0.09)] ring-1 ring-[#D6AD60]/35 transition hover:-translate-y-0.5 hover:shadow-[0_16px_38px_rgba(11,31,58,0.14)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#8B6A1F]"
                     >
-                      {img ? (
-                        <div className="relative overflow-hidden">
+                      {/* Image region — ~60 % of card height via a locked 16:10 aspect
+                         ratio. object-cover guarantees consistent framing even when
+                         CMS admins upload varying source photographs. */}
+                      <div className="relative overflow-hidden bg-[#F1EBDA]">
+                        {event.image ? (
                           <img
-                            src={img}
-                            alt={alt}
+                            src={event.image}
+                            alt={event.alt}
                             loading="lazy"
                             decoding="async"
-                            className="aspect-[16/10] w-full object-cover transition-transform duration-500 group-hover:scale-[1.02]"
+                            className="aspect-[16/10] w-full object-cover"
                           />
-                        </div>
-                      ) : (
-                        <div className="aspect-[16/10] w-full bg-[#F1EBDA]" />
-                      )}
-                      <div className="flex flex-1 flex-col gap-2 p-5">
-                        {dateStr ? (
+                        ) : (
+                          <div className="flex aspect-[16/10] w-full items-center justify-center bg-gradient-to-br from-[#F3EADA] to-[#E8DBB8]">
+                            <span className="font-serif text-[1.5rem] font-bold text-[#8B6A1F]/60">IPF</span>
+                          </div>
+                        )}
+                      </div>
+                      {/* Info region — ~40 % of card. Fixed min-height so all
+                         cards align vertically even with varying title/location
+                         lengths. flex-1 pushes 'View event →' to the bottom. */}
+                      <div className="flex min-h-[12.5rem] flex-1 flex-col gap-2.5 p-5 sm:p-6">
+                        {event.category ? (
                           <p className="text-[0.68rem] font-bold uppercase tracking-[0.22em] text-[#8B6A1F]">
-                            {dateStr}
+                            {event.category}
                           </p>
                         ) : null}
-                        <h3 className="font-serif text-[1.1rem] font-bold leading-snug text-[var(--ipf-navy)]">
+                        <h3 className="line-clamp-2 font-serif text-[1.05rem] font-bold leading-[1.3] text-[var(--ipf-navy)] sm:text-[1.125rem]">
                           {event.title}
                         </h3>
-                        {event.location ? (
-                          <p className="inline-flex items-center gap-1.5 text-[0.825rem] text-[var(--ipf-muted)]">
-                            <LocationIcon className="h-4 w-4 text-[#8B6A1F]" />
-                            {event.location}
-                          </p>
-                        ) : null}
+                        <p className="line-clamp-1 inline-flex items-center gap-1.5 text-[0.8rem] text-[#55606d]">
+                          {dateStr ? <span className="font-semibold text-[#1c2430]">{dateStr}</span> : null}
+                          {dateStr && event.location ? <span aria-hidden="true" className="text-[#8B6A1F]/60">·</span> : null}
+                          {event.location ? (
+                            <span className="inline-flex items-center gap-1">
+                              <LocationIcon className="h-3.5 w-3.5 text-[#8B6A1F]" />
+                              <span className="truncate">{event.location}</span>
+                            </span>
+                          ) : null}
+                        </p>
                         <p className="mt-auto pt-3 text-[0.825rem] font-semibold text-[#5A0F1E]">
                           View event{" "}
                           <span aria-hidden="true" className="inline-block transition-transform group-hover:translate-x-0.5">
@@ -344,12 +392,13 @@ export function HomeEvents() {
               })}
             </ul>
 
-            {/* Progress + arrows row */}
+            {/* Progress bar + ivory arrow buttons. 0..1 progress wraps every
+               full loop so the bar never slams back to zero visibly. */}
             <div className="mt-5 flex items-center justify-between gap-4">
               <div className="h-[2px] flex-1 overflow-hidden rounded-full bg-[#D6AD60]/25">
                 <div
-                  className="h-full rounded-full bg-[#5A0F1E] transition-[width] duration-300 ease-out"
-                  style={{ width: `${Math.max(10, Math.round(progress * 100))}%` }}
+                  className="h-full rounded-full bg-[#5A0F1E] transition-[width] duration-500 ease-out"
+                  style={{ width: `${Math.max(8, Math.round(progress * 100))}%` }}
                   aria-hidden="true"
                 />
               </div>
@@ -373,7 +422,8 @@ export function HomeEvents() {
               </div>
             </div>
 
-            {/* 'View all events' repeated for mobile where it was hidden above */}
+            {/* Mobile-only duplicate of 'View all events →' because the header
+               rail hides it below sm to protect the heading column. */}
             <p className="mt-5 sm:hidden">
               <Link
                 to="/events"

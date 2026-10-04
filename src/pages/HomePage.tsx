@@ -84,10 +84,19 @@ export default function HomePage() {
          on the right. Replaces the previous compact ivory section. */}
       <HomeWhoWeAre />
 
-      {/* Premium Events carousel on the approved waterfront heritage
-         background. Reads from usePublicEvents (same source as the Events
-         page). Slow autoplay (7 s) with pause-on-hover/focus/touch/hidden. */}
-      <HomeEvents />
+      {/* Premium editorial Events carousel on the approved waterfront
+         heritage background. Reads directly from content.eventHighlights
+         (six founder-selected IPF programmes seeded in
+         src/data/platformContent.ts → homeEventsCarousel, CMS-editable).
+         Six real cards rendered twice back-to-back for a seamless
+         continuous loop; 5 s cycle with native smooth-scroll transition.
+         Pauses on hover / focus / touch / tab-hidden; prefers-reduced-
+         motion disables autoplay. Wrapped in a div so the global
+         .home-theme-page > section::before saffron/green mandala
+         pseudo-element does not rotate over the section. */}
+      <div>
+        <HomeEvents />
+      </div>
 
       {/* Premium Gallery editorial mosaic on the approved cream arabesque
          skyline background. Reads from content.galleryImages (CMS). Slow

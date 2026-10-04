@@ -1,4 +1,4 @@
-import { featuredHomeEvents, galleryImages, newsItems } from "../data/platformContent";
+import { featuredHomeEvents, galleryImages, homeEventsCarousel, newsItems } from "../data/platformContent";
 import type { CmsContent, CmsPageKey } from "./types";
 
 const emptyExtras = {
@@ -22,16 +22,20 @@ export const defaultCmsContent: CmsContent = {
   })),
   galleryImages: galleryImages.map((item) => ({ src: item.src, alt: item.alt })),
   extras: emptyExtras,
-  eventHighlights: featuredHomeEvents.map((item) => ({
+  // Homepage Events carousel source of truth. Each entry is CMS-editable
+  // (title / date / location / image / body / category / emirate) via the
+  // existing admin content pipeline — no code change required to add,
+  // edit, remove, reorder, or toggle homepage visibility.
+  eventHighlights: homeEventsCarousel.map((item) => ({
     id: item.id,
     title: item.title,
     date: item.date,
     location: item.location,
     body: item.body,
-    slides: [{ src: item.src, alt: item.alt, caption: item.caption }],
-    category: item.id.includes("conclave") ? "Community" : item.id.includes("inauguration") ? "Community" : "National",
-    emirate: item.id.includes("hardeep") ? "abu-dhabi" : item.id.includes("conclave") ? "dubai" : item.id.includes("inauguration") ? "ajman" : "uae",
-    startsAt: item.id === "office-inauguration-2021" ? "2021-01-21T10:00:00+04:00" : item.id === "business-conclave-2021" ? "2021-10-03T10:00:00+04:00" : item.id === "hardeep-singh-puri" ? "2021-11-17T10:00:00+04:00" : item.id === "jaishankar-meeting" ? "2022-09-02T10:00:00+04:00" : undefined,
+    slides: [{ src: item.image, alt: item.alt }],
+    category: item.category,
+    emirate: item.emirate,
+    startsAt: "startsAt" in item ? item.startsAt : undefined,
     isFree: true,
   })),
   news: newsItems.map((item) => ({

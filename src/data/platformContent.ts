@@ -1,4 +1,101 @@
-/** Homepage carousel — same five major programmes published on ipf-uae.org. */
+/**
+ * Homepage Events carousel seeds — the six founder-selected IPF UAE
+ * programmes that appear in the homepage Events section.
+ *
+ * Every entry draws from pre-existing project data (eventCatalog archive
+ * events + news articles in `newsItems` below). No invented dates, venues,
+ * speakers or photographs. See the mapping notes beside each entry.
+ *
+ * These feed `defaultCmsContent.eventHighlights` in src/cms/defaults.ts.
+ * Admins override individual fields (title, image, date, location, body,
+ * link) by editing /api/cms/content.eventHighlights via the existing CMS
+ * — no code change required to add, edit, remove, reorder, or toggle
+ * homepage visibility.
+ */
+export const homeEventsCarousel = [
+  {
+    // Source: eventCatalog.ts archiveEvents 'office-inauguration-2021'
+    //         + newsItems.ipf-office-inauguration
+    id: "office-inauguration-ajman",
+    title: "IPF Office Inauguration in Ajman",
+    date: "21 January 2021",
+    startsAt: "2021-01-21T10:00:00+04:00",
+    location: "Horizon Towers, Al Rashidiya, Ajman",
+    emirate: "ajman",
+    category: "Community",
+    image: "/legacy-assets/images/slider1.jpg",
+    alt: "IPF office inauguration in Ajman on 21 January 2021",
+    body: "Indian People's Forum inaugurated its registered office at Horizon Towers, Al Rashidiya, Ajman — the transition from an informal volunteer effort to a licensed socio-cultural organisation with a committee structure and an eight-chapter UAE presence.",
+  },
+  {
+    // Source: newsItems.meeting-external-affairs-abu-dhabi (V. Muraleedharan,
+    // then MoS External Affairs). Image: news2.jpg.
+    id: "meeting-external-affairs-abu-dhabi",
+    title: "Meeting with Minister of State for External Affairs in Abu Dhabi",
+    date: "2021",
+    location: "Abu Dhabi",
+    emirate: "abu-dhabi",
+    category: "National",
+    image: "/legacy-assets/images/news2.jpg",
+    alt: "IPF Abu Dhabi chapter meeting with the Minister of State for External Affairs",
+    body: "The IPF Abu Dhabi chapter met Shri V. Muraleedharan, Minister of State for External Affairs, to raise concerns of the NRI community and the Indian diaspora. IPF continues to work in close coordination with the Embassy of India and the Consulate General.",
+  },
+  {
+    // Source: newsItems.nris-urged-to-invest. Image: news3.jpg.
+    id: "nris-invest-opportunities",
+    title: "NRIs Urged to Invest & Explore Opportunities in Key Sectors",
+    date: "2021",
+    location: "United Arab Emirates",
+    emirate: "uae",
+    category: "Community",
+    image: "/legacy-assets/images/news3.jpg",
+    alt: "Indian ministers address NRIs on investment opportunities in the UAE",
+    body: "Indian ministers for Road Transport and Highways and MSMEs offered investment opportunities in key economic sectors to NRIs in the UAE. The IPF Business Council remains a forum for professional networking while the organisation's core mandate stays socio-cultural and welfare-oriented.",
+  },
+  {
+    // Source: newsItems.upskilling-blue-collared-workers. Image: community-support.png.
+    id: "upskilling-blue-collar-workers",
+    title: "Upskilling of Blue-Collared Workers in the UAE",
+    date: "January 2021",
+    startsAt: "2021-01-12T10:00:00+04:00",
+    location: "Dubai",
+    emirate: "dubai",
+    category: "Welfare",
+    image: "/legacy-assets/images/community-support.png",
+    alt: "IPF community welfare and worker upskilling initiative in the UAE",
+    body: "As part of post-pandemic economic revival, the Consul General of India in Dubai, Dr Aman Puri, convened key stakeholders on 12 January 2021. IPF has consistently supported welfare, counselling and guidance for blue-collared workers, including health awareness and coordination with Indian missions.",
+  },
+  {
+    // Source: newsItems.sucheta-felicitated-business-conclave
+    //         + eventCatalog archiveEvents 'business-conclave-2021'. Image: Sucheta.jpg.
+    id: "suchetha-felicitated-piyush-goyal",
+    title: "Guinness World Record Holder Suchetha Felicitated by Shri Piyush Goyal",
+    date: "2021",
+    startsAt: "2021-10-03T10:00:00+04:00",
+    location: "Oberoi Hotel, Business Bay, Dubai",
+    emirate: "dubai",
+    category: "Community",
+    image: "/legacy-assets/images/Sucheta.jpg",
+    alt: "Guinness record holder Suchetha felicitated by Shri Piyush Goyal at the IPF Business Conclave 2021",
+    body: "Guinness Book record holder Suchetha Satish was felicitated by Shri Piyush Goyal, Minister of Commerce & Industry, at the IPF Business Conclave 2021 — attended by Shri Deepak Parekh, Shri Prakash Hinduja and ~100 business dignitaries from the UAE.",
+  },
+  {
+    // Source: featuredHomeEvents.ahlan-modi + eventCatalog archiveEvents 'ahlan-modi-event'.
+    // Image: Ahlan_Modi.jpeg. Date deliberately kept as the broad "2024" that
+    // the existing project data supports; a precise venue is not asserted here.
+    id: "ahlan-modi-community-programme",
+    title: "AHLAN MODI — IPF UAE Community Welcome",
+    date: "2024",
+    location: "United Arab Emirates",
+    emirate: "uae",
+    category: "Cultural",
+    image: "/legacy-assets/images/Ahlan_Modi.jpeg",
+    alt: "IPF UAE community members at the AHLAN MODI welcome programme",
+    body: "AHLAN MODI — the IPF UAE community's most cherished cultural programme — brought together Indians across the Emirates in one of the largest community gatherings organised in coordination with the Indian missions.",
+  },
+] as const;
+
+/** Hero carousel seeds — major IPF UAE programmes used on the mobile home-photos band and other legacy touch-points. */
 export const featuredHomeEvents = [
   {
     id: "ahlan-modi",
