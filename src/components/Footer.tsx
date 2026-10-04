@@ -21,24 +21,24 @@ const isExternalLink = (link: FooterLink): link is FooterExternalLink =>
  */
 const SOCIAL_ICONS: Record<string, ReactNode> = {
   Facebook: (
-    <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" className="h-4 w-4">
+    <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" className="h-5 w-5">
       <path d="M22 12.06C22 6.5 17.52 2 12 2S2 6.5 2 12.06c0 5 3.66 9.14 8.44 9.94v-7.03H7.9v-2.91h2.54v-2.22c0-2.52 1.49-3.91 3.78-3.91 1.1 0 2.24.2 2.24.2v2.47h-1.26c-1.24 0-1.63.78-1.63 1.57v1.89h2.78l-.44 2.91h-2.34V22c4.78-.8 8.44-4.94 8.44-9.94z" />
     </svg>
   ),
   Instagram: (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" className="h-4 w-4">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" className="h-5 w-5">
       <rect x="3" y="3" width="18" height="18" rx="5" />
       <circle cx="12" cy="12" r="4" />
       <circle cx="17.5" cy="6.5" r="0.9" fill="currentColor" stroke="none" />
     </svg>
   ),
   "X / Twitter": (
-    <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" className="h-4 w-4">
+    <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" className="h-5 w-5">
       <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24h-6.653l-5.214-6.817-5.966 6.817H1.683l7.73-8.835L1.254 2.25h6.829l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
     </svg>
   ),
   YouTube: (
-    <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" className="h-4 w-4">
+    <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" className="h-5 w-5">
       <path d="M23.498 6.186a3.016 3.016 0 00-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.016 3.016 0 00.502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 002.121 2.136c1.872.505 9.377.505 9.377.505s7.505 0 9.377-.505a3.016 3.016 0 002.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.546 15.569V8.431L15.818 12z" />
     </svg>
   ),
@@ -97,7 +97,10 @@ export function Footer() {
 
   return (
     <footer
-      className="site-footer relative isolate overflow-hidden text-white"
+      // z-[2] raises the footer above the site-wide fixed TricolorWaves ribbons
+      // (.ipf-cloth, position:fixed, z-index:1) so the opaque burgundy artwork covers
+      // them where they overlap the footer. The ribbons remain intact everywhere else.
+      className="site-footer relative isolate z-[2] overflow-hidden text-white"
       aria-label="Site footer"
     >
       {/* Background: the approved India → UAE panoramic artwork. The <img> is positioned
@@ -154,9 +157,11 @@ export function Footer() {
               </a>
             </address>
 
-            {/* Compact icon-led social controls. The old outlined text pills were
-               visually heavy against the panoramic artwork. */}
-            <ul className="mt-5 flex flex-wrap items-center gap-2">
+            {/* Social controls — 44x44 buttons meet mobile touch-target guidelines and
+               give the brand marks enough presence to be read instantly against the
+               panoramic artwork. Light ivory backing circle + gold hover tint keeps the
+               treatment tasteful for the IPF footer while preserving platform identity. */}
+            <ul className="mt-5 flex flex-wrap items-center gap-3">
               {socialLinks.map((item) => (
                 <li key={item.href}>
                   <a
@@ -165,12 +170,12 @@ export function Footer() {
                     rel="noreferrer"
                     aria-label={item.label}
                     title={item.label}
-                    className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-white/8 text-white/80 ring-1 ring-inset ring-white/10
-                               transition hover:bg-white/15 hover:text-[var(--ipf-gold)] hover:ring-[var(--ipf-gold)]/40
+                    className="group inline-flex h-11 w-11 items-center justify-center rounded-full bg-white/12 text-white shadow-[0_2px_10px_rgba(0,0,0,0.18)] ring-1 ring-inset ring-white/20
+                               transition hover:bg-white hover:text-[#5a0f1e] hover:ring-white
                                focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--ipf-gold)]"
                   >
                     {SOCIAL_ICONS[item.label] ?? (
-                      <span className="text-[0.65rem] font-semibold">{item.label.slice(0, 2)}</span>
+                      <span className="text-xs font-semibold">{item.label.slice(0, 2)}</span>
                     )}
                   </a>
                 </li>
@@ -214,23 +219,6 @@ export function Footer() {
           ))}
         </div>
 
-        {/* BRAND MESSAGE
-           Positioned over the burgundy → sunset transition rather than the water band
-           so it does not sit on top of the central boat / Burj Al Arab / Burj Khalifa /
-           Lotus Temple / India Gate silhouettes. The INDIA • PEOPLE • PARTNERSHIP •
-           PROGRESS secondary line that previously followed has been removed to let the
-           landmarks breathe and keep the composition from feeling crowded. */}
-        <div className="mt-8 border-t border-white/10 pt-6 text-center lg:mt-10 lg:pt-7">
-          <p className="font-serif text-2xl font-semibold leading-tight text-white sm:text-[1.75rem] lg:text-[2rem]">
-            People &amp; Communities
-          </p>
-          <p
-            className="mt-1.5 font-serif text-2xl italic leading-tight text-[var(--ipf-gold)] sm:text-[1.75rem] lg:text-[2rem]"
-            style={{ textShadow: "0 1px 3px rgba(0,0,0,0.45), 0 2px 10px rgba(90,15,30,0.35)" }}
-          >
-            Brighter Tomorrows
-          </p>
-        </div>
       </Container>
 
       {/* BOTTOM BAR
