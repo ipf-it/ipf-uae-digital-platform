@@ -1,5 +1,6 @@
-import { Link } from "react-router-dom";
 import { CommunityStats } from "../components/CommunityStats";
+import { HomeEvents } from "../components/HomeEvents";
+import { HomeGallery } from "../components/HomeGallery";
 import { HomeGetInvolved } from "../components/HomeGetInvolved";
 import { HomeHeroVideo } from "../components/HomeHeroVideo";
 import { HomeIdentityStrip } from "../components/HomeIdentityStrip";
@@ -7,26 +8,15 @@ import { HomePresidentMessage } from "../components/HomePresidentMessage";
 import { HomeWhoWeAre } from "../components/HomeWhoWeAre";
 import { VandeMataramToggle } from "../components/VandeMataramToggle";
 import { DocumentTitle } from "../components/layout/DocumentTitle";
-import { Button } from "../components/ui/Button";
-import { Card, CardGrid } from "../components/ui/Card";
-import { Container } from "../components/ui/Container";
 import { ImageCarousel } from "../components/ui/ImageCarousel";
 import { useCms } from "../cms/ContentProvider";
-import { Section } from "../components/ui/Section";
-import { SectionTitle } from "../components/ui/SectionTitle";
-import { FramedPhoto } from "../components/ui/TricolorFrame";
 import { useLocale } from "../i18n/LocaleProvider";
-import { usePublicEvents } from "../hooks/usePublicEvents";
 import { PageExtras } from "../cms/PageExtras";
 import { PageSectionRenderer } from "../components/PageSectionRenderer";
 
 export default function HomePage() {
   const { t } = useLocale();
   const { content } = useCms();
-  const galleryPreview = content.galleryImages.slice(0, 6);
-  const { events: featuredEvents } = usePublicEvents({ tab: "upcoming", featured: true });
-  const { events: upcomingEvents } = usePublicEvents({ tab: "upcoming" });
-  const eventsPreview = (featuredEvents.length > 0 ? featuredEvents : upcomingEvents).slice(0, 3);
 
   return (
     <div className="home-theme-page">
@@ -94,55 +84,16 @@ export default function HomePage() {
          on the right. Replaces the previous compact ivory section. */}
       <HomeWhoWeAre />
 
-      <Section className="py-10 sm:py-12 lg:py-14">
-        <Container>
-          <SectionTitle eyebrow={t("home.galleryEyebrow")} title={t("home.galleryTitle")} description={t("home.galleryDesc")} />
-          <div className="mt-8 grid grid-cols-2 gap-3 md:grid-cols-3">
-            {galleryPreview.map((item) => (
-              <FramedPhoto
-                key={item.src}
-                src={item.src}
-                alt={item.alt}
-                fit="cover"
-                imgClassName="h-36 w-full sm:h-44"
-              />
-            ))}
-          </div>
-          <div className="mt-6">
-            <Button asChild variant="outline">
-              <Link to="/events#ipf-gallery">{t("home.openGallery")}</Link>
-            </Button>
-          </div>
-        </Container>
-      </Section>
+      {/* Premium Events carousel on the approved waterfront heritage
+         background. Reads from usePublicEvents (same source as the Events
+         page). Slow autoplay (7 s) with pause-on-hover/focus/touch/hidden. */}
+      <HomeEvents />
 
-      <Section tone="white" className="py-10 sm:py-12 lg:py-14">
-        <Container>
-          <SectionTitle eyebrow={t("home.eventsEyebrow")} title={t("home.eventsTitle")} />
-          <CardGrid className="mt-8">
-            {eventsPreview.map((event) => (
-              <Card
-                key={event.id}
-                to={`/events/${event.id}`}
-                eyebrow={event.date}
-                title={event.title}
-                description={event.body}
-                image={event.image || event.slides[0]?.src}
-                imageAlt={event.slides[0]?.alt ?? event.title}
-                imageFit="contain"
-              />
-            ))}
-          </CardGrid>
-          {eventsPreview.length === 0 ? (
-            <p className="mt-6 text-sm text-[var(--ipf-muted)]">{t("page.events.emptyUpcoming")}</p>
-          ) : null}
-          <div className="mt-6">
-            <Button asChild variant="outline">
-              <Link to="/events">{t("home.allEvents")}</Link>
-            </Button>
-          </div>
-        </Container>
-      </Section>
+      {/* Premium Gallery editorial mosaic on the approved cream arabesque
+         skyline background. Reads from content.galleryImages (CMS). Slow
+         crossfade autoplay (9 s) — a deliberately different rhythm from
+         Events so the two sections never pulse together. */}
+      <HomeGallery />
 
       {/* Final CTA band directly above the footer — carries the Follow Us
          social group as its right-hand zone so socials live in exactly one

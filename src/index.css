@@ -177,6 +177,21 @@ html:not([lang="en"]) thead th {
   to { transform: translateX(-50%); }
 }
 
+/* Homepage Events carousel scroll container — hide the native scrollbar on
+ * every browser (it is replaced by the on-component arrows + progress line)
+ * while native scrolling, touch swipe and keyboard arrow nav all keep
+ * working. */
+.ipf-no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+.ipf-no-scrollbar::-webkit-scrollbar { display: none; }
+
+/* Homepage Gallery mosaic crossfade. Used by HomeGallery to softly swap
+ * triples of community photographs on each tick of the autoplay. */
+@keyframes ipf-gallery-fade {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.animate-ipf-gallery-fade { animation-name: ipf-gallery-fade; }
+
 .ipf-cloth {
   position: fixed;
   top: 0;
