@@ -544,6 +544,13 @@ html:not([lang="en"]) thead th {
 .site-footer::before { width:min(46rem,72vw); aspect-ratio:1; right:-14rem; top:-24rem; border:1px solid rgba(214,165,72,.18); box-shadow:0 0 0 5rem rgba(214,165,72,.025),0 0 0 11rem rgba(255,255,255,.018); animation:footer-orbit 28s ease-in-out infinite alternate; }
 .site-footer::after { left:-12%; right:-12%; bottom:-12rem; height:19rem; background:linear-gradient(90deg,rgba(226,114,39,.11),rgba(255,255,255,.035),rgba(20,125,76,.12)); filter:blur(12px); animation:footer-wave 24s ease-in-out infinite alternate; }
 .site-footer > * { position:relative; z-index:1; }
+/* Opt-out for the India-UAE panoramic footer artwork + its contrast overlay. The three
+ * layers below are decorative background chrome that must sit behind content, so they
+ * explicitly override the generic .site-footer > * rule above. Selector specificity
+ * (0,2,0) beats both the generic rule and the Tailwind utility -z-10 (0,1,0). */
+.site-footer > .ipf-footer-art,
+.site-footer > .ipf-footer-art-overlay { position:absolute; z-index:-10; }
+.site-footer > .ipf-footer-art-base { position:absolute; z-index:-20; }
 @keyframes global-ambient-one { from { transform:translate3d(0,0,0) scale(.94); } to { transform:translate3d(-4vw,5vh,0) scale(1.08); } }
 @keyframes global-ambient-two { from { transform:translate3d(0,0,0) scale(1); } to { transform:translate3d(5vw,-4vh,0) scale(1.1); } }
 @keyframes global-section-light { from { background-position:100% 0,0 100%,110% 0; } to { background-position:90% 8%,10% 92%,-90% 0; } }

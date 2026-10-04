@@ -78,7 +78,7 @@ export function Footer() {
         decoding="async"
         width={2170}
         height={725}
-        className="pointer-events-none absolute inset-0 -z-10 h-full w-full object-cover
+        className="ipf-footer-art pointer-events-none absolute inset-0 -z-10 h-full w-full object-cover
                    object-[50%_82%] md:object-[50%_70%] lg:object-center"
       />
 
@@ -86,7 +86,7 @@ export function Footer() {
          the first paint doesn't flash a different colour. */}
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute inset-0 -z-20"
+        className="ipf-footer-art-base pointer-events-none absolute inset-0 -z-20"
         style={{ backgroundColor: "#5a0f1e" }}
       />
 
@@ -95,7 +95,7 @@ export function Footer() {
          columns sit; the central sunset/water band stays open. */}
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute inset-0 -z-10
+        className="ipf-footer-art-overlay pointer-events-none absolute inset-0 -z-10
                    bg-[linear-gradient(180deg,rgba(90,15,30,0.68)_0%,rgba(90,15,30,0.32)_38%,rgba(0,0,0,0.08)_62%,rgba(0,0,0,0.55)_100%)]"
       />
 
