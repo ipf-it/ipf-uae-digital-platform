@@ -546,12 +546,11 @@ html:not([lang="en"]) thead th {
  * orange/white/green side ribbons bleeding over the panorama. The artwork is now the
  * footer's primary visual element. */
 .site-footer > * { position:relative; z-index:1; }
-/* Opt-out for the India-UAE panoramic footer artwork + its contrast overlay. The three
- * layers below are decorative background chrome that must sit behind content, so they
+/* Opt-out for the India-UAE panoramic footer artwork + its burgundy base. The two
+ * layers below are decorative background that must sit behind content, so they
  * explicitly override the generic .site-footer > * rule above. Selector specificity
  * (0,2,0) beats both the generic rule and the Tailwind utility -z-10 (0,1,0). */
-.site-footer > .ipf-footer-art,
-.site-footer > .ipf-footer-art-overlay { position:absolute; z-index:-10; }
+.site-footer > .ipf-footer-art { position:absolute; z-index:-10; }
 .site-footer > .ipf-footer-art-base { position:absolute; z-index:-20; }
 @keyframes global-ambient-one { from { transform:translate3d(0,0,0) scale(.94); } to { transform:translate3d(-4vw,5vh,0) scale(1.08); } }
 @keyframes global-ambient-two { from { transform:translate3d(0,0,0) scale(1); } to { transform:translate3d(5vw,-4vh,0) scale(1.1); } }

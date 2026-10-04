@@ -104,13 +104,11 @@ export function Footer() {
          absolutely behind every content layer so the composition — India (left) → sunset
          (centre) → UAE (right) — reads intact, and the content sits over it. object-position
          is tuned per breakpoint via CSS below. */}
-      {/* object-position tuning:
-          - mobile (<768px): the panoramic image is 2170x725 (≈3:1); the footer stacks tall,
-            so the image is cropped horizontally. Centre horizontally so the sunset / central
-            boat / Burj Al Arab silhouette remain the first-read; vertical bias slightly below
-            centre (60%) so skyline silhouettes do not get clipped at the top.
-          - tablet (≥768px): bias slightly below centre so the lower horizon reads richer.
-          - desktop (≥1024px): true centre; the full panorama is visible. */}
+      {/* object-contain so the entire panorama — gold corner flourishes, palm fronds,
+         India + UAE landmarks, sunset, water band and the stylised tricolour wave at
+         the bottom — is always visible, never cropped. At viewport widths narrower
+         than the image's ~3:1 aspect ratio the image letterboxes to the burgundy base
+         below, which matches the artwork's own burgundy sky at the seam. */}
       <img
         src={INDIA_UAE_BG}
         alt=""
@@ -119,31 +117,16 @@ export function Footer() {
         decoding="async"
         width={2170}
         height={725}
-        className="ipf-footer-art pointer-events-none absolute inset-0 -z-10 h-full w-full object-cover
-                   object-[50%_60%] md:object-[50%_55%] lg:object-center"
+        className="ipf-footer-art pointer-events-none absolute inset-0 -z-10 h-full w-full object-contain object-center"
       />
 
-      {/* Base burgundy fill in case the image is still loading; matches the artwork's maroon so
-         the first paint doesn't flash a different colour. */}
+      {/* Base burgundy fill that both covers initial load and matches the colour of the
+         artwork's own sky so letterbox bands at narrower viewports read as a continuous
+         background with no visible seam. */}
       <div
         aria-hidden="true"
         className="ipf-footer-art-base pointer-events-none absolute inset-0 -z-20"
         style={{ backgroundColor: "#5a0f1e" }}
-      />
-
-      {/* Subtle burgundy → transparent → black-at-bottom gradient to anchor text contrast
-         without covering the landmarks. The gradient is strongest where the navigation
-         columns sit; the central sunset/water band stays open. */}
-      {/* Overlay strategy (top → bottom):
-          0%   — strong burgundy wash so navigation and brand mark stay readable
-          18%  — burgundy already halving
-          34%  — burgundy becoming thin; sunset starts coming through
-          58%  — fully transparent so the water band + silhouettes read naturally
-         100%  — gentle 20% black at the very bottom to give the legal bar a seam */}
-      <div
-        aria-hidden="true"
-        className="ipf-footer-art-overlay pointer-events-none absolute inset-0 -z-10
-                   bg-[linear-gradient(180deg,rgba(90,15,30,0.82)_0%,rgba(90,15,30,0.56)_18%,rgba(90,15,30,0.22)_34%,rgba(90,15,30,0)_58%,rgba(0,0,0,0.20)_100%)]"
       />
 
       {/* Container padding reduced ~20% from the pre-tuning values so the burgundy
