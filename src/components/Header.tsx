@@ -90,12 +90,15 @@ export function Header({ logoSrc }: HeaderProps) {
 
   return (
     <header ref={headerRef} className="sticky top-0 z-40">
-      <div className="hidden border-b border-white/10 bg-[var(--ipf-navy)] text-xs text-white/80 md:block">
+      {/* Top announcement bar — background flipped from navy to the new
+         institutional burgundy. Structure, LATEST badge, ticker animation,
+         Donate/Sign in utility links, email, language selector all unchanged. */}
+      <div className="hidden border-b border-white/10 bg-[var(--ipf-burgundy)] text-xs text-white/80 md:block">
         <Container className="flex items-center justify-between gap-x-4 py-1.5">
           <p className="min-w-0 flex-1 overflow-hidden pr-2">
             {headlines.length > 0 ? (
               <Link to="/news" className="flex items-center gap-2 text-white/90 hover:text-white">
-                <span className="shrink-0 rounded bg-[var(--ipf-saffron)] px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-[0.14em] text-[var(--ipf-navy)]">
+                <span className="shrink-0 rounded bg-[var(--ipf-saffron)] px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-[0.14em] text-[var(--ipf-burgundy-dark)]">
                   {t("nav.latest")}
                 </span>
                 <span className="ipf-ticker min-w-0">

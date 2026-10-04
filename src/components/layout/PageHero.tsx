@@ -21,7 +21,7 @@ type PageHeroProps = {
 export function PageHero({ eyebrow, title, description, crumbs = [], image, actions }: PageHeroProps) {
   const { t } = useLocale();
   return (
-    <section className="page-hero-themed relative isolate overflow-hidden bg-[var(--ipf-navy)] text-white">
+    <section className="page-hero-themed relative isolate overflow-hidden bg-[var(--ipf-burgundy)] text-white">
       <div className="page-hero-mandala" aria-hidden="true" />
       <div className="page-hero-weave" aria-hidden="true" />
       {/* Soft gradient "orbs" for modern depth — purely decorative, sit behind all content. */}
@@ -30,11 +30,13 @@ export function PageHero({ eyebrow, title, description, crumbs = [], image, acti
       {image ? (
         <img src={image} alt="" loading="eager" fetchPriority="high" className="absolute inset-0 h-full w-full object-cover object-center opacity-35" />
       ) : null}
+      {/* Overlay gradient — burgundy washed to the right by a touch of green,
+         same composition as before but keyed to the new institutional dark. */}
       <div
         className={
           image
-            ? "absolute inset-0 bg-[linear-gradient(90deg,rgba(11,31,58,0.88)_0%,rgba(11,31,58,0.72)_70%,rgba(19,136,8,0.18)_100%)]"
-            : "absolute inset-0 bg-[linear-gradient(90deg,rgba(11,31,58,1)_0%,rgba(11,31,58,0.92)_70%,rgba(19,136,8,0.18)_100%)]"
+            ? "absolute inset-0 bg-[linear-gradient(90deg,rgba(90,15,30,0.88)_0%,rgba(90,15,30,0.72)_70%,rgba(19,136,8,0.18)_100%)]"
+            : "absolute inset-0 bg-[linear-gradient(90deg,rgba(90,15,30,1)_0%,rgba(90,15,30,0.92)_70%,rgba(19,136,8,0.18)_100%)]"
         }
       />
       <Container className="relative py-12 sm:py-20">

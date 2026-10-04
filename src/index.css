@@ -11,6 +11,13 @@
   --ipf-muted: #5c6573;
   --ipf-gold: #c4a35a;
   --ipf-line: #e4ddd0;
+  /* Deep burgundy — primary institutional dark brand surface for public-facing
+   * large backgrounds (announcement bar, page heroes, chapter directory map).
+   * --ipf-burgundy-dark is reserved for the footer legal strip only.
+   * --ipf-burgundy-soft is the hover/soft variant equivalent to --ipf-navy-soft. */
+  --ipf-burgundy: #5a0f1e;
+  --ipf-burgundy-soft: #7a1f30;
+  --ipf-burgundy-dark: #3a0913;
   --font-body: "Noto Sans", "Noto Sans Devanagari", "Noto Sans Malayalam", "Noto Sans Tamil", "Noto Sans Telugu", "Noto Sans Kannada", "Noto Sans Gujarati", "Noto Sans Gurmukhi", "Noto Sans Bengali", "Segoe UI", Roboto, Arial, sans-serif;
   --font-serif-accent: "Playfair Display", Georgia, "Noto Sans Devanagari", serif;
   font-family: var(--font-body);
@@ -433,7 +440,7 @@ html:not([lang="en"]) thead th {
 .site-theme-ambient--one { right:-17rem; top:28vh; background:repeating-conic-gradient(from 10deg,var(--route-secondary) 0 3deg,transparent 3deg 15deg); mask-image:radial-gradient(circle,transparent 0 25%,#000 26% 28%,transparent 29% 45%,#000 46% 49%,transparent 50%); animation:site-theme-spin 42s linear infinite; }
 .site-theme-ambient--two { left:-16rem; bottom:4vh; border:1px solid color-mix(in srgb,var(--route-primary) 35%,transparent); box-shadow:0 0 0 4rem color-mix(in srgb,var(--route-secondary) 5%,transparent),0 0 0 8rem color-mix(in srgb,var(--route-primary) 4%,transparent); animation:site-theme-float 13s ease-in-out infinite; }
 .site-route-content > section:not(.ipf-home-hero):not(.state-journey-hero):not(.chapter-journey-hero):not(.org-hero),.site-route-content > div > section:not(.ipf-home-hero):not(.state-journey-hero):not(.chapter-journey-hero):not(.org-hero) { background-image:radial-gradient(circle at 92% 18%,color-mix(in srgb,var(--route-secondary) 12%,transparent),transparent 22%),radial-gradient(circle at 7% 78%,color-mix(in srgb,var(--route-primary) 9%,transparent),transparent 26%),repeating-linear-gradient(120deg,transparent 0 46px,color-mix(in srgb,var(--route-primary) 3%,transparent) 47px 48px,transparent 49px 96px); background-blend-mode:multiply; }
-.page-hero-themed { isolation:isolate; background:radial-gradient(circle at 82% 30%,color-mix(in srgb,var(--route-secondary) 20%,transparent),transparent 26%),linear-gradient(110deg,#07182f,var(--route-primary) 72%,#09233c); }
+.page-hero-themed { isolation:isolate; background:radial-gradient(circle at 82% 30%,color-mix(in srgb,var(--route-secondary) 20%,transparent),transparent 26%),linear-gradient(110deg,#2a0810,var(--ipf-burgundy) 72%,#3a0d16); }
 .page-hero-mandala { position:absolute; z-index:0; width:28rem; aspect-ratio:1; right:-9rem; top:-15rem; border-radius:50%; opacity:.2; background:repeating-conic-gradient(from 12deg,var(--route-secondary) 0 4deg,transparent 4deg 18deg); mask-image:radial-gradient(circle,transparent 0 22%,#000 23% 26%,transparent 27% 42%,#000 43% 47%,transparent 48%); animation:site-theme-spin 30s linear infinite; }
 .page-hero-weave { position:absolute; inset:0; z-index:0; opacity:.09; background:repeating-linear-gradient(45deg,transparent 0 28px,var(--route-secondary) 29px 30px,transparent 31px 60px); animation:page-hero-weave 18s linear infinite; }
 @keyframes site-theme-spin { to { transform:rotate(360deg); } }
@@ -453,7 +460,7 @@ html:not([lang="en"]) thead th {
 .chapter-map-svg path.is-selected { fill:var(--org-secondary); stroke:#fff; stroke-width:2.6; filter:drop-shadow(0 0 10px color-mix(in srgb,var(--org-secondary) 70%,transparent)); }
 .chapter-sand-flow { position:absolute; inset:auto -10% -8rem; height:20rem; z-index:-1; border-radius:50%; opacity:.28; background:linear-gradient(180deg,color-mix(in srgb,var(--org-secondary) 4%,transparent),color-mix(in srgb,var(--org-secondary) 10%,transparent)); rotate:-3deg; animation:org-wave 24s ease-in-out infinite; }
 .chapter-sky-orbit { display:none; }
-.chapter-directory-map { position:relative; background:radial-gradient(circle at 24% 35%,rgba(255,153,51,.14),transparent 24%),linear-gradient(135deg,#0b1f3a,#174b63); box-shadow:0 30px 70px rgba(11,31,58,.18); }
+.chapter-directory-map { position:relative; background:radial-gradient(circle at 24% 35%,rgba(255,153,51,.14),transparent 24%),linear-gradient(135deg,#3a0913,#7a1f30); box-shadow:0 30px 70px rgba(0,0,0,.22); }
 .chapter-directory-orbit { position:absolute; width:24rem; aspect-ratio:1; left:-9rem; bottom:-12rem; border:1px solid rgba(255,255,255,.14); border-radius:50%; box-shadow:0 0 0 4rem rgba(255,255,255,.025),0 0 0 8rem rgba(255,153,51,.025); animation:org-float 11s ease-in-out infinite; }
 .chapter-directory-map svg path { transition:fill .25s ease,filter .25s ease; }
 .chapter-directory-map svg text { fill:#fff; paint-order:stroke; stroke:#0b1f3a; stroke-width:3px; }

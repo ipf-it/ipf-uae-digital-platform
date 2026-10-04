@@ -101,11 +101,11 @@ export function ChapterMap() {
           {pins.map((pin) => (
             <g key={pin.id} className="cursor-pointer" onClick={() => selectChapter(pin.id)}>
               <circle cx={pin.x} cy={pin.y} r="24" fill="transparent" className="pointer-events-auto" />
-              <circle cx={pin.x} cy={pin.y} r={active === pin.id ? 9 : 7} fill="#ff9933" stroke="#0b1f3a" strokeWidth="2" />
+              <circle cx={pin.x} cy={pin.y} r={active === pin.id ? 9 : 7} fill="#ff9933" stroke="#3a0913" strokeWidth="2" />
               <text
                 x={pin.x + 12}
                 y={pin.y + 4}
-                fill="#0b1f3a"
+                fill="#FFF8EE"
                 fontSize="18"
                 fontWeight="700"
                 fontFamily="Noto Sans, sans-serif"
