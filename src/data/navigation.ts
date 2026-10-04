@@ -86,10 +86,20 @@ export const footerGroups = [
   },
 ] as const;
 
+/**
+ * Social accounts only. Historically "Caring & Sharing" (external link to
+ * https://www.ipf-uae.com/) was listed here, which was semantically wrong — it is not
+ * a social network. The link itself is preserved on the footer, under Resources, via
+ * `caringSharingLink` below.
+ */
 export const socialLinks = [
   { label: "Facebook", href: "https://www.facebook.com/IPF.uae/" },
   { label: "Instagram", href: "https://www.instagram.com/ipf_uae/" },
   { label: "X / Twitter", href: "https://twitter.com/ipfuae" },
   { label: "YouTube", href: "https://www.youtube.com/channel/UCYxVULAR6md3PRWCVljvnZA/featured" },
-  { label: "Caring & Sharing", href: "https://www.ipf-uae.com/" },
 ];
+
+export const caringSharingLink = {
+  label: "Caring & Sharing",
+  href: "https://www.ipf-uae.com/",
+};

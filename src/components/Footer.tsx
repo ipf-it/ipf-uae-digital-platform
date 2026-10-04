@@ -1,11 +1,48 @@
+import type { ReactNode } from "react";
 import { Link } from "react-router-dom";
-import { socialLinks } from "../data/navigation";
+import { socialLinks, caringSharingLink } from "../data/navigation";
 import { useLocale } from "../i18n/LocaleProvider";
 import { site } from "../data/site";
 import { Container } from "./ui/Container";
 
-type FooterLink = { label: string; to: string };
+type FooterInternalLink = { label: string; to: string };
+type FooterExternalLink = { label: string; href: string };
+type FooterLink = FooterInternalLink | FooterExternalLink;
 type FooterColumn = { title: string; links: readonly FooterLink[] };
+
+const isExternalLink = (link: FooterLink): link is FooterExternalLink =>
+  "href" in link;
+
+/**
+ * Brand-mark icons for social controls. Inline SVGs keep the footer dependency-free —
+ * the installed `lucide-react` build does not ship Facebook/Instagram/Twitter/YouTube
+ * glyphs. Each path is from the official brand set, drawn on a 24×24 viewBox, uses
+ * currentColor so the hover/focus colour transitions apply uniformly.
+ */
+const SOCIAL_ICONS: Record<string, ReactNode> = {
+  Facebook: (
+    <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" className="h-4 w-4">
+      <path d="M22 12.06C22 6.5 17.52 2 12 2S2 6.5 2 12.06c0 5 3.66 9.14 8.44 9.94v-7.03H7.9v-2.91h2.54v-2.22c0-2.52 1.49-3.91 3.78-3.91 1.1 0 2.24.2 2.24.2v2.47h-1.26c-1.24 0-1.63.78-1.63 1.57v1.89h2.78l-.44 2.91h-2.34V22c4.78-.8 8.44-4.94 8.44-9.94z" />
+    </svg>
+  ),
+  Instagram: (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" className="h-4 w-4">
+      <rect x="3" y="3" width="18" height="18" rx="5" />
+      <circle cx="12" cy="12" r="4" />
+      <circle cx="17.5" cy="6.5" r="0.9" fill="currentColor" stroke="none" />
+    </svg>
+  ),
+  "X / Twitter": (
+    <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" className="h-4 w-4">
+      <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24h-6.653l-5.214-6.817-5.966 6.817H1.683l7.73-8.835L1.254 2.25h6.829l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+    </svg>
+  ),
+  YouTube: (
+    <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" className="h-4 w-4">
+      <path d="M23.498 6.186a3.016 3.016 0 00-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.016 3.016 0 00.502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 002.121 2.136c1.872.505 9.377.505 9.377.505s7.505 0 9.377-.505a3.016 3.016 0 002.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.546 15.569V8.431L15.818 12z" />
+    </svg>
+  ),
+};
 
 /**
  * Footer information architecture, locked to routes that actually exist in src/App.tsx.
@@ -46,6 +83,9 @@ const footerColumns: readonly FooterColumn[] = [
       { label: "Contact", to: "/contact" },
       { label: "Donate", to: "/donate" },
       { label: "Member portal", to: "/portal" },
+      // Previously rendered inside the social group — it is a legacy community portal,
+      // not a social network. Preserved here with its existing external destination.
+      caringSharingLink,
     ],
   },
 ];
@@ -65,10 +105,11 @@ export function Footer() {
          (centre) → UAE (right) — reads intact, and the content sits over it. object-position
          is tuned per breakpoint via CSS below. */}
       {/* object-position tuning:
-          - mobile (<768px): the panoramic image is 2170x725 (≈3:1) and the footer is tall-stack;
-            we anchor to bottom-centre so the sunset band + skyline silhouettes stay in view
-            under the content, while most of the burgundy sky crops away.
-          - tablet (≥768px): shift upward slightly so landmarks + sunset both read.
+          - mobile (<768px): the panoramic image is 2170x725 (≈3:1); the footer stacks tall,
+            so the image is cropped horizontally. Centre horizontally so the sunset / central
+            boat / Burj Al Arab silhouette remain the first-read; vertical bias slightly below
+            centre (60%) so skyline silhouettes do not get clipped at the top.
+          - tablet (≥768px): bias slightly below centre so the lower horizon reads richer.
           - desktop (≥1024px): true centre; the full panorama is visible. */}
       <img
         src={INDIA_UAE_BG}
@@ -79,7 +120,7 @@ export function Footer() {
         width={2170}
         height={725}
         className="ipf-footer-art pointer-events-none absolute inset-0 -z-10 h-full w-full object-cover
-                   object-[50%_82%] md:object-[50%_70%] lg:object-center"
+                   object-[50%_60%] md:object-[50%_55%] lg:object-center"
       />
 
       {/* Base burgundy fill in case the image is still loading; matches the artwork's maroon so
@@ -93,22 +134,33 @@ export function Footer() {
       {/* Subtle burgundy → transparent → black-at-bottom gradient to anchor text contrast
          without covering the landmarks. The gradient is strongest where the navigation
          columns sit; the central sunset/water band stays open. */}
+      {/* Overlay strategy (top → bottom):
+          0%   — strong burgundy wash so navigation and brand mark stay readable
+          18%  — burgundy already halving
+          34%  — burgundy becoming thin; sunset starts coming through
+          58%  — fully transparent so the water band + silhouettes read naturally
+         100%  — gentle 20% black at the very bottom to give the legal bar a seam */}
       <div
         aria-hidden="true"
         className="ipf-footer-art-overlay pointer-events-none absolute inset-0 -z-10
-                   bg-[linear-gradient(180deg,rgba(90,15,30,0.68)_0%,rgba(90,15,30,0.32)_38%,rgba(0,0,0,0.08)_62%,rgba(0,0,0,0.55)_100%)]"
+                   bg-[linear-gradient(180deg,rgba(90,15,30,0.82)_0%,rgba(90,15,30,0.56)_18%,rgba(90,15,30,0.22)_34%,rgba(90,15,30,0)_58%,rgba(0,0,0,0.20)_100%)]"
       />
 
-      <Container className="relative pt-16 pb-8 sm:pt-20 sm:pb-10 lg:pt-24 lg:pb-12">
-        <div className="grid gap-10 md:grid-cols-2 lg:grid-cols-4 lg:gap-12">
+      {/* Container padding reduced ~20% from the pre-tuning values so the burgundy
+         wash sits above the fold shorter and the panoramic landmarks come into view
+         sooner on scroll. */}
+      <Container className="relative pt-10 pb-6 sm:pt-14 sm:pb-8 lg:pt-16 lg:pb-10">
+        <div className="grid gap-8 md:grid-cols-2 md:gap-10 lg:grid-cols-4 lg:gap-10">
           {/* COLUMN 1 — IPF UAE */}
           <div className="min-w-0">
-            <p className="text-base font-bold tracking-wide text-white">{site.name}</p>
-            <p className="mt-4 max-w-sm text-sm leading-relaxed text-white/85">
+            <p className="font-serif text-[1.08rem] font-semibold tracking-wide text-white sm:text-[1.15rem]">
+              {site.name}
+            </p>
+            <p className="mt-3 max-w-sm text-sm leading-relaxed text-white/85">
               Connecting India&rsquo;s diverse communities across the UAE through service,
               culture, leadership and opportunity.
             </p>
-            <address className="not-italic mt-5 text-sm leading-relaxed text-white/80">
+            <address className="not-italic mt-4 text-sm leading-relaxed text-white/80">
               {site.office}
               <br />
               <a
@@ -119,18 +171,24 @@ export function Footer() {
               </a>
             </address>
 
-            {/* Social icons / links — real existing socialLinks from src/data/navigation.ts */}
-            <ul className="mt-6 flex flex-wrap gap-2 text-xs">
+            {/* Compact icon-led social controls. The old outlined text pills were
+               visually heavy against the panoramic artwork. */}
+            <ul className="mt-5 flex flex-wrap items-center gap-2">
               {socialLinks.map((item) => (
                 <li key={item.href}>
                   <a
                     href={item.href}
                     target="_blank"
                     rel="noreferrer"
-                    className="inline-flex items-center rounded-full border border-white/25 bg-white/5 px-3 py-1.5 font-medium tracking-wide transition
-                               hover:border-[var(--ipf-gold)]/80 hover:bg-white/10 hover:text-[var(--ipf-gold)]"
+                    aria-label={item.label}
+                    title={item.label}
+                    className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-white/8 text-white/80 ring-1 ring-inset ring-white/10
+                               transition hover:bg-white/15 hover:text-[var(--ipf-gold)] hover:ring-[var(--ipf-gold)]/40
+                               focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--ipf-gold)]"
                   >
-                    {item.label}
+                    {SOCIAL_ICONS[item.label] ?? (
+                      <span className="text-[0.65rem] font-semibold">{item.label.slice(0, 2)}</span>
+                    )}
                   </a>
                 </li>
               ))}
@@ -140,52 +198,70 @@ export function Footer() {
           {/* COLUMNS 2-4 — EXPLORE / GET INVOLVED / RESOURCES */}
           {footerColumns.map((col) => (
             <div key={col.title} className="min-w-0">
-              <p className="text-xs font-semibold uppercase tracking-[0.22em] text-[var(--ipf-gold)]">
+              <p className="text-[0.72rem] font-semibold uppercase tracking-[0.26em] text-[var(--ipf-gold)]">
                 {col.title}
               </p>
-              <ul className="mt-4 space-y-2.5 text-sm">
-                {col.links.map((item) => (
-                  <li key={`${col.title}-${item.to}-${item.label}`}>
-                    <Link
-                      to={item.to}
-                      className="inline-block rounded-sm text-white/90 underline-offset-4 transition
-                                 hover:text-white hover:underline focus-visible:outline-2 focus-visible:outline-[var(--ipf-gold)]"
-                    >
-                      {item.label}
-                    </Link>
-                  </li>
-                ))}
+              <ul className="mt-3 space-y-2 text-sm">
+                {col.links.map((item) => {
+                  const key = `${col.title}-${isExternalLink(item) ? item.href : item.to}-${item.label}`;
+                  const className =
+                    "inline-block rounded-sm text-white/90 underline-offset-4 transition " +
+                    "hover:text-white hover:underline focus-visible:outline-2 focus-visible:outline-[var(--ipf-gold)]";
+                  return (
+                    <li key={key}>
+                      {isExternalLink(item) ? (
+                        <a
+                          href={item.href}
+                          target="_blank"
+                          rel="noreferrer"
+                          className={className}
+                        >
+                          {item.label}
+                        </a>
+                      ) : (
+                        <Link to={item.to} className={className}>
+                          {item.label}
+                        </Link>
+                      )}
+                    </li>
+                  );
+                })}
               </ul>
             </div>
           ))}
         </div>
 
-        {/* BRAND MESSAGE AREA */}
-        <div className="mt-14 border-t border-white/10 pt-10 text-center lg:mt-16 lg:pt-12">
-          <p className="font-serif text-2xl font-semibold leading-tight text-white sm:text-3xl lg:text-[2.1rem]">
+        {/* BRAND MESSAGE
+           Positioned over the burgundy → sunset transition rather than the water band
+           so it does not sit on top of the central boat / Burj Al Arab / Burj Khalifa /
+           Lotus Temple / India Gate silhouettes. The INDIA • PEOPLE • PARTNERSHIP •
+           PROGRESS secondary line that previously followed has been removed to let the
+           landmarks breathe and keep the composition from feeling crowded. */}
+        <div className="mt-8 border-t border-white/10 pt-6 text-center lg:mt-10 lg:pt-7">
+          <p className="font-serif text-2xl font-semibold leading-tight text-white sm:text-[1.75rem] lg:text-[2rem]">
             People &amp; Communities
           </p>
-          <p className="mt-2 font-serif text-2xl italic leading-tight text-[var(--ipf-gold)] sm:text-3xl lg:text-[2.1rem]">
+          <p
+            className="mt-1.5 font-serif text-2xl italic leading-tight text-[var(--ipf-gold)] sm:text-[1.75rem] lg:text-[2rem]"
+            style={{ textShadow: "0 1px 3px rgba(0,0,0,0.45), 0 2px 10px rgba(90,15,30,0.35)" }}
+          >
             Brighter Tomorrows
-          </p>
-          <p className="mt-5 text-[0.68rem] font-semibold uppercase tracking-[0.42em] text-white/70">
-            India <span className="mx-2 text-[var(--ipf-gold)]">•</span> People{" "}
-            <span className="mx-2 text-[var(--ipf-gold)]">•</span> Partnership{" "}
-            <span className="mx-2 text-[var(--ipf-gold)]">•</span> Progress
           </p>
         </div>
       </Container>
 
-      {/* BOTTOM BAR */}
-      <div className="relative border-t border-white/10 bg-[rgba(28,8,14,0.55)] py-4 backdrop-blur-[1px]">
-        <Container className="flex flex-col items-center justify-between gap-3 text-xs text-white/70 sm:flex-row">
-          <p className="text-center sm:text-left">
+      {/* BOTTOM BAR
+         Dravyx AI credit is retained but visually secondary — smaller type and lower
+         opacity than the IPF copyright, which remains the first-read on this strip. */}
+      <div className="relative border-t border-white/10 bg-[rgba(20,6,12,0.62)] py-3 backdrop-blur-[2px]">
+        <Container className="flex flex-col items-center justify-between gap-2 text-xs text-white/75 sm:flex-row">
+          <p className="text-center font-medium sm:text-left">
             &copy; {new Date().getFullYear()} Indian People&rsquo;s Forum UAE. All Rights Reserved.
           </p>
-          <p className="text-center sm:text-right">
+          <p className="text-center text-[0.7rem] text-white/55 sm:text-right">
             {t("footer.powered")}{" "}
             <a
-              className="font-semibold text-[var(--ipf-gold)] underline-offset-2 transition hover:text-white hover:underline"
+              className="font-medium text-[var(--ipf-gold)]/85 underline-offset-2 transition hover:text-[var(--ipf-gold)] hover:underline"
               href="https://dravyxai.com/"
               target="_blank"
               rel="noreferrer"
