@@ -74,49 +74,48 @@ const INDIA_UAE_BG = "/footer-india-uae.webp";
 
 export function Footer() {
   return (
-    <footer
-      // z-[2] raises the footer above the site-wide fixed TricolorWaves ribbons
-      // (.ipf-cloth, position:fixed, z-index:1) so the opaque burgundy artwork covers
-      // them where they overlap the footer. The ribbons remain intact everywhere else.
-      className="site-footer relative isolate z-[2] overflow-hidden text-white"
-      aria-label="Site footer"
-    >
-      {/* Full-bleed panoramic artwork. absolute inset-0 h-full w-full + object-cover
-         guarantees the image reaches both viewport edges with no burgundy gutters at
-         any width. object-position stays horizontally centred so the sunset / central
-         boat remains the first-read; vertical bias is tuned per breakpoint:
-           - mobile (<768px): 50% 70% — keeps the lower landmark silhouettes + water
-             + tricolour band visible, lets more sky crop off the top where columns sit.
-           - tablet (≥768px): 50% 60% — slight below-centre bias for the horizon.
-           - desktop (≥1024px): 50% 50% — true centre; wide viewports show the fullest
-             India-left / sunset-centre / UAE-right story since container AR is close
-             to the image's own ~2.993:1. */}
-      <img
-        src={INDIA_UAE_BG}
-        alt=""
-        aria-hidden="true"
-        loading="lazy"
-        decoding="async"
-        width={2170}
-        height={725}
-        className="ipf-footer-art pointer-events-none absolute inset-0 -z-10 h-full w-full object-cover
-                   object-[50%_70%] md:object-[50%_60%] lg:object-center"
-      />
+    // The <footer> itself is kept simple so the two regions below are plain
+    // sequential document-flow siblings. isolate+z-[2] stays on the artwork
+    // wrapper so it still covers the global fixed TricolorWaves ribbons where
+    // they overlap the artwork; the legal strip does not need the elevation
+    // because its background is already fully opaque.
+    <footer className="site-footer text-white" aria-label="Site footer">
+      {/* REGION 1 — Footer artwork + columns.
+         The panoramic image is positioned ABSOLUTELY relative to this wrapper
+         only, so its bounding box ends at this wrapper's bottom edge. The
+         legal strip below is OUTSIDE this wrapper and has no image behind it.
+         relative + overflow-hidden clip the artwork to this region exactly.
+         z-[2] + isolate raise this region above the site-wide .ipf-cloth
+         tricolour ribbons (position:fixed, z-index:1). */}
+      <div className="footer-artwork-section relative isolate z-[2] overflow-hidden">
+        {/* Full-bleed panoramic artwork — fills the artwork region only.
+           object-position tuned per breakpoint:
+             mobile  (<768px) : 50% 70%
+             tablet  (≥768px) : 50% 60%
+             desktop (≥1024px): centre */}
+        <img
+          src={INDIA_UAE_BG}
+          alt=""
+          aria-hidden="true"
+          loading="lazy"
+          decoding="async"
+          width={2170}
+          height={725}
+          className="ipf-footer-art pointer-events-none absolute inset-0 -z-10 h-full w-full object-cover
+                     object-[50%_70%] md:object-[50%_60%] lg:object-center"
+        />
 
-      {/* Burgundy fallback shown only while the image is loading or unavailable.
-         object-cover guarantees it is never visible as side gutters in steady state. */}
-      <div
-        aria-hidden="true"
-        className="ipf-footer-art-base pointer-events-none absolute inset-0 -z-20"
-        style={{ backgroundColor: "#5a0f1e" }}
-      />
+        {/* Burgundy fallback — matches the artwork's own sky, visible only
+           during initial image load. */}
+        <div
+          aria-hidden="true"
+          className="ipf-footer-art-base pointer-events-none absolute inset-0 -z-20"
+          style={{ backgroundColor: "#5a0f1e" }}
+        />
 
-      {/* Content sits directly over the panoramic artwork — no wrapping panel, no
-         backdrop blur, no shadow box. Readability comes from a brighter warm-ivory
-         type colour (#FFF8EE) and a restrained text-shadow applied only to prose
-         and nav links. Only the FOLLOW US label itself gets a small highlighted
-         chip; the social buttons sit free beneath it. */}
-      <Container className="relative pt-10 pb-6 sm:pt-14 sm:pb-8 lg:pt-16 lg:pb-10">
+        {/* Content: columns, FOLLOW US chip, social icons. Sits in normal
+           flow above the image via its own stacking order. */}
+        <Container className="relative pt-10 pb-6 sm:pt-14 sm:pb-8 lg:pt-16 lg:pb-10">
         {/* Three-column grid.
              mobile              single column stack
              tablet (md)         col 1 spans both tracks (identity reads its own row);
@@ -198,20 +197,25 @@ export function Footer() {
             </div>
           ))}
         </div>
-      </Container>
+        </Container>
+      </div>
+      {/* /REGION 1 — artwork section ends here. The image bounding box
+         terminates at the bottom of .footer-artwork-section above. */}
 
-      {/* BOTTOM BAR
-         Co-builder credit retained but visually secondary — smaller type and lower
-         opacity than the IPF copyright, which remains the first-read on this strip. */}
-      <div className="relative border-t border-white/10 bg-[#3A0913] py-3">
+      {/* REGION 2 — Legal strip.
+         Physically BELOW the artwork region in normal document flow. Solid
+         #3A0913 fill — no rgba, no backdrop filter, no gradient, no image
+         behind it. Copyright on the left, co-builder credit on the right,
+         both paragraphs share the exact same font-size / weight / opacity. */}
+      <div className="footer-legal-strip relative border-t border-white/10 bg-[#3A0913] py-3">
         <Container className="flex flex-col items-center justify-between gap-2 text-xs text-white/75 sm:flex-row">
           <p className="text-center font-medium sm:text-left">
             &copy; {new Date().getFullYear()} Indian People&rsquo;s Forum UAE. All Rights Reserved.
           </p>
-          <p className="text-center text-[0.7rem] text-white/55 sm:text-right">
-            Co-built by{" "}
+          <p className="text-center font-medium sm:text-right">
+            Co-built and managed by{" "}
             <a
-              className="font-medium text-[var(--ipf-gold)]/85 underline-offset-2 transition hover:text-[var(--ipf-gold)] hover:underline"
+              className="underline-offset-2 transition hover:text-[var(--ipf-gold)] hover:underline"
               href="https://dravyxai.com/"
               target="_blank"
               rel="noreferrer"
@@ -220,7 +224,7 @@ export function Footer() {
             </a>
             {" & "}
             <a
-              className="font-medium text-[var(--ipf-gold)]/85 underline-offset-2 transition hover:text-[var(--ipf-gold)] hover:underline"
+              className="underline-offset-2 transition hover:text-[var(--ipf-gold)] hover:underline"
               href="https://www.jettifi.com/"
               target="_blank"
               rel="noreferrer"
