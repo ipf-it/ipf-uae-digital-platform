@@ -89,16 +89,6 @@ export default function HomePage() {
             </div>
           </Container>
         </section>
-        <section id="home-photos" className="bg-[var(--ipf-navy)] px-2 pb-6">
-          <ImageCarousel
-            framed={false}
-            fit="contain"
-            chrome="below"
-            positionClass="object-center"
-            slides={content.heroSlides}
-            heightClass="aspect-[4/3] h-auto max-h-[52vh] w-full"
-          />
-        </section>
       </div>
 
       <div className="hidden lg:block">
@@ -135,8 +125,24 @@ export default function HomePage() {
         </section>
       </div>
 
+      {/* Statistics sit immediately below the hero on both mobile and desktop.
+         The mobile hero-photos carousel is rendered AFTER this section so
+         stats are always the first content block after the hero banner. */}
       <div id="community-stats">
         <CommunityStats />
+      </div>
+
+      <div className="lg:hidden">
+        <section id="home-photos" className="bg-[var(--ipf-navy)] px-2 pb-6">
+          <ImageCarousel
+            framed={false}
+            fit="contain"
+            chrome="below"
+            positionClass="object-center"
+            slides={content.heroSlides}
+            heightClass="aspect-[4/3] h-auto max-h-[52vh] w-full"
+          />
+        </section>
       </div>
 
       <PageSectionRenderer pageId="home-extras" startTone="ivory" />
