@@ -202,9 +202,7 @@ export function Footer() {
 
       {/* BOTTOM BAR
          Co-builder credit retained but visually secondary — smaller type and lower
-         opacity than the IPF copyright, which remains the first-read on this strip.
-         Dravyx AI and Jettifi get IDENTICAL gold link treatment — neither partner
-         is more prominent than the other. */}
+         opacity than the IPF copyright, which remains the first-read on this strip. */}
       <div className="relative border-t border-white/10 bg-[rgba(20,6,12,0.62)] py-3 backdrop-blur-[2px]">
         <Container className="flex flex-col items-center justify-between gap-2 text-xs text-white/75 sm:flex-row">
           <p className="text-center font-medium sm:text-left">
@@ -213,19 +211,19 @@ export function Footer() {
           <p className="text-center text-[0.7rem] text-white/55 sm:text-right">
             Co-built by{" "}
             <a
-              className="font-medium text-[var(--ipf-gold)]/85 underline-offset-2 transition hover:text-[var(--ipf-gold)] hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--ipf-gold)]"
+              className="font-medium text-[var(--ipf-gold)]/85 underline-offset-2 transition hover:text-[var(--ipf-gold)] hover:underline"
               href="https://dravyxai.com/"
               target="_blank"
-              rel="noopener noreferrer"
+              rel="noreferrer"
             >
               Dravyx AI
             </a>
             {" & "}
             <a
-              className="font-medium text-[var(--ipf-gold)]/85 underline-offset-2 transition hover:text-[var(--ipf-gold)] hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--ipf-gold)]"
+              className="font-medium text-[var(--ipf-gold)]/85 underline-offset-2 transition hover:text-[var(--ipf-gold)] hover:underline"
               href="https://www.jettifi.com/"
               target="_blank"
-              rel="noopener noreferrer"
+              rel="noreferrer"
             >
               Jettifi
             </a>
