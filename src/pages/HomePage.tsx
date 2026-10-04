@@ -4,6 +4,7 @@ import { HomeGetInvolved } from "../components/HomeGetInvolved";
 import { HomeHeroVideo } from "../components/HomeHeroVideo";
 import { HomeIdentityStrip } from "../components/HomeIdentityStrip";
 import { HomePresidentMessage } from "../components/HomePresidentMessage";
+import { HomeWhoWeAre } from "../components/HomeWhoWeAre";
 import { VandeMataramToggle } from "../components/VandeMataramToggle";
 import { DocumentTitle } from "../components/layout/DocumentTitle";
 import { Button } from "../components/ui/Button";
@@ -13,27 +14,19 @@ import { ImageCarousel } from "../components/ui/ImageCarousel";
 import { useCms } from "../cms/ContentProvider";
 import { Section } from "../components/ui/Section";
 import { SectionTitle } from "../components/ui/SectionTitle";
-import { PersonIdentity } from "../components/ui/PersonIdentity";
 import { FramedPhoto } from "../components/ui/TricolorFrame";
-import { img } from "../data/site";
 import { useLocale } from "../i18n/LocaleProvider";
 import { usePublicEvents } from "../hooks/usePublicEvents";
-import { useLeadership } from "../hooks/useOrgDirectory";
-import { useHomeContent } from "../hooks/useHomeContent";
 import { PageExtras } from "../cms/PageExtras";
 import { PageSectionRenderer } from "../components/PageSectionRenderer";
 
 export default function HomePage() {
   const { t } = useLocale();
   const { content } = useCms();
-  const { leadership } = useLeadership("global");
-  const leaders = leadership.filter((entry) => entry.personImage).map((entry) => ({ name: entry.personName, role: entry.positionTitle, image: entry.personImage }));
   const galleryPreview = content.galleryImages.slice(0, 6);
   const { events: featuredEvents } = usePublicEvents({ tab: "upcoming", featured: true });
   const { events: upcomingEvents } = usePublicEvents({ tab: "upcoming" });
   const eventsPreview = (featuredEvents.length > 0 ? featuredEvents : upcomingEvents).slice(0, 3);
-  const home = useHomeContent();
-  const h = (key: keyof NonNullable<typeof home>, fallbackKey: string) => home?.[key] || t(fallbackKey);
 
   return (
     <div className="home-theme-page">
@@ -90,55 +83,16 @@ export default function HomePage() {
          rhythm change after the burgundy statistics strip above. */}
       <HomePresidentMessage />
 
-      <Section className="py-10 sm:py-12 lg:py-14">
-        <Container>
-          <SectionTitle
-            eyebrow={t("nav.leadership")}
-            title={t("home.central")}
-            description={t("home.centralDesc")}
-          />
-          <div className="mt-8 flex gap-4 overflow-x-auto pb-2 lg:grid lg:grid-cols-5 lg:overflow-visible">
-            {leaders.map((member) => (
-              <Link
-                key={`${member.name}-${member.role}`}
-                to="/leadership#committee"
-                className="w-[9.5rem] shrink-0 lg:w-auto"
-              >
-                <PersonIdentity
-                  layout="stack"
-                  size="md"
-                  src={member.image}
-                  alt={member.name}
-                  name={member.name}
-                  role={member.role}
-                />
-              </Link>
-            ))}
-          </div>
-        </Container>
-      </Section>
+      {/* The homepage Leaders / Central Committee section has been removed —
+         leadership presence on the homepage is now carried by the President's
+         Message above. The Leaders page, /leadership route, About → Leaders
+         navigation entry, useLeadership hook and leadership data are all
+         retained. */}
 
-      <Section tone="white" className="py-10 sm:py-12 lg:py-14">
-        <Container className="grid gap-8 lg:grid-cols-[1.1fr,0.9fr] lg:items-center">
-          <div>
-            <SectionTitle eyebrow={h("who_eyebrow", "home.whoEyebrow")} title={h("who_title", "home.whoTitle")} description={h("who_body", "home.whoBody")} />
-            <div className="mt-6 flex flex-wrap gap-3">
-              <Button asChild>
-                <Link to="/about">{t("home.aboutCta")}</Link>
-              </Button>
-              <Button asChild variant="outline">
-                <Link to="/chapters">{t("home.chaptersCta")}</Link>
-              </Button>
-            </div>
-          </div>
-          <FramedPhoto
-            src={img.indiaUae}
-            alt={t("page.discover.photoAlt")}
-            fit="cover"
-            imgClassName="aspect-[4/3] h-auto max-h-[22rem] w-full sm:max-h-[26rem]"
-          />
-        </Container>
-      </Section>
+      {/* Premium Who We Are editorial band — CMS-controlled community image
+         on the left, approved copy + three heritage values + Discover CTA
+         on the right. Replaces the previous compact ivory section. */}
+      <HomeWhoWeAre />
 
       <Section className="py-10 sm:py-12 lg:py-14">
         <Container>

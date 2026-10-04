@@ -47,4 +47,11 @@ export type CmsContent = {
   extras: Record<CmsPageKey, CmsSection[]>;
   eventHighlights: CmsEvent[];
   news: CmsNews[];
+  /**
+   * Homepage Who We Are community photograph. Independently replaceable from
+   * the admin so the editorial image can be rotated without a code change.
+   * When the backend's /api/cms/content payload omits this field, the
+   * defaultCmsContent fallback value in src/cms/defaults.ts is used.
+   */
+  whoWeAreImage?: CmsSlide;
 };

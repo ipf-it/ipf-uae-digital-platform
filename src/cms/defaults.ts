@@ -42,4 +42,13 @@ export const defaultCmsContent: CmsContent = {
     excerpt: item.excerpt,
     body: item.body,
   })),
+  // Default fallback for the homepage Who We Are community photograph. This
+  // is the approved IPF AHLAN MODI community gathering image already shipping
+  // on the site; it is used only when the CMS payload has not provided a
+  // dedicated whoWeAreImage. Admins replace it live from the CMS by editing
+  // the whoWeAreImage field on /api/cms/content.
+  whoWeAreImage: {
+    src: "/legacy-assets/images/Ahlan_Modi.jpeg",
+    alt: "IPF UAE community members at the Ahlan Modi welcome event, Dubai",
+  },
 };
