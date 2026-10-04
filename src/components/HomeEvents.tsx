@@ -422,17 +422,6 @@ export function HomeEvents() {
               </div>
             </div>
 
-            {/* Mobile-only duplicate of 'View all events →' because the header
-               rail hides it below sm to protect the heading column. */}
-            <p className="mt-5 sm:hidden">
-              <Link
-                to="/events"
-                className="group inline-flex items-center gap-1.5 text-[0.9rem] font-semibold text-[var(--ipf-navy)] underline-offset-[6px] transition hover:text-[#5A0F1E] hover:underline"
-              >
-                {t("home.allEvents")}
-                <span aria-hidden="true" className="transition-transform group-hover:translate-x-0.5">&rarr;</span>
-              </Link>
-            </p>
           </div>
         )}
       </Container>
