@@ -133,97 +133,100 @@ export function Footer() {
         style={{ backgroundColor: "#5a0f1e" }}
       />
 
-      {/* The content grid lives inside a single translucent burgundy panel so all
-         four columns read cleanly against the panorama without a heavy block
-         obscuring landmarks. One unified panel, not four cards:
-           - bg burgundy at 55% opacity        → honours the artwork, lifts the text
-           - backdrop-blur-md                   → softens detail directly under the text
-           - 1px warm-ivory inner highlight     → premium institutional edge
-           - rounded-2xl + soft shadow          → restrained, not glassmorphic kitsch
-         The panel height is driven by content, so the lower portion of the footer
-         (sunset / water / landmarks / tricolour wave) remains fully visible around
-         and below it. */}
+      {/* Content sits directly over the panoramic artwork — no wrapping panel, no
+         backdrop blur, no shadow box. Readability comes from a brighter warm-ivory
+         type colour (#FFF8EE) and a restrained text-shadow applied only to prose
+         and nav links. Only the FOLLOW US label itself gets a small highlighted
+         chip; the social buttons sit free beneath it. */}
       <Container className="relative pt-10 pb-6 sm:pt-14 sm:pb-8 lg:pt-16 lg:pb-10">
-        <div
-          className="rounded-2xl bg-[rgba(60,8,18,0.56)] p-6 shadow-[0_12px_40px_rgba(0,0,0,0.28)] ring-1 ring-inset ring-white/15 backdrop-blur-md sm:p-8 lg:p-10"
-        >
-          <div className="grid gap-8 md:grid-cols-2 md:gap-10 lg:grid-cols-4 lg:gap-10">
-            {/* COLUMN 1 — IPF UAE */}
-            <div className="min-w-0">
-              <p className="font-serif text-[1.3rem] font-bold tracking-tight text-white sm:text-[1.4rem] lg:text-[1.5rem]">
-                {site.name}
-              </p>
-              <p className="mt-3 max-w-sm text-[0.925rem] leading-relaxed text-white/95">
-                Connecting India&rsquo;s diverse communities across the UAE through service,
-                culture, leadership and opportunity.
-              </p>
+        <div className="grid gap-8 md:grid-cols-2 md:gap-10 lg:grid-cols-4 lg:gap-10">
+          {/* COLUMN 1 — IPF UAE */}
+          <div className="min-w-0">
+            <p
+              className="font-serif text-[1.3rem] font-bold tracking-tight text-[#FFF8EE] sm:text-[1.4rem] lg:text-[1.5rem]"
+              style={{ textShadow: "0 1px 3px rgba(0,0,0,0.55), 0 2px 10px rgba(0,0,0,0.35)" }}
+            >
+              {site.name}
+            </p>
+            <p
+              className="mt-3 max-w-sm text-[0.925rem] leading-relaxed text-[#FFF8EE]"
+              style={{ textShadow: "0 1px 3px rgba(0,0,0,0.5)" }}
+            >
+              Connecting India&rsquo;s diverse communities across the UAE through service,
+              culture, leadership and opportunity.
+            </p>
 
-              {/* FOLLOW US sub-panel — slightly lighter translucent backing + a hairline
-                 ivory border lifts the social controls off the artwork as a deliberate
-                 section, not loose glyphs. In normal document flow, right after the
-                 description, so it never floats over the tricolour wave. */}
-              <div className="mt-6 inline-block rounded-xl bg-white/[0.09] px-4 py-3.5 ring-1 ring-inset ring-white/20 backdrop-blur-sm">
-                <p className="text-[0.74rem] font-semibold uppercase tracking-[0.28em] text-[var(--ipf-gold)]">
-                  Follow us
-                </p>
-                <ul className="mt-3 flex flex-wrap items-center gap-3">
-                  {socialLinks.map((item) => (
-                    <li key={item.href}>
-                      <a
-                        href={item.href}
-                        target="_blank"
-                        rel="noreferrer"
-                        aria-label={item.label}
-                        title={item.label}
-                        className="inline-flex h-11 w-11 items-center justify-center rounded-full bg-white text-[#5a0f1e] shadow-[0_2px_10px_rgba(0,0,0,0.22)] ring-1 ring-inset ring-white/70
-                                   transition hover:bg-[var(--ipf-gold)] hover:text-[#5a0f1e] hover:ring-[var(--ipf-gold)]
-                                   focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--ipf-gold)]"
-                      >
-                        {SOCIAL_ICONS[item.label] ?? (
-                          <span className="text-xs font-semibold">{item.label.slice(0, 2)}</span>
-                        )}
-                      </a>
-                    </li>
-                  ))}
-                </ul>
-              </div>
+            {/* FOLLOW US — small highlighted label only. The social buttons sit free
+               below it; nothing wraps them. Deep-burgundy chip with gold text + a
+               thin gold border keeps it compact and unmistakable. */}
+            <div className="mt-6">
+              <span
+                className="inline-block rounded-md bg-[#5a0f1e] px-3 py-1.5 text-[0.72rem] font-bold uppercase tracking-[0.28em] text-[var(--ipf-gold)] shadow-[0_2px_8px_rgba(0,0,0,0.35)] ring-1 ring-inset ring-[var(--ipf-gold)]/50"
+              >
+                Follow us
+              </span>
+              <ul className="mt-4 flex items-center gap-3">
+                {socialLinks.map((item) => (
+                  <li key={item.href}>
+                    <a
+                      href={item.href}
+                      target="_blank"
+                      rel="noreferrer"
+                      aria-label={item.label}
+                      title={item.label}
+                      className="inline-flex h-11 w-11 items-center justify-center rounded-full bg-white text-[#5a0f1e] shadow-[0_2px_10px_rgba(0,0,0,0.3)] ring-1 ring-inset ring-white/70
+                                 transition hover:bg-[var(--ipf-gold)] hover:text-[#5a0f1e] hover:ring-[var(--ipf-gold)]
+                                 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--ipf-gold)]"
+                    >
+                      {SOCIAL_ICONS[item.label] ?? (
+                        <span className="text-xs font-semibold">{item.label.slice(0, 2)}</span>
+                      )}
+                    </a>
+                  </li>
+                ))}
+              </ul>
             </div>
-
-            {/* COLUMNS 2-4 — EXPLORE / GET INVOLVED / RESOURCES */}
-            {footerColumns.map((col) => (
-              <div key={col.title} className="min-w-0">
-                <p className="text-[0.74rem] font-bold uppercase tracking-[0.28em] text-[var(--ipf-gold)]">
-                  {col.title}
-                </p>
-                <ul className="mt-3.5 space-y-2 text-[0.925rem]">
-                  {col.links.map((item) => {
-                    const key = `${col.title}-${isExternalLink(item) ? item.href : item.to}-${item.label}`;
-                    const className =
-                      "inline-block rounded-sm text-white underline-offset-4 transition " +
-                      "hover:text-[var(--ipf-gold)] hover:underline focus-visible:outline-2 focus-visible:outline-[var(--ipf-gold)]";
-                    return (
-                      <li key={key}>
-                        {isExternalLink(item) ? (
-                          <a
-                            href={item.href}
-                            target="_blank"
-                            rel="noreferrer"
-                            className={className}
-                          >
-                            {item.label}
-                          </a>
-                        ) : (
-                          <Link to={item.to} className={className}>
-                            {item.label}
-                          </Link>
-                        )}
-                      </li>
-                    );
-                  })}
-                </ul>
-              </div>
-            ))}
           </div>
+
+          {/* COLUMNS 2-4 — EXPLORE / GET INVOLVED / RESOURCES */}
+          {footerColumns.map((col) => (
+            <div key={col.title} className="min-w-0">
+              <p
+                className="text-[0.74rem] font-bold uppercase tracking-[0.28em] text-[var(--ipf-gold)]"
+                style={{ textShadow: "0 1px 3px rgba(0,0,0,0.5)" }}
+              >
+                {col.title}
+              </p>
+              <ul className="mt-3.5 space-y-2 text-[0.925rem]">
+                {col.links.map((item) => {
+                  const key = `${col.title}-${isExternalLink(item) ? item.href : item.to}-${item.label}`;
+                  const linkClass =
+                    "inline-block rounded-sm text-[#FFF8EE] underline-offset-4 transition " +
+                    "hover:text-[var(--ipf-gold)] hover:underline focus-visible:outline-2 focus-visible:outline-[var(--ipf-gold)]";
+                  const linkShadow = { textShadow: "0 1px 3px rgba(0,0,0,0.5)" };
+                  return (
+                    <li key={key}>
+                      {isExternalLink(item) ? (
+                        <a
+                          href={item.href}
+                          target="_blank"
+                          rel="noreferrer"
+                          className={linkClass}
+                          style={linkShadow}
+                        >
+                          {item.label}
+                        </a>
+                      ) : (
+                        <Link to={item.to} className={linkClass} style={linkShadow}>
+                          {item.label}
+                        </Link>
+                      )}
+                    </li>
+                  );
+                })}
+              </ul>
+            </div>
+          ))}
         </div>
       </Container>
 
