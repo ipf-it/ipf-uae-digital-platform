@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import { CommunityStats } from "../components/CommunityStats";
+import { HomeGetInvolved } from "../components/HomeGetInvolved";
 import { HomeHeroVideo } from "../components/HomeHeroVideo";
 import { HomeIdentityStrip } from "../components/HomeIdentityStrip";
 import { VandeMataramToggle } from "../components/VandeMataramToggle";
@@ -212,26 +213,10 @@ export default function HomePage() {
         </Container>
       </Section>
 
-      <Section tone="navy" className="py-10 sm:py-12 lg:py-14">
-        <Container>
-          <Card size="lg" tone="navy" eyebrow={h("join_eyebrow", "home.getInvolved")} title={h("join_title", "home.joinTitle")} description={h("join_desc", "home.joinDesc")}>
-            <div className="flex flex-wrap gap-3">
-              <Button asChild variant="gold" className="ipf-home-glow-gold">
-                <Link to="/membership">{t("nav.joinLong")}</Link>
-              </Button>
-              <Button asChild variant="secondary">
-                <Link to="/yuva">{t("nav.yuva")}</Link>
-              </Button>
-              <Button asChild variant="secondary">
-                <Link to="/contact">{t("home.contactIpf")}</Link>
-              </Button>
-              <Button asChild variant="secondary">
-                <Link to="/donate">{t("nav.donate")}</Link>
-              </Button>
-            </div>
-          </Card>
-        </Container>
-      </Section>
+      {/* Final CTA band directly above the footer — carries the Follow Us
+         social group as its right-hand zone so socials live in exactly one
+         public location. */}
+      <HomeGetInvolved />
       <PageExtras page="home" />
     </div>
   );

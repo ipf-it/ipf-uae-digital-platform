@@ -4,7 +4,7 @@ import { cn } from "../../lib/utils";
 
 type SectionProps = PropsWithChildren<{
   id?: string;
-  tone?: "ivory" | "white" | "navy";
+  tone?: "ivory" | "white" | "navy" | "burgundy";
   className?: string;
 }>;
 
@@ -15,7 +15,9 @@ export function Section({ id, tone = "ivory", className, children }: SectionProp
       ? "bg-[var(--ipf-paper)]"
       : tone === "navy"
         ? "bg-[var(--ipf-navy)] text-white"
-        : "bg-[var(--ipf-ivory)]";
+        : tone === "burgundy"
+          ? "bg-[var(--ipf-burgundy)] text-white"
+          : "bg-[var(--ipf-ivory)]";
 
   return (
     <motion.section
