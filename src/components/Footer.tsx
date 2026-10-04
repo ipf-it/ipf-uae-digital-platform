@@ -133,99 +133,98 @@ export function Footer() {
         style={{ backgroundColor: "#5a0f1e" }}
       />
 
-      {/* Container padding reduced ~20% from the pre-tuning values so the burgundy
-         wash sits above the fold shorter and the panoramic landmarks come into view
-         sooner on scroll. */}
+      {/* The content grid lives inside a single translucent burgundy panel so all
+         four columns read cleanly against the panorama without a heavy block
+         obscuring landmarks. One unified panel, not four cards:
+           - bg burgundy at 55% opacity        → honours the artwork, lifts the text
+           - backdrop-blur-md                   → softens detail directly under the text
+           - 1px warm-ivory inner highlight     → premium institutional edge
+           - rounded-2xl + soft shadow          → restrained, not glassmorphic kitsch
+         The panel height is driven by content, so the lower portion of the footer
+         (sunset / water / landmarks / tricolour wave) remains fully visible around
+         and below it. */}
       <Container className="relative pt-10 pb-6 sm:pt-14 sm:pb-8 lg:pt-16 lg:pb-10">
-        <div className="grid gap-8 md:grid-cols-2 md:gap-10 lg:grid-cols-4 lg:gap-10">
-          {/* COLUMN 1 — IPF UAE */}
-          <div className="min-w-0">
-            <p className="font-serif text-[1.08rem] font-semibold tracking-wide text-white sm:text-[1.15rem]">
-              {site.name}
-            </p>
-            <p className="mt-3 max-w-sm text-sm leading-relaxed text-white/85">
-              Connecting India&rsquo;s diverse communities across the UAE through service,
-              culture, leadership and opportunity.
-            </p>
-            <address className="not-italic mt-4 text-sm leading-relaxed text-white/80">
-              {site.office}
-              <br />
-              <a
-                className="underline-offset-2 transition hover:text-[var(--ipf-gold)] hover:underline"
-                href={`mailto:${site.email}`}
-              >
-                {site.email}
-              </a>
-            </address>
-
-            {/* Deliberate FOLLOW US section inside Column 1 — in document flow, directly
-               under the email address, so the social buttons never sit over the
-               tricolour or landmarks regardless of viewport. 44x44 buttons meet mobile
-               touch-target guidelines; solid ivory backing + burgundy mark on default
-               (not hover) makes platform logos unmistakable at any width. */}
-            <div className="mt-5">
-              <p className="text-[0.72rem] font-semibold uppercase tracking-[0.26em] text-[var(--ipf-gold)]">
-                Follow us
+        <div
+          className="rounded-2xl bg-[rgba(60,8,18,0.56)] p-6 shadow-[0_12px_40px_rgba(0,0,0,0.28)] ring-1 ring-inset ring-white/15 backdrop-blur-md sm:p-8 lg:p-10"
+        >
+          <div className="grid gap-8 md:grid-cols-2 md:gap-10 lg:grid-cols-4 lg:gap-10">
+            {/* COLUMN 1 — IPF UAE */}
+            <div className="min-w-0">
+              <p className="font-serif text-[1.3rem] font-bold tracking-tight text-white sm:text-[1.4rem] lg:text-[1.5rem]">
+                {site.name}
               </p>
-              <ul className="mt-3 flex flex-wrap items-center gap-3">
-                {socialLinks.map((item) => (
-                  <li key={item.href}>
-                    <a
-                      href={item.href}
-                      target="_blank"
-                      rel="noreferrer"
-                      aria-label={item.label}
-                      title={item.label}
-                      className="inline-flex h-11 w-11 items-center justify-center rounded-full bg-white text-[#5a0f1e] shadow-[0_2px_10px_rgba(0,0,0,0.22)] ring-1 ring-inset ring-white/70
-                                 transition hover:bg-[var(--ipf-gold)] hover:text-[#5a0f1e] hover:ring-[var(--ipf-gold)]
-                                 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--ipf-gold)]"
-                    >
-                      {SOCIAL_ICONS[item.label] ?? (
-                        <span className="text-xs font-semibold">{item.label.slice(0, 2)}</span>
-                      )}
-                    </a>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          </div>
-
-          {/* COLUMNS 2-4 — EXPLORE / GET INVOLVED / RESOURCES */}
-          {footerColumns.map((col) => (
-            <div key={col.title} className="min-w-0">
-              <p className="text-[0.72rem] font-semibold uppercase tracking-[0.26em] text-[var(--ipf-gold)]">
-                {col.title}
+              <p className="mt-3 max-w-sm text-[0.925rem] leading-relaxed text-white/95">
+                Connecting India&rsquo;s diverse communities across the UAE through service,
+                culture, leadership and opportunity.
               </p>
-              <ul className="mt-3 space-y-2 text-sm">
-                {col.links.map((item) => {
-                  const key = `${col.title}-${isExternalLink(item) ? item.href : item.to}-${item.label}`;
-                  const className =
-                    "inline-block rounded-sm text-white/90 underline-offset-4 transition " +
-                    "hover:text-white hover:underline focus-visible:outline-2 focus-visible:outline-[var(--ipf-gold)]";
-                  return (
-                    <li key={key}>
-                      {isExternalLink(item) ? (
-                        <a
-                          href={item.href}
-                          target="_blank"
-                          rel="noreferrer"
-                          className={className}
-                        >
-                          {item.label}
-                        </a>
-                      ) : (
-                        <Link to={item.to} className={className}>
-                          {item.label}
-                        </Link>
-                      )}
+
+              {/* FOLLOW US sub-panel — slightly lighter translucent backing + a hairline
+                 ivory border lifts the social controls off the artwork as a deliberate
+                 section, not loose glyphs. In normal document flow, right after the
+                 description, so it never floats over the tricolour wave. */}
+              <div className="mt-6 inline-block rounded-xl bg-white/[0.09] px-4 py-3.5 ring-1 ring-inset ring-white/20 backdrop-blur-sm">
+                <p className="text-[0.74rem] font-semibold uppercase tracking-[0.28em] text-[var(--ipf-gold)]">
+                  Follow us
+                </p>
+                <ul className="mt-3 flex flex-wrap items-center gap-3">
+                  {socialLinks.map((item) => (
+                    <li key={item.href}>
+                      <a
+                        href={item.href}
+                        target="_blank"
+                        rel="noreferrer"
+                        aria-label={item.label}
+                        title={item.label}
+                        className="inline-flex h-11 w-11 items-center justify-center rounded-full bg-white text-[#5a0f1e] shadow-[0_2px_10px_rgba(0,0,0,0.22)] ring-1 ring-inset ring-white/70
+                                   transition hover:bg-[var(--ipf-gold)] hover:text-[#5a0f1e] hover:ring-[var(--ipf-gold)]
+                                   focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--ipf-gold)]"
+                      >
+                        {SOCIAL_ICONS[item.label] ?? (
+                          <span className="text-xs font-semibold">{item.label.slice(0, 2)}</span>
+                        )}
+                      </a>
                     </li>
-                  );
-                })}
-              </ul>
+                  ))}
+                </ul>
+              </div>
             </div>
-          ))}
-        </div>
 
+            {/* COLUMNS 2-4 — EXPLORE / GET INVOLVED / RESOURCES */}
+            {footerColumns.map((col) => (
+              <div key={col.title} className="min-w-0">
+                <p className="text-[0.74rem] font-bold uppercase tracking-[0.28em] text-[var(--ipf-gold)]">
+                  {col.title}
+                </p>
+                <ul className="mt-3.5 space-y-2 text-[0.925rem]">
+                  {col.links.map((item) => {
+                    const key = `${col.title}-${isExternalLink(item) ? item.href : item.to}-${item.label}`;
+                    const className =
+                      "inline-block rounded-sm text-white underline-offset-4 transition " +
+                      "hover:text-[var(--ipf-gold)] hover:underline focus-visible:outline-2 focus-visible:outline-[var(--ipf-gold)]";
+                    return (
+                      <li key={key}>
+                        {isExternalLink(item) ? (
+                          <a
+                            href={item.href}
+                            target="_blank"
+                            rel="noreferrer"
+                            className={className}
+                          >
+                            {item.label}
+                          </a>
+                        ) : (
+                          <Link to={item.to} className={className}>
+                            {item.label}
+                          </Link>
+                        )}
+                      </li>
+                    );
+                  })}
+                </ul>
+              </div>
+            ))}
+          </div>
+        </div>
       </Container>
 
       {/* BOTTOM BAR
