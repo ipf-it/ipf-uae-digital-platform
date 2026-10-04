@@ -55,7 +55,7 @@ export function HomeWhoWeAre() {
           decoding="async"
           width={1774}
           height={887}
-          className="pointer-events-none absolute inset-0 -z-10 h-full w-full object-cover object-[center_55%]"
+          className="pointer-events-none absolute inset-0 -z-10 h-full w-full object-cover object-[center_55%] opacity-90"
         />
       </picture>
 

@@ -165,7 +165,7 @@ export function HomeGallery() {
           decoding="async"
           width={1774}
           height={887}
-          className="pointer-events-none absolute inset-0 -z-10 h-full w-full object-cover object-[75%_bottom] lg:object-[center_bottom]"
+          className="pointer-events-none absolute inset-0 -z-10 h-full w-full object-cover object-[75%_bottom] lg:object-[center_bottom] opacity-[0.88]"
         />
       </picture>
 

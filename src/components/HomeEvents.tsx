@@ -251,7 +251,7 @@ export function HomeEvents() {
           decoding="async"
           width={1774}
           height={887}
-          className="pointer-events-none absolute inset-0 -z-10 h-full w-full object-cover object-[35%_center]"
+          className="pointer-events-none absolute inset-0 -z-10 h-full w-full object-cover object-[35%_center] opacity-90"
         />
       </picture>
 
