@@ -1,34 +1,36 @@
 import { Container } from "./ui/Container";
 
 /**
- * Warm ivory identity/message strip. Sits between the cinematic WebM hero and
- * the thin burgundy statistics strip, creating a clean visual break:
+ * Warm ivory hero identity section. Reads as the textual continuation of the
+ * WebM hero — not a generic content block — so the composition
  *
- *   WebM hero  →  warm ivory identity strip (this)  →  burgundy stats strip
+ *   WebM video  →  this ivory identity  →  burgundy statistics strip
  *
- * Deliberately shallow typography and generous whitespace — not another hero.
+ * feels like ONE hero experience. Padding is intentionally compact and the
+ * main heading is sized at hero typography scale (lg: 48 px, sm: 36 px,
+ * mobile: 30 px).
  */
 export function HomeIdentityStrip() {
   return (
     <section
       aria-labelledby="ipf-identity-heading"
-      className="bg-[#FFF8EE] py-10 sm:py-12 lg:py-14"
+      className="bg-[#FFF8EE] py-6 sm:py-7 lg:py-9"
     >
       <Container className="text-center">
-        <p className="text-[0.72rem] font-bold uppercase tracking-[0.3em] text-[var(--ipf-burgundy)] sm:text-[0.75rem]">
+        <p className="text-[0.75rem] font-bold uppercase tracking-[0.3em] text-[#D6AD60] sm:text-[0.78rem]">
           सेवा · संस्कृति · समुदाय
         </p>
-        <h2
+        <h1
           id="ipf-identity-heading"
-          className="mt-3 font-serif text-2xl font-bold tracking-tight text-[var(--ipf-navy)] sm:text-[1.75rem] lg:text-[2rem]"
+          className="mt-2 font-serif text-[1.9rem] font-bold leading-[1.08] tracking-tight text-[#5A0F1E] sm:mt-3 sm:text-[2.35rem] lg:text-[3rem]"
         >
           Indian People&rsquo;s Forum UAE
-        </h2>
+        </h1>
         <div
           aria-hidden="true"
-          className="mx-auto mt-4 h-0.5 w-20 rounded-full bg-[linear-gradient(90deg,var(--ipf-saffron)_0_33%,#ffffff_33%_66%,var(--ipf-green)_66%)]"
+          className="mx-auto mt-3 h-0.5 w-24 rounded-full bg-[linear-gradient(90deg,#FF9933_0_33%,#ffffff_33%_66%,#138808_66%)]"
         />
-        <p className="mx-auto mt-4 max-w-2xl text-sm leading-relaxed text-[var(--ipf-muted)] sm:mt-5 sm:text-base">
+        <p className="mx-auto mt-3 max-w-[850px] text-[0.95rem] leading-relaxed text-[#5C6573] sm:mt-4 sm:text-base lg:text-[1.125rem]">
           Serving the Indian community in the UAE through service, culture,
           leadership and community engagement.
         </p>

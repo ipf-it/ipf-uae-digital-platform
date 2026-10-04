@@ -58,12 +58,16 @@ export default function HomePage() {
         </section>
       </div>
 
-      {/* IDENTITY / MESSAGE STRIP — warm ivory, between video and stats. */}
-      <HomeIdentityStrip />
-
-      {/* THIN BURGUNDY LIVE STATISTICS STRIP. */}
-      <div id="community-stats">
-        <CommunityStats />
+      {/* HERO IDENTITY + STATISTICS — rendered as ONE continuous hero block
+         (video → ivory identity → burgundy stats). Wrapped in a div so the
+         global .home-theme-page > section::before saffron/green mandala
+         pseudo-element does not target either section — the composition stays
+         clean, with no rotating decorative mark. */}
+      <div>
+        <HomeIdentityStrip />
+        <div id="community-stats">
+          <CommunityStats />
+        </div>
       </div>
 
       <div className="lg:hidden">
@@ -215,8 +219,11 @@ export default function HomePage() {
 
       {/* Final CTA band directly above the footer — carries the Follow Us
          social group as its right-hand zone so socials live in exactly one
-         public location. */}
-      <HomeGetInvolved />
+         public location. Wrapped in a div so the global home-theme-page
+         saffron/green mandala pseudo-element does not render over it. */}
+      <div>
+        <HomeGetInvolved />
+      </div>
       <PageExtras page="home" />
     </div>
   );

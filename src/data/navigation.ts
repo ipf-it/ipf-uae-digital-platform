@@ -17,16 +17,10 @@ export const primaryNav: NavGroup[] = [
     children: [
       { label: "About IPF", to: "/about" },
       { label: "History", to: "/history" },
+      { label: "Leadership", to: "/leadership" },
       { label: "Governance", to: "/governance" },
       { label: "Support", to: "/support" },
-    ],
-  },
-  {
-    label: "Leadership",
-    to: "/leadership",
-    children: [
-      { label: "President's Message", to: "/leadership" },
-      { label: "Committee", to: "/leadership#committee" },
+      { label: "IPF Yuva", to: "/yuva" },
     ],
   },
   { label: "Chapters", to: "/chapters", mega: "chapters" },

@@ -213,9 +213,7 @@ export function Header({ logoSrc }: HeaderProps) {
                 </div>
               );
             })}
-            <NavLink to="/yuva" className={({ isActive }) => linkClass(isActive)} onMouseEnter={() => setMega(null)}>
-              {t("nav.yuva")}
-            </NavLink>
+            {/* Yuva lives inside the About dropdown now — see primaryNav. */}
             <NavLink to="/contact" className={({ isActive }) => linkClass(isActive)} onMouseEnter={() => setMega(null)}>
               {t("nav.contact")}
             </NavLink>
@@ -264,9 +262,7 @@ export function Header({ logoSrc }: HeaderProps) {
               >
                 {member ? t("nav.portal") : t("nav.signIn")}
               </Link>
-              <Link className="block rounded-lg py-2 text-sm font-semibold text-[var(--ipf-navy)]" to="/yuva" onClick={() => setOpen(false)}>
-                {t("nav.yuva")}
-              </Link>
+              {/* Yuva lives inside the About accordion group below. */}
               <Link className="block rounded-lg py-2 text-sm font-semibold text-[var(--ipf-navy)]" to="/register" onClick={() => setOpen(false)}>
                 {t("nav.joinLong")}
               </Link>

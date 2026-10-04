@@ -1,26 +1,6 @@
 import { useEffect, useRef, useState } from "react";
-import { useCms } from "../cms/ContentProvider";
-import { useCommunityStats } from "../hooks/useCommunityStats";
+import { homeStats } from "../data/homeStats";
 import { Container } from "./ui/Container";
-
-type StatKey = "members" | "yuva" | "events" | "chapters";
-
-type StatEntry = {
-  readonly key: StatKey;
-  readonly label: string;
-};
-
-/**
- * Thin, unified burgundy band. Four live statistics from the existing
- * useCommunityStats hook — no hard-coded numbers, no cards, no shadows,
- * no per-statistic surfaces. All four are the same visual weight.
- */
-const ENTRIES: readonly StatEntry[] = [
-  { key: "members", label: "Members" },
-  { key: "yuva", label: "IPF Yuva" },
-  { key: "events", label: "Events" },
-  { key: "chapters", label: "UAE Chapters" },
-];
 
 const ANIMATION_MS = 1200;
 
@@ -40,9 +20,10 @@ function usePrefersReducedMotion(): boolean {
 }
 
 /**
- * Lightweight count-up: eases from 0 → target over ANIMATION_MS once per
- * mount when `enabled` flips true. Reduced motion / zero target → final
- * value in one tick.
+ * One-shot easeOutCubic count-up from 0 → target. Fires once per mount when
+ * `enabled` flips true. Reduced motion / zero target → final value immediately.
+ * The suffix (e.g. "+") is appended by the component, so this hook only
+ * animates the numeric part.
  */
 function useCountUp(target: number, enabled: boolean, reducedMotion: boolean): number {
   const [value, setValue] = useState<number>(0);
@@ -75,11 +56,15 @@ function useCountUp(target: number, enabled: boolean, reducedMotion: boolean): n
   return value;
 }
 
+/**
+ * Thin, unified burgundy statistics band directly below the identity section.
+ * No cards, no shadows, no per-stat backgrounds — four equal zones separated
+ * only by hairline ivory dividers so the row reads as a single institutional
+ * strip. Values come from the static homeStats config in src/data/homeStats.ts
+ * (CMS-ready contract).
+ */
 export function CommunityStats() {
-  const { content } = useCms();
-  const counts = useCommunityStats(content.eventHighlights.length);
   const reducedMotion = usePrefersReducedMotion();
-
   const sectionRef = useRef<HTMLElement | null>(null);
   const [inView, setInView] = useState<boolean>(false);
 
@@ -106,13 +91,15 @@ export function CommunityStats() {
     return () => io.disconnect();
   }, [inView]);
 
-  // One useCountUp call per statistic, deterministic order.
-  const animated = {
-    members: useCountUp(counts.members, inView, reducedMotion),
-    yuva: useCountUp(counts.yuva, inView, reducedMotion),
-    events: useCountUp(counts.events, inView, reducedMotion),
-    chapters: useCountUp(counts.chapters, inView, reducedMotion),
-  } as const;
+  // One useCountUp call per statistic, deterministic order to satisfy
+  // React's rules of hooks.
+  const [members, yuva, events, chapters] = homeStats;
+  const animated: Record<string, number> = {
+    members: useCountUp(members.value, inView, reducedMotion),
+    yuva: useCountUp(yuva.value, inView, reducedMotion),
+    events: useCountUp(events.value, inView, reducedMotion),
+    chapters: useCountUp(chapters.value, inView, reducedMotion),
+  };
 
   return (
     <section
@@ -121,17 +108,15 @@ export function CommunityStats() {
       className="bg-[#5A0F1E] py-6 sm:py-7 lg:py-8"
     >
       <Container>
-        {/* grid-cols-2 on mobile → 2×2 compact; four equal columns on desktop
-           with subtle ivory dividers so the four stats read as ONE strip. */}
+        {/* grid-cols-2 (2×2) on mobile, lg:grid-cols-4 on desktop — one
+           unified band with hairline white/15 dividers on the desktop row. */}
         <ul
           role="list"
           className="grid grid-cols-2 gap-y-5 lg:grid-cols-4 lg:gap-y-0"
         >
-          {ENTRIES.map((entry, idx) => {
-            const target = counts[entry.key];
+          {homeStats.map((entry, idx) => {
             const displayed = animated[entry.key];
-            // Hairline dividers on desktop between items 2/3/4; mobile gets no
-            // divider — the row gap plus column gap already carry the beat.
+            const final = `${entry.value.toLocaleString()}${entry.suffix}`;
             const dividerClass =
               idx > 0 ? "lg:border-l lg:border-[#FFF8EE]/15" : "";
             return (
@@ -144,14 +129,15 @@ export function CommunityStats() {
                   className="font-serif text-[2rem] font-bold leading-none tabular-nums text-[#D6AD60] sm:text-[2.25rem] lg:text-[2.5rem]"
                 >
                   {displayed.toLocaleString()}
+                  {entry.suffix}
                 </p>
                 <p className="mt-2 text-[0.65rem] font-bold uppercase tracking-[0.22em] text-[#FFF8EE]/85 sm:text-[0.7rem]">
                   {entry.label}
                 </p>
-                {/* Live total exposed only to assistive tech so screen readers
-                   hear the final value, not the count-up noise. */}
+                {/* Final value exposed to assistive tech instead of the
+                   count-up noise. */}
                 <span className="sr-only">
-                  {entry.label}: {target.toLocaleString()}
+                  {entry.label}: {final}
                 </span>
               </li>
             );

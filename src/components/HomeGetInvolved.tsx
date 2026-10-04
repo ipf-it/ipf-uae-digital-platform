@@ -5,7 +5,6 @@ import { useLocale } from "../i18n/LocaleProvider";
 import { useHomeContent } from "../hooks/useHomeContent";
 import { Button } from "./ui/Button";
 import { Container } from "./ui/Container";
-import { Section } from "./ui/Section";
 
 /**
  * Brand-mark glyphs for the four social controls. Inline SVGs keep the section
@@ -56,21 +55,21 @@ export function HomeGetInvolved() {
     home?.[key] || t(fallbackKey);
 
   return (
-    <Section tone="burgundy" className="py-14 sm:py-16 lg:py-20">
+    <section className="bg-[#5A0F1E] py-7 sm:py-9 lg:py-10 text-white">
       <Container>
-        <div className="grid gap-10 lg:grid-cols-[1.9fr_1fr] lg:items-start lg:gap-12 xl:gap-16">
+        <div className="grid gap-7 lg:grid-cols-[1.9fr_1fr] lg:items-center lg:gap-12 xl:gap-16">
           {/* LEFT — mission + CTA row */}
           <div className="min-w-0">
             <p className="text-[0.72rem] font-bold uppercase tracking-[0.3em] text-[var(--ipf-gold)] sm:text-[0.75rem]">
               {h("join_eyebrow", "home.getInvolved")}
             </p>
-            <h2 className="mt-3 font-serif text-3xl font-bold leading-[1.1] tracking-tight text-[#FFF8EE] sm:text-4xl lg:text-[2.5rem]">
+            <h2 className="mt-2 font-serif text-2xl font-bold leading-[1.1] tracking-tight text-[#FFF8EE] sm:text-[1.75rem] lg:text-[2rem]">
               {h("join_title", "home.joinTitle")}
             </h2>
-            <p className="mt-4 max-w-xl text-base leading-relaxed text-[#FFF8EE]/85">
+            <p className="mt-2 max-w-xl text-[0.95rem] leading-relaxed text-[#FFF8EE]/85 sm:text-base">
               {h("join_desc", "home.joinDesc")}
             </p>
-            <div className="mt-7 flex flex-wrap gap-3">
+            <div className="mt-5 flex flex-wrap gap-3">
               {/* Primary — saffron with deep-burgundy text per spec */}
               <Button asChild variant="gold" className="text-[#3A0913] shadow-[0_6px_20px_rgba(255,153,51,0.35)]">
                 <Link to="/membership">{t("nav.joinLong")}</Link>
@@ -90,7 +89,7 @@ export function HomeGetInvolved() {
           {/* RIGHT — Follow Us. A hairline ivory divider on desktop reads as one
              section, not two separate boxes. On mobile the divider becomes a
              top border above the social row for the same effect vertically. */}
-          <div className="min-w-0 border-t border-[#FFF8EE]/15 pt-8 lg:border-t-0 lg:border-l lg:pt-0 lg:pl-10 xl:pl-14">
+          <div className="min-w-0 border-t border-[#FFF8EE]/15 pt-6 lg:border-t-0 lg:border-l lg:pt-0 lg:pl-10 xl:pl-14">
             <p className="text-[0.72rem] font-bold uppercase tracking-[0.3em] text-[var(--ipf-gold)] sm:text-[0.75rem]">
               Follow us
             </p>
@@ -115,6 +114,6 @@ export function HomeGetInvolved() {
           </div>
         </div>
       </Container>
-    </Section>
+    </section>
   );
 }
