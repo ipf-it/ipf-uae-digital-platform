@@ -1,13 +1,9 @@
-import { useCallback, useRef, useState } from "react";
 import { Link } from "react-router-dom";
-import { ChevronDown } from "lucide-react";
-import { BrandLoader } from "../components/BrandLoader";
-import { BrandMark } from "../components/BrandMark";
 import { CommunityStats } from "../components/CommunityStats";
 import { HomeHeroVideo } from "../components/HomeHeroVideo";
-import { MobileIntro } from "../components/MobileIntro";
+import { HomeIdentityStrip } from "../components/HomeIdentityStrip";
+import { VandeMataramToggle } from "../components/VandeMataramToggle";
 import { DocumentTitle } from "../components/layout/DocumentTitle";
-import { Badge } from "../components/ui/Badge";
 import { Button } from "../components/ui/Button";
 import { Card, CardGrid } from "../components/ui/Card";
 import { Container } from "../components/ui/Container";
@@ -18,25 +14,17 @@ import { Section } from "../components/ui/Section";
 import { SectionTitle } from "../components/ui/SectionTitle";
 import { PersonIdentity } from "../components/ui/PersonIdentity";
 import { FramedPhoto } from "../components/ui/TricolorFrame";
-import { cn } from "../lib/utils";
 import { img, site } from "../data/site";
 import { useLocale } from "../i18n/LocaleProvider";
 import { usePublicEvents } from "../hooks/usePublicEvents";
 import { useLeadership } from "../hooks/useOrgDirectory";
 import { useHomeContent } from "../hooks/useHomeContent";
-import { markMobileIntroPlayed, shouldPlayMobileIntro } from "../lib/mobileIntro";
 import { PageExtras } from "../cms/PageExtras";
 import { PageSectionRenderer } from "../components/PageSectionRenderer";
 
 export default function HomePage() {
   const { t } = useLocale();
   const { content } = useCms();
-  const markRef = useRef<HTMLDivElement>(null);
-  const [introReady, setIntroReady] = useState(() => !shouldPlayMobileIntro());
-  const finishIntro = useCallback(() => {
-    markMobileIntroPlayed();
-    setIntroReady(true);
-  }, []);
   const { leadership } = useLeadership("global");
   const leaders = leadership.filter((entry) => entry.personImage).map((entry) => ({ name: entry.personName, role: entry.positionTitle, image: entry.personImage }));
   const galleryPreview = content.galleryImages.slice(0, 6);
@@ -50,89 +38,29 @@ export default function HomePage() {
     <div className="home-theme-page">
       <DocumentTitle title={t("home.documentTitle")} />
 
+      {/* HOMEPAGE HERO — the approved IPF UAE WebM is the hero. All former
+         overlay content (BrandLoader/BrandMark/badge/h1/subtitle/tricolour
+         divider/intro paragraph/Join + Yuva + Meet the leaders CTAs/scroll
+         chevron) has been removed. The Vande Mataram audio toggle is the
+         only interactive element over the video. */}
       <div className="lg:hidden">
-        {!introReady ? <MobileIntro anchorRef={markRef} onDone={finishIntro} /> : null}
-        <section className="ipf-home-hero relative flex min-h-[calc(100svh-var(--ipf-header-h,4.85rem)-var(--ipf-tabbar-h,4.75rem))] flex-col overflow-hidden text-white">
-          {/* Approved IPF UAE mobile hero creative (1080×1440 VP9, silent). */}
+        <section className="ipf-home-hero relative flex min-h-[calc(100svh-var(--ipf-header-h,4.85rem)-var(--ipf-tabbar-h,4.75rem))] flex-col overflow-hidden">
           <HomeHeroVideo />
-          <Container className="relative z-10 flex flex-col items-center py-10 text-center">
-            <div ref={markRef} className={cn("flex flex-col items-center", !introReady && "invisible")}>
-              <BrandLoader size={110} label={`${site.brandMark} emblem`} />
-              <BrandMark className="mt-4" />
-            </div>
-            <div
-              className={cn(
-                "flex w-full flex-col items-center transition-opacity duration-500",
-                introReady ? "opacity-100" : "opacity-0",
-              )}
-            >
-              <div className="mt-5">
-                <Badge className="ipf-home-eyebrow-glow">{h("hero_badge", "home.badge")}</Badge>
-              </div>
-              <h1 className="home-hero-title-mobile mt-4 font-bold leading-[1.15] text-white">
-                {h("hero_title", "home.title")}
-                <span className="mt-2 block text-xl font-semibold text-[var(--ipf-gold)]">{h("hero_subtitle", "home.uae")}</span>
-              </h1>
-              <p className="mt-4 max-w-md text-pretty text-sm leading-7 text-white/85">{h("hero_intro", "home.intro")}</p>
-              <div className="mt-5 flex flex-wrap justify-center gap-3">
-                <Button asChild variant="gold" className="ipf-home-glow-gold">
-                  <Link to="/membership">{t("nav.join")}</Link>
-                </Button>
-                <Button asChild variant="secondary">
-                  <Link to="/yuva">{t("nav.yuva")}</Link>
-                </Button>
-              </div>
-              <a
-                href="#home-photos"
-                className="mt-6 inline-flex flex-col items-center gap-0.5 text-[11px] font-semibold tracking-wide text-white/90"
-              >
-                {t("home.scroll")}
-                <ChevronDown className="size-4 animate-bounce" />
-              </a>
-            </div>
-          </Container>
+          <VandeMataramToggle />
         </section>
       </div>
 
       <div className="hidden lg:block">
-        <section className="ipf-home-hero relative flex min-h-[calc(100svh-var(--ipf-header-h,6rem))] overflow-hidden text-white">
-          {/* Approved IPF UAE desktop hero creative (2304×1080 VP9, silent). */}
+        <section className="ipf-home-hero relative flex min-h-[calc(100svh-var(--ipf-header-h,6rem))] overflow-hidden">
           <HomeHeroVideo />
-          <Container className="relative z-10 flex min-h-0 flex-1 flex-col justify-center py-10 pb-28 text-left">
-            <div className="max-w-5xl">
-              <p className="ipf-home-eyebrow-glow inline-block rounded-full border border-[var(--ipf-gold)]/30 bg-white/5 px-3 py-1 text-xs font-bold uppercase tracking-[0.28em] text-[var(--ipf-gold)]">सेवा · संस्कृति · समुदाय</p>
-              <h1 className="home-hero-title-desktop mt-5 font-bold leading-[1.04] text-white">
-                {h("hero_title", "home.title")}
-                <span className="mt-3 block text-2xl font-semibold tracking-wide text-[var(--ipf-gold)]">{h("hero_subtitle", "home.uae")}</span>
-              </h1>
-              <div className="mt-5 h-1 w-28 bg-[linear-gradient(90deg,var(--ipf-saffron)_0_33%,#fff_33%_66%,var(--ipf-green)_66%)]" />
-              <p className="mt-5 max-w-lg text-pretty text-base leading-8 text-white/85">{h("hero_intro", "home.intro")}</p>
-              <div className="mt-6 flex flex-wrap gap-3">
-                <Button asChild variant="gold" className="ipf-home-glow-gold">
-                  <Link to="/membership">{t("nav.joinLong")}</Link>
-                </Button>
-                <Button asChild variant="secondary">
-                  <Link to="/yuva">{t("nav.yuva")}</Link>
-                </Button>
-                <Button asChild variant="secondary">
-                  <Link to="/leadership">{t("home.meetLeaders")}</Link>
-                </Button>
-              </div>
-            </div>
-            <a
-              href="#community-stats"
-              className="absolute bottom-6 left-1/2 inline-flex -translate-x-1/2 flex-col items-center gap-0.5 text-[11px] font-semibold tracking-wide text-white/80"
-            >
-              {t("home.scroll")}
-              <ChevronDown className="size-4 animate-bounce" />
-            </a>
-          </Container>
+          <VandeMataramToggle />
         </section>
       </div>
 
-      {/* Statistics sit immediately below the hero on both mobile and desktop.
-         The mobile hero-photos carousel is rendered AFTER this section so
-         stats are always the first content block after the hero banner. */}
+      {/* IDENTITY / MESSAGE STRIP — warm ivory, between video and stats. */}
+      <HomeIdentityStrip />
+
+      {/* THIN BURGUNDY LIVE STATISTICS STRIP. */}
       <div id="community-stats">
         <CommunityStats />
       </div>

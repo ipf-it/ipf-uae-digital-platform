@@ -1,66 +1,25 @@
 import { useEffect, useRef, useState } from "react";
-import type { ComponentType } from "react";
-import { Link } from "react-router-dom";
-import { CalendarDays, MapPin, UserRound, Users } from "lucide-react";
 import { useCms } from "../cms/ContentProvider";
 import { useCommunityStats } from "../hooks/useCommunityStats";
 import { Container } from "./ui/Container";
-import { cn } from "../lib/utils";
 
 type StatKey = "members" | "yuva" | "events" | "chapters";
 
-type StatCard = {
-  key: StatKey;
-  to: string;
-  icon: ComponentType<{ size?: number | string }>;
-  label: string;
-  hint: string;
-  accent: string;
-  accentSoft: string; // ~15% tint used for icon chip + border
+type StatEntry = {
+  readonly key: StatKey;
+  readonly label: string;
 };
 
 /**
- * Per-card accent identity. Numbers themselves are rendered in deep ink so the
- * composition stays institutional; the accent lives in the top rule, the icon
- * chip and the hover ring. Values are the spec palette.
+ * Thin, unified burgundy band. Four live statistics from the existing
+ * useCommunityStats hook — no hard-coded numbers, no cards, no shadows,
+ * no per-statistic surfaces. All four are the same visual weight.
  */
-const CARDS: readonly StatCard[] = [
-  {
-    key: "members",
-    to: "/membership",
-    icon: Users,
-    label: "Members",
-    hint: "Across the Emirates",
-    accent: "#FF9933",
-    accentSoft: "rgba(255,153,51,0.14)",
-  },
-  {
-    key: "yuva",
-    to: "/yuva",
-    icon: UserRound,
-    label: "IPF Yuva",
-    hint: "Youth community",
-    accent: "#5A0F1E",
-    accentSoft: "rgba(90,15,30,0.12)",
-  },
-  {
-    key: "events",
-    to: "/events",
-    icon: CalendarDays,
-    label: "Events",
-    hint: "Published programmes",
-    accent: "#138808",
-    accentSoft: "rgba(19,136,8,0.12)",
-  },
-  {
-    key: "chapters",
-    to: "/chapters",
-    icon: MapPin,
-    label: "UAE Chapters",
-    hint: "Across the seven emirates",
-    accent: "#D6AD60",
-    accentSoft: "rgba(214,173,96,0.18)",
-  },
+const ENTRIES: readonly StatEntry[] = [
+  { key: "members", label: "Members" },
+  { key: "yuva", label: "IPF Yuva" },
+  { key: "events", label: "Events" },
+  { key: "chapters", label: "UAE Chapters" },
 ];
 
 const ANIMATION_MS = 1200;
@@ -70,7 +29,6 @@ function usePrefersReducedMotion(): boolean {
     if (typeof window === "undefined" || !window.matchMedia) return false;
     return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   });
-
   useEffect(() => {
     if (typeof window === "undefined" || !window.matchMedia) return;
     const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
@@ -78,14 +36,13 @@ function usePrefersReducedMotion(): boolean {
     mq.addEventListener("change", handler);
     return () => mq.removeEventListener("change", handler);
   }, []);
-
   return reduced;
 }
 
 /**
- * Lightweight rAF-based count-up. Fires at most once per mount, when `enabled`
- * flips to true. If reduced motion is requested or target is 0, the final value
- * is set immediately.
+ * Lightweight count-up: eases from 0 → target over ANIMATION_MS once per
+ * mount when `enabled` flips true. Reduced motion / zero target → final
+ * value in one tick.
  */
 function useCountUp(target: number, enabled: boolean, reducedMotion: boolean): number {
   const [value, setValue] = useState<number>(0);
@@ -94,29 +51,22 @@ function useCountUp(target: number, enabled: boolean, reducedMotion: boolean): n
   useEffect(() => {
     if (!enabled) return;
     if (startedRef.current) {
-      // Already animated once this mount — reflect any later data updates
-      // directly, without a second animation.
       setValue(target);
       return;
     }
     startedRef.current = true;
-
     if (reducedMotion || target <= 0) {
       setValue(target);
       return;
     }
-
     const start = performance.now();
     let raf = 0;
     const tick = (now: number) => {
       const t = Math.min(1, (now - start) / ANIMATION_MS);
-      const eased = 1 - Math.pow(1 - t, 3); // easeOutCubic — settles smoothly
+      const eased = 1 - Math.pow(1 - t, 3);
       setValue(Math.round(target * eased));
-      if (t < 1) {
-        raf = requestAnimationFrame(tick);
-      } else {
-        setValue(target); // land on the exact target
-      }
+      if (t < 1) raf = requestAnimationFrame(tick);
+      else setValue(target);
     };
     raf = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(raf);
@@ -156,6 +106,7 @@ export function CommunityStats() {
     return () => io.disconnect();
   }, [inView]);
 
+  // One useCountUp call per statistic, deterministic order.
   const animated = {
     members: useCountUp(counts.members, inView, reducedMotion),
     yuva: useCountUp(counts.yuva, inView, reducedMotion),
@@ -166,79 +117,42 @@ export function CommunityStats() {
   return (
     <section
       ref={sectionRef}
-      aria-labelledby="ipf-glance-heading"
-      className={cn(
-        "relative isolate bg-[#FFF8EE] py-14 sm:py-16",
-        // Slight 32px overlap into the hero on desktop so the stat row reads
-        // as a bridge between hero and the next section.
-        "lg:-mt-8 lg:py-20",
-      )}
+      aria-label="IPF UAE community statistics"
+      className="bg-[#5A0F1E] py-6 sm:py-7 lg:py-8"
     >
       <Container>
-        <header className="mx-auto max-w-2xl text-center">
-          <p className="text-[0.72rem] font-bold uppercase tracking-[0.3em] text-[#D6AD60]">
-            Our community
-          </p>
-          <h2
-            id="ipf-glance-heading"
-            className="mt-3 font-serif text-3xl font-bold tracking-tight text-[var(--ipf-navy)] sm:text-[2.25rem] lg:text-4xl"
-          >
-            IPF UAE at a Glance
-          </h2>
-          <p className="mt-3 text-sm text-[var(--ipf-muted)] sm:text-base">
-            One community. Across the Emirates.
-          </p>
-        </header>
-
+        {/* grid-cols-2 on mobile → 2×2 compact; four equal columns on desktop
+           with subtle ivory dividers so the four stats read as ONE strip. */}
         <ul
           role="list"
-          className="mt-10 grid grid-cols-2 gap-4 sm:gap-5 lg:mt-12 lg:grid-cols-4 lg:gap-6"
+          className="grid grid-cols-2 gap-y-5 lg:grid-cols-4 lg:gap-y-0"
         >
-          {CARDS.map((card) => {
-            const Icon = card.icon;
-            const displayed = animated[card.key];
-            const target = counts[card.key];
+          {ENTRIES.map((entry, idx) => {
+            const target = counts[entry.key];
+            const displayed = animated[entry.key];
+            // Hairline dividers on desktop between items 2/3/4; mobile gets no
+            // divider — the row gap plus column gap already carry the beat.
+            const dividerClass =
+              idx > 0 ? "lg:border-l lg:border-[#FFF8EE]/15" : "";
             return (
-              <li key={card.key} className="h-full">
-                <Link
-                  to={card.to}
-                  className="group relative flex h-full flex-col overflow-hidden rounded-2xl bg-white p-5 pt-6 shadow-[0_6px_18px_rgba(11,31,58,0.06)] ring-1 ring-[var(--ipf-line)] transition-all duration-200 hover:-translate-y-1 hover:shadow-[0_14px_32px_rgba(11,31,58,0.12)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--ipf-gold)] sm:p-6 sm:pt-7"
-                  aria-label={`${card.label}: ${target.toLocaleString()}`}
+              <li
+                key={entry.key}
+                className={`text-center ${dividerClass} lg:px-4`.trim()}
+              >
+                <p
+                  aria-hidden="true"
+                  className="font-serif text-[2rem] font-bold leading-none tabular-nums text-[#D6AD60] sm:text-[2.25rem] lg:text-[2.5rem]"
                 >
-                  {/* Top accent rule — the only strong colour on the card edge. */}
-                  <span
-                    aria-hidden="true"
-                    className="absolute inset-x-0 top-0 h-[3px]"
-                    style={{ backgroundColor: card.accent }}
-                  />
-
-                  {/* Icon chip in the card's accent, soft fill + bold glyph. */}
-                  <span
-                    aria-hidden="true"
-                    className="inline-flex h-10 w-10 items-center justify-center rounded-xl transition-colors group-hover:scale-[1.03] sm:h-11 sm:w-11"
-                    style={{ backgroundColor: card.accentSoft, color: card.accent }}
-                  >
-                    <Icon size={22} />
-                  </span>
-
-                  {/* NUMBER — strongest visual element on the card. aria-hidden
-                     because the <Link>'s aria-label already announces label + value;
-                     keeps the animated counter out of the a11y tree. */}
-                  <p
-                    aria-hidden="true"
-                    className="mt-5 font-serif text-[2.5rem] font-bold tabular-nums leading-none text-[var(--ipf-navy)] sm:text-5xl lg:text-[3.5rem]"
-                    style={{ color: card.accent }}
-                  >
-                    {displayed.toLocaleString()}
-                  </p>
-
-                  <p className="mt-3 text-sm font-bold uppercase tracking-[0.14em] text-[var(--ipf-navy)]">
-                    {card.label}
-                  </p>
-                  <p className="mt-1 text-xs leading-5 text-[var(--ipf-muted)] sm:text-[0.8rem]">
-                    {card.hint}
-                  </p>
-                </Link>
+                  {displayed.toLocaleString()}
+                </p>
+                <p className="mt-2 text-[0.65rem] font-bold uppercase tracking-[0.22em] text-[#FFF8EE]/85 sm:text-[0.7rem]">
+                  {entry.label}
+                </p>
+                {/* Live total exposed only to assistive tech so screen readers
+                   hear the final value, not the count-up noise. */}
+                <span className="sr-only">
+                  {entry.label}: {target.toLocaleString()}
+                </span>
               </li>
             );
           })}
