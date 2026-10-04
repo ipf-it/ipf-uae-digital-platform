@@ -203,7 +203,7 @@ export function Footer() {
       {/* BOTTOM BAR
          Co-builder credit retained but visually secondary — smaller type and lower
          opacity than the IPF copyright, which remains the first-read on this strip. */}
-      <div className="relative border-t border-white/10 bg-[rgba(20,6,12,0.62)] py-3 backdrop-blur-[2px]">
+      <div className="relative border-t border-white/10 bg-[#3A0913] py-3">
         <Container className="flex flex-col items-center justify-between gap-2 text-xs text-white/75 sm:flex-row">
           <p className="text-center font-medium sm:text-left">
             &copy; {new Date().getFullYear()} Indian People&rsquo;s Forum UAE. All Rights Reserved.
