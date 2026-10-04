@@ -38,8 +38,10 @@ export const mobileTabs: NavLinkItem[] = [
   { label: "Join", to: "/membership" },
 ];
 
+// Right-side utility links in the announcement bar. Donate used to live here;
+// it has been intentionally retired from the top strip (it still exists on the
+// Get Involved section, in the footer navigation, and on dedicated pages).
 export const utilityLinks: NavLinkItem[] = [
-  { label: "Donate", to: "/donate" },
   { label: "Sign In", to: "/sign-in" },
 ];
 

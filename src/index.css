@@ -349,6 +349,7 @@ html:not([lang="en"]) thead th {
   .ipf-splash-emblem-in,
   .ipf-splash-letter.is-on,
   .ipf-splash-rule.is-on,
+  .ipf-ticker-track,
   .ipf-toast[data-state="open"],
   .ipf-toast[data-state="closed"],
   .ipf-overlay[data-state="open"],

@@ -65,7 +65,6 @@ export function Header({ logoSrc }: HeaderProps) {
   const links = utilityLinks.map((item) => {
     if (item.to === "/sign-in" && member) return { label: t("nav.portal"), to: "/portal" };
     if (item.to === "/sign-in") return { ...item, label: t("nav.signIn") };
-    if (item.to === "/donate") return { ...item, label: t("nav.donate") };
     if (item.to === "/news") return { ...item, label: t("nav.news") };
     return item;
   });
@@ -90,15 +89,16 @@ export function Header({ logoSrc }: HeaderProps) {
 
   return (
     <header ref={headerRef} className="sticky top-0 z-40">
-      {/* Top announcement bar — background flipped from navy to the new
-         institutional burgundy. Structure, LATEST badge, ticker animation,
-         Donate/Sign in utility links, email, language selector all unchanged. */}
-      <div className="hidden border-b border-white/10 bg-[var(--ipf-burgundy)] text-xs text-white/80 md:block">
+      {/* Top announcement bar on burgundy. Desktop-only (md:block). Final
+         layout: [LATEST] [ scrolling ticker ] [ Sign in ] [ EN ]. Donate and
+         the IPF email that previously lived here have been retired from
+         this strip — both remain available elsewhere on the site. */}
+      <div className="hidden border-b border-white/10 bg-[var(--ipf-burgundy)] text-[13px] text-[#FFF8EE]/85 md:block">
         <Container className="flex items-center justify-between gap-x-4 py-1.5">
           <p className="min-w-0 flex-1 overflow-hidden pr-2">
             {headlines.length > 0 ? (
-              <Link to="/news" className="flex items-center gap-2 text-white/90 hover:text-white">
-                <span className="shrink-0 rounded bg-[var(--ipf-saffron)] px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-[0.14em] text-[var(--ipf-burgundy-dark)]">
+              <Link to="/news" className="flex items-center gap-2 text-[#FFF8EE]/85 hover:text-[#FFF8EE]">
+                <span className="shrink-0 rounded bg-[var(--ipf-saffron)] px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-[0.14em] text-[#3A0913]">
                   {t("nav.latest")}
                 </span>
                 <span className="ipf-ticker min-w-0">
@@ -113,13 +113,14 @@ export function Header({ logoSrc }: HeaderProps) {
           </p>
           <div className="flex shrink-0 items-center gap-3">
             {links.map((item) => (
-              <Link key={item.to} className="rounded-md px-1 py-0.5 transition hover:bg-white/10 hover:text-white" to={item.to}>
+              <Link
+                key={item.to}
+                className="rounded-md px-1 py-0.5 text-[13px] font-medium text-[#FFF8EE]/90 transition hover:text-[var(--ipf-gold)]"
+                to={item.to}
+              >
                 {item.label}
               </Link>
             ))}
-            <a className="hidden rounded-md px-1 py-0.5 transition hover:bg-white/10 hover:text-white xl:inline" href={`mailto:${site.email}`}>
-              {site.email}
-            </a>
             <LanguageToggle tone="dark" />
           </div>
         </Container>
