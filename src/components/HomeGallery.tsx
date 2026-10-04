@@ -145,10 +145,16 @@ export function HomeGallery() {
       aria-labelledby="ipf-gallery-eyebrow"
       className="relative isolate overflow-hidden bg-[#FFF8EE]"
     >
-      {/* Approved Gallery background — Elegant Cream Arabesque Skyline
-         Background. object-position pulled toward the right so the
-         bottom-right tricolour element stays visible when the frame
-         crops horizontally. */}
+      {/* Approved Gallery background — Serene Temple River Panorama with
+         Tricolour Waves. Temples cluster at the bottom-left; tricolour
+         waves enter from the bottom-right; mandala ornament top-left,
+         vertical ornament top-right. object-position anchors the BOTTOM
+         so both the temple band and the tricolour band stay in-frame at
+         every section height, and biases slightly RIGHT (75 %) so the
+         tricolour remains visible on narrow viewports where the frame
+         crops the image horizontally. On desktop (where the image fills
+         the width in full) the horizontal bias has no visual effect —
+         both ends read naturally. */}
       <picture aria-hidden="true">
         <source srcSet={BG_WEBP} type="image/webp" />
         <img
@@ -159,7 +165,7 @@ export function HomeGallery() {
           decoding="async"
           width={1774}
           height={887}
-          className="pointer-events-none absolute inset-0 -z-10 h-full w-full object-cover object-[65%_center]"
+          className="pointer-events-none absolute inset-0 -z-10 h-full w-full object-cover object-[75%_bottom] lg:object-[center_bottom]"
         />
       </picture>
 
