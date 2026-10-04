@@ -62,12 +62,18 @@ export function Header({ logoSrc }: HeaderProps) {
   const navLabel = (label: string) => t(navKeys[label] ?? label);
   const [open, setOpen] = useState(false);
   const [mega, setMega] = useState<null | "chapters" | "councils">(null);
-  const links = utilityLinks.map((item) => {
-    if (item.to === "/sign-in" && member) return { label: t("nav.portal"), to: "/portal" };
-    if (item.to === "/sign-in") return { ...item, label: t("nav.signIn") };
-    if (item.to === "/news") return { ...item, label: t("nav.news") };
-    return item;
-  });
+  // Donate is intentionally retired from the top announcement bar. The CMS
+  // nav payload (/api/nav) may still include it for other consumers, so we
+  // filter it out here as the single UI opt-out — the database, admin editor
+  // and other Donate links across the site are untouched.
+  const links = utilityLinks
+    .filter((item) => item.to !== "/donate")
+    .map((item) => {
+      if (item.to === "/sign-in" && member) return { label: t("nav.portal"), to: "/portal" };
+      if (item.to === "/sign-in") return { ...item, label: t("nav.signIn") };
+      if (item.to === "/news") return { ...item, label: t("nav.news") };
+      return item;
+    });
   const headerRef = useRef<HTMLElement>(null);
 
   useEffect(() => {
