@@ -103,15 +103,16 @@ export function Footer() {
       className="site-footer relative isolate z-[2] overflow-hidden text-white"
       aria-label="Site footer"
     >
-      {/* Background: the approved India → UAE panoramic artwork. The <img> is positioned
-         absolutely behind every content layer so the composition — India (left) → sunset
-         (centre) → UAE (right) — reads intact, and the content sits over it. object-position
-         is tuned per breakpoint via CSS below. */}
-      {/* object-contain so the entire panorama — gold corner flourishes, palm fronds,
-         India + UAE landmarks, sunset, water band and the stylised tricolour wave at
-         the bottom — is always visible, never cropped. At viewport widths narrower
-         than the image's ~3:1 aspect ratio the image letterboxes to the burgundy base
-         below, which matches the artwork's own burgundy sky at the seam. */}
+      {/* Full-bleed panoramic artwork. absolute inset-0 h-full w-full + object-cover
+         guarantees the image reaches both viewport edges with no burgundy gutters at
+         any width. object-position stays horizontally centred so the sunset / central
+         boat remains the first-read; vertical bias is tuned per breakpoint:
+           - mobile (<768px): 50% 70% — keeps the lower landmark silhouettes + water
+             + tricolour band visible, lets more sky crop off the top where columns sit.
+           - tablet (≥768px): 50% 60% — slight below-centre bias for the horizon.
+           - desktop (≥1024px): 50% 50% — true centre; wide viewports show the fullest
+             India-left / sunset-centre / UAE-right story since container AR is close
+             to the image's own ~2.993:1. */}
       <img
         src={INDIA_UAE_BG}
         alt=""
@@ -120,12 +121,12 @@ export function Footer() {
         decoding="async"
         width={2170}
         height={725}
-        className="ipf-footer-art pointer-events-none absolute inset-0 -z-10 h-full w-full object-contain object-center"
+        className="ipf-footer-art pointer-events-none absolute inset-0 -z-10 h-full w-full object-cover
+                   object-[50%_70%] md:object-[50%_60%] lg:object-center"
       />
 
-      {/* Base burgundy fill that both covers initial load and matches the colour of the
-         artwork's own sky so letterbox bands at narrower viewports read as a continuous
-         background with no visible seam. */}
+      {/* Burgundy fallback shown only while the image is loading or unavailable.
+         object-cover guarantees it is never visible as side gutters in steady state. */}
       <div
         aria-hidden="true"
         className="ipf-footer-art-base pointer-events-none absolute inset-0 -z-20"
@@ -157,30 +158,36 @@ export function Footer() {
               </a>
             </address>
 
-            {/* Social controls — 44x44 buttons meet mobile touch-target guidelines and
-               give the brand marks enough presence to be read instantly against the
-               panoramic artwork. Light ivory backing circle + gold hover tint keeps the
-               treatment tasteful for the IPF footer while preserving platform identity. */}
-            <ul className="mt-5 flex flex-wrap items-center gap-3">
-              {socialLinks.map((item) => (
-                <li key={item.href}>
-                  <a
-                    href={item.href}
-                    target="_blank"
-                    rel="noreferrer"
-                    aria-label={item.label}
-                    title={item.label}
-                    className="group inline-flex h-11 w-11 items-center justify-center rounded-full bg-white/12 text-white shadow-[0_2px_10px_rgba(0,0,0,0.18)] ring-1 ring-inset ring-white/20
-                               transition hover:bg-white hover:text-[#5a0f1e] hover:ring-white
-                               focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--ipf-gold)]"
-                  >
-                    {SOCIAL_ICONS[item.label] ?? (
-                      <span className="text-xs font-semibold">{item.label.slice(0, 2)}</span>
-                    )}
-                  </a>
-                </li>
-              ))}
-            </ul>
+            {/* Deliberate FOLLOW US section inside Column 1 — in document flow, directly
+               under the email address, so the social buttons never sit over the
+               tricolour or landmarks regardless of viewport. 44x44 buttons meet mobile
+               touch-target guidelines; solid ivory backing + burgundy mark on default
+               (not hover) makes platform logos unmistakable at any width. */}
+            <div className="mt-5">
+              <p className="text-[0.72rem] font-semibold uppercase tracking-[0.26em] text-[var(--ipf-gold)]">
+                Follow us
+              </p>
+              <ul className="mt-3 flex flex-wrap items-center gap-3">
+                {socialLinks.map((item) => (
+                  <li key={item.href}>
+                    <a
+                      href={item.href}
+                      target="_blank"
+                      rel="noreferrer"
+                      aria-label={item.label}
+                      title={item.label}
+                      className="inline-flex h-11 w-11 items-center justify-center rounded-full bg-white text-[#5a0f1e] shadow-[0_2px_10px_rgba(0,0,0,0.22)] ring-1 ring-inset ring-white/70
+                                 transition hover:bg-[var(--ipf-gold)] hover:text-[#5a0f1e] hover:ring-[var(--ipf-gold)]
+                                 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--ipf-gold)]"
+                    >
+                      {SOCIAL_ICONS[item.label] ?? (
+                        <span className="text-xs font-semibold">{item.label.slice(0, 2)}</span>
+                      )}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </div>
           </div>
 
           {/* COLUMNS 2-4 — EXPLORE / GET INVOLVED / RESOURCES */}
