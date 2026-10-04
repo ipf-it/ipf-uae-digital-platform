@@ -190,32 +190,51 @@ export function HomeEvents() {
   }, [reducedMotion, paused, originalCount, next]);
 
   /* Seamless loop + progress indicator.
-     - When scrollLeft crosses the first-copy width, invisibly subtract
-       that width. User sees the content continue without a rewind. */
+     - Wait until the smooth scroll has FULLY settled past the halfway
+       duplicate boundary, THEN instantly subtract halfWidth. Detecting
+       "settled" via a trailing debounce (scroll events have stopped
+       firing for 80 ms) prevents the reset from interrupting the
+       in-progress smooth scroll — which was the root cause of the
+       visible rewind the user saw. */
   useEffect(() => {
     const el = trackRef.current;
     if (!el) return;
-    const onScroll = () => {
+    let settleTimer: number | undefined;
+    const settleAndCheck = () => {
       if (resettingRef.current) return;
       const half = halfWidth();
-      if (half > 0 && el.scrollLeft >= half - 1) {
+      if (half > 0 && el.scrollLeft >= half) {
         resettingRef.current = true;
+        // Force an INSTANT jump even if a future CSS change ever applies
+        // scroll-behavior:smooth to this track. Belt-and-braces alongside
+        // the removal of the `scroll-smooth` utility class on the <ul>.
+        const prev = el.style.scrollBehavior;
+        el.style.scrollBehavior = "auto";
         el.scrollLeft = el.scrollLeft - half;
-        // Give the browser one frame to settle before accepting scrolls again.
+        // Restore after the browser has committed the reset.
         requestAnimationFrame(() => {
+          el.style.scrollBehavior = prev;
           resettingRef.current = false;
         });
       }
-      // Progress reflects position within the first copy only.
+    };
+    const updateProgress = () => {
+      const half = halfWidth();
       const effectiveMax = half || el.scrollWidth - el.clientWidth;
-      const within = el.scrollLeft % Math.max(1, half || el.scrollLeft || 1);
+      const within = half ? el.scrollLeft % half : el.scrollLeft;
       setProgress(effectiveMax > 0 ? within / effectiveMax : 0);
     };
-    onScroll();
+    const onScroll = () => {
+      updateProgress();
+      if (settleTimer) window.clearTimeout(settleTimer);
+      settleTimer = window.setTimeout(settleAndCheck, 80);
+    };
+    updateProgress();
     el.addEventListener("scroll", onScroll, { passive: true });
-    const ro = new ResizeObserver(onScroll);
+    const ro = new ResizeObserver(updateProgress);
     ro.observe(el);
     return () => {
+      if (settleTimer) window.clearTimeout(settleTimer);
       el.removeEventListener("scroll", onScroll);
       ro.disconnect();
     };
@@ -323,7 +342,14 @@ export function HomeEvents() {
               ref={trackRef}
               role="list"
               aria-label={t("home.allEvents")}
-              className="ipf-no-scrollbar flex snap-x snap-mandatory gap-4 overflow-x-auto scroll-smooth pb-2 sm:gap-5 lg:gap-6"
+              /* IMPORTANT: no `scroll-smooth` class on the track. The seamless
+                 loop depends on an INSTANT scrollLeft reset when we cross the
+                 halfway duplicate boundary; CSS scroll-behavior:smooth would
+                 animate that reset and produce a visible rewind. Autoplay +
+                 prev/next buttons still animate smoothly via per-call
+                 `behavior: "smooth"` on scrollBy(). Native touch/swipe is
+                 unaffected either way. */
+              className="ipf-no-scrollbar flex snap-x snap-mandatory gap-4 overflow-x-auto pb-2 sm:gap-5 lg:gap-6"
               style={{ scrollbarWidth: "none" }}
             >
               {trackCards.map((event, index) => {
