@@ -30,7 +30,13 @@ export function HomeIdentityStrip() {
           aria-hidden="true"
           className="mx-auto mt-3 h-0.5 w-24 rounded-full bg-[linear-gradient(90deg,#FF9933_0_33%,#ffffff_33%_66%,#138808_66%)]"
         />
-        <p className="mx-auto mt-3 max-w-[850px] text-[0.95rem] leading-relaxed text-[#5C6573] sm:mt-4 sm:text-base lg:text-[1.125rem]">
+        {/* At 18 px (lg) the full sentence measures ~907 px. The previous
+           max-w-[850px] forced the final words to wrap even though the
+           Container has ~1022 px of inner width at 1024 viewport. Lifting
+           the ceiling to 1000 px at lg lets the whole sentence sit on one
+           line at every width ≥ 1024, while mobile / tablet keep the
+           original 850 px reading-width ceiling for natural wrapping. */}
+        <p className="mx-auto mt-3 max-w-[850px] text-[0.95rem] leading-relaxed text-[#5C6573] sm:mt-4 sm:text-base lg:max-w-[1000px] lg:text-[1.125rem]">
           Serving the Indian community in the UAE through service, culture,
           leadership and community engagement.
         </p>
