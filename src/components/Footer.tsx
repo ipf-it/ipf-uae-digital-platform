@@ -1,17 +1,11 @@
 import type { ReactNode } from "react";
 import { Link } from "react-router-dom";
-import { socialLinks, caringSharingLink } from "../data/navigation";
-import { useLocale } from "../i18n/LocaleProvider";
+import { socialLinks } from "../data/navigation";
 import { site } from "../data/site";
 import { Container } from "./ui/Container";
 
-type FooterInternalLink = { label: string; to: string };
-type FooterExternalLink = { label: string; href: string };
-type FooterLink = FooterInternalLink | FooterExternalLink;
+type FooterLink = { label: string; to: string };
 type FooterColumn = { title: string; links: readonly FooterLink[] };
-
-const isExternalLink = (link: FooterLink): link is FooterExternalLink =>
-  "href" in link;
 
 /**
  * Brand-mark icons for social controls. Inline SVGs keep the footer dependency-free —
@@ -45,14 +39,15 @@ const SOCIAL_ICONS: Record<string, ReactNode> = {
 };
 
 /**
- * Footer information architecture, locked to routes that actually exist in src/App.tsx.
- * Intentional omissions (reported to the Founder, not silently dropped):
- *   - "Publications" in Resources: /drishti IS the publications page; a separate /publications
- *     route does not exist yet.
- *   - "Privacy Policy" in Resources and bottom bar: no /privacy-policy route exists.
- *   - "Terms of Use" in bottom bar: no /terms route exists.
- * "Volunteer With Us" links to /membership — the register form carries the volunteer opt-in.
- * "Business Council" uses the live NDA council id (/councils/business).
+ * Simplified footer IA — intentionally narrower than the full sitemap. Only the
+ * essential orient-and-act destinations stay. All removed items (News & Media,
+ * IPF YUVA, Business Council, Community Support, DRISHTI, Governance, Member
+ * portal, Caring & Sharing) remain reachable from the main navigation / their
+ * pages — only the permanent footer slot was retired.
+ *
+ * "Volunteer" → /membership: no dedicated /volunteer route exists in src/App.tsx
+ * (verified against the full route list); the member register flow carries the
+ * volunteer opt-in.
  */
 const footerColumns: readonly FooterColumn[] = [
   {
@@ -62,30 +57,15 @@ const footerColumns: readonly FooterColumn[] = [
       { label: "Leadership", to: "/leadership" },
       { label: "Chapters & Councils", to: "/chapters" },
       { label: "Events", to: "/events" },
-      { label: "News & Media", to: "/news" },
+      { label: "Contact", to: "/contact" },
     ],
   },
   {
     title: "Get involved",
     links: [
       { label: "Become a Member", to: "/membership" },
-      { label: "Volunteer With Us", to: "/membership" },
-      { label: "IPF YUVA", to: "/yuva" },
-      { label: "Business Council", to: "/councils/business" },
-      { label: "Community Support", to: "/support" },
-    ],
-  },
-  {
-    title: "Resources",
-    links: [
-      { label: "DRISHTI", to: "/drishti" },
-      { label: "Governance", to: "/governance" },
-      { label: "Contact", to: "/contact" },
+      { label: "Volunteer", to: "/membership" },
       { label: "Donate", to: "/donate" },
-      { label: "Member portal", to: "/portal" },
-      // Previously rendered inside the social group — it is a legacy community portal,
-      // not a social network. Preserved here with its existing external destination.
-      caringSharingLink,
     ],
   },
 ];
@@ -93,8 +73,6 @@ const footerColumns: readonly FooterColumn[] = [
 const INDIA_UAE_BG = "/footer-india-uae.webp";
 
 export function Footer() {
-  const { t } = useLocale();
-
   return (
     <footer
       // z-[2] raises the footer above the site-wide fixed TricolorWaves ribbons
@@ -139,9 +117,16 @@ export function Footer() {
          and nav links. Only the FOLLOW US label itself gets a small highlighted
          chip; the social buttons sit free beneath it. */}
       <Container className="relative pt-10 pb-6 sm:pt-14 sm:pb-8 lg:pt-16 lg:pb-10">
-        <div className="grid gap-8 md:grid-cols-2 md:gap-10 lg:grid-cols-4 lg:gap-10">
+        {/* Three-column grid.
+             mobile              single column stack
+             tablet (md)         col 1 spans both tracks (identity reads its own row);
+                                 Explore + Get involved share the row below
+             desktop (lg)        1.4fr / 1fr / 1fr — col 1 is wider since it carries
+                                 identity + description + FOLLOW US chip + four social
+                                 buttons (needs ~212 px minimum for the icon row). */}
+        <div className="grid gap-8 md:grid-cols-2 md:gap-10 lg:grid-cols-[1.4fr_1fr_1fr] lg:gap-10">
           {/* COLUMN 1 — IPF UAE */}
-          <div className="min-w-0">
+          <div className="min-w-0 md:col-span-2 lg:col-span-1">
             <p
               className="font-serif text-[1.3rem] font-bold tracking-tight text-[#FFF8EE] sm:text-[1.4rem] lg:text-[1.5rem]"
               style={{ textShadow: "0 1px 3px rgba(0,0,0,0.55), 0 2px 10px rgba(0,0,0,0.35)" }}
@@ -188,7 +173,7 @@ export function Footer() {
             </div>
           </div>
 
-          {/* COLUMNS 2-4 — EXPLORE / GET INVOLVED / RESOURCES */}
+          {/* COLUMNS 2-3 — EXPLORE / GET INVOLVED */}
           {footerColumns.map((col) => (
             <div key={col.title} className="min-w-0">
               <p
@@ -198,32 +183,17 @@ export function Footer() {
                 {col.title}
               </p>
               <ul className="mt-3.5 space-y-2 text-[0.925rem]">
-                {col.links.map((item) => {
-                  const key = `${col.title}-${isExternalLink(item) ? item.href : item.to}-${item.label}`;
-                  const linkClass =
-                    "inline-block rounded-sm text-[#FFF8EE] underline-offset-4 transition " +
-                    "hover:text-[var(--ipf-gold)] hover:underline focus-visible:outline-2 focus-visible:outline-[var(--ipf-gold)]";
-                  const linkShadow = { textShadow: "0 1px 3px rgba(0,0,0,0.5)" };
-                  return (
-                    <li key={key}>
-                      {isExternalLink(item) ? (
-                        <a
-                          href={item.href}
-                          target="_blank"
-                          rel="noreferrer"
-                          className={linkClass}
-                          style={linkShadow}
-                        >
-                          {item.label}
-                        </a>
-                      ) : (
-                        <Link to={item.to} className={linkClass} style={linkShadow}>
-                          {item.label}
-                        </Link>
-                      )}
-                    </li>
-                  );
-                })}
+                {col.links.map((item) => (
+                  <li key={`${col.title}-${item.to}-${item.label}`}>
+                    <Link
+                      to={item.to}
+                      className="inline-block rounded-sm text-[#FFF8EE] underline-offset-4 transition hover:text-[var(--ipf-gold)] hover:underline focus-visible:outline-2 focus-visible:outline-[var(--ipf-gold)]"
+                      style={{ textShadow: "0 1px 3px rgba(0,0,0,0.5)" }}
+                    >
+                      {item.label}
+                    </Link>
+                  </li>
+                ))}
               </ul>
             </div>
           ))}
@@ -231,22 +201,33 @@ export function Footer() {
       </Container>
 
       {/* BOTTOM BAR
-         Dravyx AI credit is retained but visually secondary — smaller type and lower
-         opacity than the IPF copyright, which remains the first-read on this strip. */}
+         Co-builder credit retained but visually secondary — smaller type and lower
+         opacity than the IPF copyright, which remains the first-read on this strip.
+         Dravyx AI and Jettifi get IDENTICAL gold link treatment — neither partner
+         is more prominent than the other. */}
       <div className="relative border-t border-white/10 bg-[rgba(20,6,12,0.62)] py-3 backdrop-blur-[2px]">
         <Container className="flex flex-col items-center justify-between gap-2 text-xs text-white/75 sm:flex-row">
           <p className="text-center font-medium sm:text-left">
             &copy; {new Date().getFullYear()} Indian People&rsquo;s Forum UAE. All Rights Reserved.
           </p>
           <p className="text-center text-[0.7rem] text-white/55 sm:text-right">
-            {t("footer.powered")}{" "}
+            Co-built by{" "}
             <a
-              className="font-medium text-[var(--ipf-gold)]/85 underline-offset-2 transition hover:text-[var(--ipf-gold)] hover:underline"
+              className="font-medium text-[var(--ipf-gold)]/85 underline-offset-2 transition hover:text-[var(--ipf-gold)] hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--ipf-gold)]"
               href="https://dravyxai.com/"
               target="_blank"
-              rel="noreferrer"
+              rel="noopener noreferrer"
             >
               Dravyx AI
+            </a>
+            {" & "}
+            <a
+              className="font-medium text-[var(--ipf-gold)]/85 underline-offset-2 transition hover:text-[var(--ipf-gold)] hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--ipf-gold)]"
+              href="https://www.jettifi.com/"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Jettifi
             </a>
           </p>
         </Container>
