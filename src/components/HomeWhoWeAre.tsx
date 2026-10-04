@@ -60,9 +60,19 @@ export function HomeWhoWeAre() {
       </picture>
 
       <Container className="relative py-12 sm:py-14 lg:py-16">
-        <div className="grid gap-8 lg:grid-cols-[1.15fr_0.85fr] lg:items-center lg:gap-12 xl:gap-14">
-          {/* LEFT — editorial content (54 % on desktop) */}
-          <div className="min-w-0 order-2 lg:order-1">
+        {/* Image lives in the LEFT column at ≥lg; text on the RIGHT.
+           grid-cols-[1.25fr_1fr] + lg:gap-12 means at a 1440 viewport the
+           Container inner (1088 px) splits into ~578 px image + ~462 px
+           text, which lands the photograph in the approved 540–600 px
+           width band. Container's own max-w-6xl ceiling (1152 px) also
+           caps the image at ~578 px even at 1920 so it never grows past
+           the 600–620 px upper bound. On mobile the grid collapses to
+           one column and the image sits above the text. */}
+        <div className="grid gap-8 lg:grid-cols-[1.25fr_1fr] lg:items-center lg:gap-12 xl:gap-14">
+          {/* RIGHT on desktop — editorial content (≈ 44 % at ≥lg).
+             Mobile keeps the content second (order-2) so the photo renders
+             first on narrow viewports. */}
+          <div className="min-w-0 order-2">
             <p
               id="ipf-who-we-are-eyebrow"
               className="text-[0.72rem] font-bold uppercase tracking-[0.3em] text-[#8B6A1F]"
@@ -99,10 +109,19 @@ export function HomeWhoWeAre() {
             </p>
           </div>
 
-          {/* RIGHT — CMS-controlled community photograph (46 % on desktop).
-             Independent of the decorative background; replaceable via the
-             CMS whoWeAreImage field. */}
-          <div className="min-w-0 order-1 lg:order-2">
+          {/* LEFT on desktop — CMS-controlled community photograph
+             (≈ 56 % at ≥lg). The grid gives the image column slightly more
+             width than the text so the photograph reads as a major
+             editorial visual rather than a thumbnail. 16:10 is held at
+             every width — no shallow banner crop at sm/md. The image
+             fills its grid column (w-full, no inner max-w restriction);
+             the Container itself (max-w-6xl) is the only upper bound,
+             which keeps the photograph around 578 px wide at both 1440
+             and 1920 viewports.
+
+             Independent of the decorative background; replaceable via
+             the CMS whoWeAreImage field. */}
+          <div className="min-w-0 order-1">
             <img
               src={image.src}
               alt={image.alt}
@@ -110,7 +129,7 @@ export function HomeWhoWeAre() {
               height={900}
               loading="lazy"
               decoding="async"
-              className="aspect-[16/10] w-full rounded-2xl object-cover object-center shadow-[0_14px_38px_rgba(11,31,58,0.14)] ring-1 ring-[#D6AD60]/25 sm:aspect-[16/9]"
+              className="aspect-[16/10] w-full rounded-2xl object-cover object-center shadow-[0_18px_48px_rgba(11,31,58,0.18)] ring-1 ring-[#D6AD60]/30"
             />
           </div>
         </div>
