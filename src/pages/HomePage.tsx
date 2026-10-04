@@ -3,19 +3,19 @@ import { CommunityStats } from "../components/CommunityStats";
 import { HomeGetInvolved } from "../components/HomeGetInvolved";
 import { HomeHeroVideo } from "../components/HomeHeroVideo";
 import { HomeIdentityStrip } from "../components/HomeIdentityStrip";
+import { HomePresidentMessage } from "../components/HomePresidentMessage";
 import { VandeMataramToggle } from "../components/VandeMataramToggle";
 import { DocumentTitle } from "../components/layout/DocumentTitle";
 import { Button } from "../components/ui/Button";
 import { Card, CardGrid } from "../components/ui/Card";
 import { Container } from "../components/ui/Container";
-import { Quote } from "../components/ui/Quote";
 import { ImageCarousel } from "../components/ui/ImageCarousel";
 import { useCms } from "../cms/ContentProvider";
 import { Section } from "../components/ui/Section";
 import { SectionTitle } from "../components/ui/SectionTitle";
 import { PersonIdentity } from "../components/ui/PersonIdentity";
 import { FramedPhoto } from "../components/ui/TricolorFrame";
-import { img, site } from "../data/site";
+import { img } from "../data/site";
 import { useLocale } from "../i18n/LocaleProvider";
 import { usePublicEvents } from "../hooks/usePublicEvents";
 import { useLeadership } from "../hooks/useOrgDirectory";
@@ -85,37 +85,10 @@ export default function HomePage() {
 
       <PageSectionRenderer pageId="home-extras" startTone="ivory" />
 
-      <Section tone="ivory" className="py-10 sm:py-12 lg:py-14">
-        <Container>
-          <Card tone="navy" flush className="h-auto overflow-hidden">
-            <div className="flex flex-col lg:min-h-[22rem] lg:flex-row lg:items-stretch">
-              <div className="order-2 flex min-w-0 flex-1 flex-col justify-center px-5 py-7 sm:px-10 sm:py-9 lg:order-1">
-                <p className="text-xs font-bold uppercase tracking-[0.16em] text-[var(--ipf-gold)]">
-                  {h("president_quote_title", "home.presidentMsg")}
-                </p>
-                <Quote className="mt-5 [font-family:var(--font-serif-accent)]" attribution={site.president}>
-                  {h("president_quote_body", "home.presidentQuote")}
-                </Quote>
-                <div className="mt-6 flex justify-center">
-                  <Button asChild variant="secondary" size="sm">
-                    <Link to="/leadership">{t("home.readFull")}</Link>
-                  </Button>
-                </div>
-              </div>
-              <div className="relative order-1 h-72 w-full shrink-0 bg-[var(--ipf-navy)] sm:h-80 lg:order-2 lg:h-auto lg:w-[42%] lg:min-w-[8.5rem] lg:max-w-[24rem]">
-                <img
-                  src={img.president}
-                  alt={`${site.president}, ${site.presidentRole}`}
-                  decoding="async"
-                  className="h-full w-full object-contain object-[center_22%] lg:absolute lg:inset-0 lg:object-cover"
-                />
-                <div className="pointer-events-none absolute inset-x-0 bottom-0 h-14 bg-gradient-to-t from-[var(--ipf-navy)] to-transparent lg:hidden" />
-                <div className="pointer-events-none absolute inset-y-0 left-0 hidden w-8 bg-gradient-to-r from-[var(--ipf-navy)] to-transparent sm:w-10 lg:block" />
-              </div>
-            </div>
-          </Card>
-        </Container>
-      </Section>
+      {/* Light, premium President's Message set on the approved IPF heritage
+         ivory artwork. Replaces the previous navy Card to create a deliberate
+         rhythm change after the burgundy statistics strip above. */}
+      <HomePresidentMessage />
 
       <Section className="py-10 sm:py-12 lg:py-14">
         <Container>
