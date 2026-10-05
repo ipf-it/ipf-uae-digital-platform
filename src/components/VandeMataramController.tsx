@@ -9,22 +9,6 @@ import {
 } from "react";
 
 const AUDIO_SRC = "/audio/vande-mataram.mp3";
-const USER_PAUSED_KEY = "ipf.vande-mataram.user-paused";
-
-/**
- * Module-level autoplay-attempted flag.
- *
- * React 19 <StrictMode> intentionally double-invokes effects in development
- * so bugs around subscription cleanup surface early. If the autoplay-attempt
- * logic lived in a per-mount useRef, StrictMode would call play() twice on
- * the fresh component mount, then once more after the cleanup pass remounted.
- * A module-level flag ensures audible autoplay is attempted exactly ONCE per
- * tab session regardless of how many times React mounts the provider.
- *
- * Production is unaffected (StrictMode is a dev-only wrapper for behaviour,
- * not a bundle guard), but it keeps dev output clean.
- */
-let autoplayAttempted = false;
 
 type VandeMataramContextValue = {
   /** True when the <audio> element is currently playing (derived from
@@ -34,9 +18,9 @@ type VandeMataramContextValue = {
    *  the last play. Resets to false on the next play(). */
   ended: boolean;
   /** User-driven toggle: pause if playing, play if paused/ended.
-   *  Writes/clears the session-scoped user-pause flag so the browser can
-   *  resume autoplay on fresh visits but respects explicit pauses within
-   *  the current tab. */
+   *  This is the ONLY code path that ever calls audio.play(); there is
+   *  no autoplay, no auto-resume, no sessionStorage/localStorage state
+   *  that can trigger playback automatically on later loads. */
   toggle: () => void;
 };
 
@@ -45,37 +29,49 @@ const VandeMataramContext = createContext<VandeMataramContextValue | null>(null)
 /**
  * Site-wide persistent Vande Mataram audio controller.
  *
- * Lives inside <SiteLayout> ABOVE the react-router <Outlet /> so route
- * navigation does NOT unmount it. One <audio> element exists for the
- * whole public site; starting playback on the homepage and navigating
- * to /about keeps the song playing without a restart.
+ * Default behaviour (updated 5 Oct 2026)
+ *   The player is OFF on every page load, refresh, hard refresh, route
+ *   change, HMR remount, deployment, tab visibility change and browser
+ *   restart. Playback begins ONLY after an explicit user click on the
+ *   <VandeMataramButton> control. There is no autoplay attempt. There
+ *   is no stored "was playing" state that can resurrect playback.
  *
- * Autoplay policy
- *   Modern browsers (Chrome 66+, Safari, iOS Safari, Firefox) can reject
- *   audible autoplay with NotAllowedError until the origin has sufficient
- *   media engagement OR the user has interacted with the page. We attempt
- *   play() exactly once, catch rejection silently, and let the UI reflect
- *   whatever `paused` the browser actually reports via media events. One
- *   deliberate click on the control then succeeds as a user gesture.
+ * Why the previous autoplay was removed
+ *   During active development/testing the audio repeatedly started on
+ *   its own — disruptive to QA and anyone browsing the site before a
+ *   formal launch. The audio.play() call that lived in the mount
+ *   useEffect, together with the sessionStorage "user-paused" flag that
+ *   only existed to NOT re-force playback, are both gone. The <audio>
+ *   element remains in the DOM but is paused by default and does NOT
+ *   use the HTML autoplay attribute.
  *
- * User intent
- *   An explicit pause writes USER_PAUSED_KEY to sessionStorage. A later
- *   route change / re-render / visibilitychange will NOT re-force play.
- *   Explicit play clears the key so a later visit resumes autoplay.
+ * What remained
+ *   - Single <audio> element rendered once by this provider at the
+ *     SiteLayout level, so route changes do NOT remount it — the song
+ *     continues smoothly across SPA navigation IF the user already
+ *     started it, otherwise it stays silent.
+ *   - Real play/pause/ended event listeners keep UI state in sync with
+ *     whatever the browser is actually doing (lock-screen media session,
+ *     tab backgrounded, external controls).
+ *   - End-of-track leaves the UI in the Play state and does NOT loop.
+ *     The next user click rewinds and plays again.
  *
- * End-of-track
- *   No `loop` attribute — Vande Mataram plays once. On `ended` the UI
- *   returns to the Play state; the next click rewinds and starts over.
+ * preload="none" — the file is NOT downloaded until the user actually
+ * clicks play, so there is no latent "buffered and ready" audio sitting
+ * primed for an accidental autoplay path, and no bandwidth cost for
+ * visitors who never engage the control.
  */
 export function VandeMataramProvider({ children }: { children: ReactNode }) {
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  /* Default state is OFF. This is initialised to false and is NEVER
+     seeded from storage, URL, cookie, or any other source. */
   const [playing, setPlaying] = useState<boolean>(false);
   const [ended, setEnded] = useState<boolean>(false);
 
   /* Keep React state in strict sync with real media events. We never
      derive `playing` from our own calls to play()/pause() because the
-     browser is authoritative — autoplay can be blocked, media sessions
-     can pause from the lock screen, tab backgrounding can intervene. */
+     browser is authoritative. This listener does NOT itself initiate
+     playback — it only reacts to events that the browser already fired. */
   useEffect(() => {
     const el = audioRef.current;
     if (!el) return;
@@ -98,62 +94,19 @@ export function VandeMataramProvider({ children }: { children: ReactNode }) {
     };
   }, []);
 
-  /* Attempt audible autoplay ONCE per tab session.
-     - Respects a prior session-scoped user pause.
-     - Catches browser-policy rejection silently so no console error
-       surfaces to visitors. The UI stays in the paused state and
-       `playing` remains false; the first click will succeed.
-     - Does NOT retry on rejection, does NOT use intervals, does NOT
-       mute-and-unmute. */
-  useEffect(() => {
-    if (autoplayAttempted) return;
-    autoplayAttempted = true;
-
-    const el = audioRef.current;
-    if (!el) return;
-
-    let userPaused = false;
-    try {
-      userPaused = sessionStorage.getItem(USER_PAUSED_KEY) === "1";
-    } catch {
-      /* private browsing can throw — treat as never-paused */
-    }
-    if (userPaused) return;
-
-    const promise = el.play();
-    if (promise && typeof promise.then === "function") {
-      promise.catch(() => {
-        /* Browser blocked audible autoplay. Expected. No action required
-           — the `pause` event listener above will keep setPlaying(false)
-           in sync so the UI shows the correct Play affordance. */
-      });
-    }
-  }, []);
-
+  /* The ONLY code path that can start audio playback. Bound to a real
+     user click/tap via <VandeMataramButton>. */
   const toggle = useCallback(() => {
     const el = audioRef.current;
     if (!el) return;
 
     if (!el.paused) {
-      /* Explicit pause by the user — record intent for this session. */
       el.pause();
-      try {
-        sessionStorage.setItem(USER_PAUSED_KEY, "1");
-      } catch {
-        /* ignore quota / disabled storage */
-      }
       return;
     }
 
-    /* Explicit play by the user. Clear the pause intent so later
-       autoplay attempts (none in-session, but fresh page load) run. */
-    try {
-      sessionStorage.removeItem(USER_PAUSED_KEY);
-    } catch {
-      /* ignore */
-    }
-    /* If the track reached the end previously, rewind so a click
-       behaves like "play again" rather than a no-op. */
+    /* If the track ended previously, rewind so a click behaves like
+       "play again" rather than being a no-op. */
     if (el.ended || ended) {
       el.currentTime = 0;
     }
@@ -161,8 +114,8 @@ export function VandeMataramProvider({ children }: { children: ReactNode }) {
     if (promise && typeof promise.then === "function") {
       promise.catch(() => {
         /* Rare — this call is from a user gesture so policy should allow
-           it. If something else rejected (decode error, aborted load),
-           the browser's own `pause` event will keep state accurate. */
+           it. If the browser rejected for any other reason (decode error,
+           aborted load) the `pause` event listener keeps the UI accurate. */
       });
     }
   }, [ended]);
@@ -172,7 +125,12 @@ export function VandeMataramProvider({ children }: { children: ReactNode }) {
       <audio
         ref={audioRef}
         src={AUDIO_SRC}
-        preload="auto"
+        /* preload="none" — nothing is fetched, buffered or primed until
+           the user clicks the button. preload="auto" was removed with
+           the autoplay useEffect to eliminate any "ready to play"
+           precondition that could lead to accidental playback. */
+        preload="none"
+        /* NO `autoPlay` attribute. NO `loop` attribute. */
         aria-hidden="true"
       />
       {children}
@@ -238,10 +196,11 @@ function SpeakerOffIcon() {
  * Floating LEFT-side audio control. Rendered once by <SiteLayout>, visible
  * on every public page so the user can start/stop Vande Mataram from any
  * route. Mirrors the chat launcher's bottom-24 / lg:bottom-6 vertical
- * offsets so neither control ever overlaps the mobile tab bar (fixed
- * inset-x-0 bottom-0, xl:hidden).
+ * offsets so neither control ever overlaps the mobile tab bar.
  *
  * Audio = LEFT   Chat = RIGHT.
+ *
+ * Clicking this button is the ONLY way to begin Vande Mataram playback.
  */
 export function VandeMataramButton() {
   const { playing, toggle } = useVandeMataram();
