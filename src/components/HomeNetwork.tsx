@@ -388,12 +388,23 @@ export function HomeNetwork() {
           {/* Centre overlay — two content panels in the ivory negative space.
              Each panel has a soft translucent ivory bg with large organic
              rounded corners so it integrates with the photos behind rather
-             than sitting as a hard-edged rectangle. */}
+             than sitting as a hard-edged rectangle.
+
+             CTA alignment: `items-stretch` makes both outer flex columns
+             fill the grid cell to EQUAL heights regardless of inner
+             content differences (Councils labels like "Women's Council"
+             wrap to two lines whereas most Chapter labels do not —
+             without stretch the taller panel centres higher via
+             items-center, which drops its CTA ~7 px below the opposite
+             CTA). Each inner panel is `flex flex-col` so children flow
+             vertically; the CTA uses `mt-auto` to anchor to the bottom
+             of its panel. Result: both CTAs sit on the same horizontal
+             baseline on desktop with no arbitrary per-button margin. */}
           <div className="absolute inset-0 grid grid-cols-2">
             {/* ────── CHAPTERS content ────── */}
-            <div className="flex items-center justify-end pr-2 lg:pr-4">
+            <div className="flex items-stretch justify-end pr-2 lg:pr-4">
               <div
-                className="w-full max-w-[20rem] rounded-[2.5rem] bg-[#FFFDF8]/88 px-5 py-5 backdrop-blur-[2px] lg:max-w-[22rem] lg:px-6 lg:py-6"
+                className="flex w-full max-w-[20rem] flex-col rounded-[2.5rem] bg-[#FFFDF8]/88 px-5 py-5 backdrop-blur-[2px] lg:max-w-[22rem] lg:px-6 lg:py-6"
                 style={{
                   borderTopLeftRadius: "4rem",
                   borderBottomLeftRadius: "4rem",
@@ -441,16 +452,18 @@ export function HomeNetwork() {
                   </ul>
                 ) : null}
 
-                <p className="mt-3">
+                {/* mt-auto pushes the CTA to the bottom of the stretched
+                   flex-col panel so both CTAs share the same baseline. */}
+                <p className="mt-auto pt-3">
                   <PillLink to="/chapters">Explore Chapters</PillLink>
                 </p>
               </div>
             </div>
 
             {/* ────── COUNCILS content ────── */}
-            <div className="flex items-center justify-start pl-2 lg:pl-4">
+            <div className="flex items-stretch justify-start pl-2 lg:pl-4">
               <div
-                className="w-full max-w-[20rem] rounded-[2.5rem] bg-[#FFFDF8]/88 px-5 py-5 backdrop-blur-[2px] lg:max-w-[22rem] lg:px-6 lg:py-6"
+                className="flex w-full max-w-[20rem] flex-col rounded-[2.5rem] bg-[#FFFDF8]/88 px-5 py-5 backdrop-blur-[2px] lg:max-w-[22rem] lg:px-6 lg:py-6"
                 style={{
                   borderTopRightRadius: "4rem",
                   borderBottomRightRadius: "4rem",
@@ -502,7 +515,9 @@ export function HomeNetwork() {
                   )}
                 </ul>
 
-                <p className="mt-3">
+                {/* mt-auto on the opposite side mirrors the Chapters CTA
+                   so both buttons share the same baseline. */}
+                <p className="mt-auto pt-3">
                   <PillLink to="/councils">Explore Councils</PillLink>
                 </p>
               </div>
