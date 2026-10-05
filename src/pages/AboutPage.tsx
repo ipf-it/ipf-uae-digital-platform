@@ -121,20 +121,32 @@ function Section({ tone = "ivory", children, ariaLabelledBy, backdrop }: Section
  * motif (mandala, horizon, etc.) lands where we want it on screen.
  * ───────────────────────────────────────────────────────────────── */
 
-type BackdropOverlay = "radial" | "leftEdge" | "rightEdge" | "verticalFade";
-
+/* ───────────────────────────────────────────────────────────────────
+ * Backdrop — LOCKED DESIGN RULES (founder-approved 5 Oct 2026)
+ *
+ *   1. Approved background artwork must remain in its ORIGINAL colours
+ *      and intensity. No reinterpretation.
+ *   2. NO CSS filter on the approved artwork
+ *      (no saturate / contrast / brightness / hue / blur).
+ *   3. NO opacity manipulation of the approved artwork.
+ *   4. NO colour / tint / gradient / vignette OVERLAY over the artwork.
+ *   5. `object-position` / `object-fit` crop MAY be adjusted when
+ *      required — but the artwork pixels themselves must not be altered.
+ *   6. Text readability on sections that need it is provided by
+ *      FOREGROUND white/ivory curved content panels (currently §4 Aims
+ *      and §7 India x UAE), NOT by tinting the background.
+ *
+ * These rules apply to every future edit of the About page. Any new
+ * section or background change must respect them.
+ * ───────────────────────────────────────────────────────────────── */
 function Backdrop({
   webp,
   png,
-  opacity,
   objectPos = "center",
-  overlay = "radial",
 }: {
   webp: string;
   png: string;
-  opacity: number;
   objectPos?: "left" | "center" | "right" | "topLeft" | "topRight";
-  overlay?: BackdropOverlay;
 }) {
   const posClass = {
     left: "object-[20%_center]",
@@ -144,62 +156,20 @@ function Backdrop({
     topRight: "object-[80%_30%]",
   }[objectPos];
 
-  /* Overlay strategy (iteration 4 — significantly reduced ivory veils).
-     Source artwork is deliberately pastel (gold mandala line-art,
-     sage waves, soft watercolour skylines) so even a modest ivory
-     overlay washes it out. Lowering centre densities so the artwork
-     becomes the actual atmosphere of each section while body copy
-     (navy serif headings + dark #1c2430 ink) still reads cleanly. */
-  const overlayStyle: Record<BackdropOverlay, string> = {
-    /* Centre only 0.3 ivory — artwork reads boldly behind content;
-       outer stops hit 0 so the illustration bleeds untouched to the
-       viewport edges. */
-    radial:
-      "radial-gradient(ellipse 50% 65% at 50% 50%, rgba(255,248,238,0.3) 0%, rgba(255,248,238,0.15) 50%, rgba(255,248,238,0) 85%)",
-    /* leftEdge: content column on left needs more protection; right
-       half (decoration) stays almost clear. */
-    leftEdge:
-      "linear-gradient(to right, rgba(255,248,238,0.65) 0%, rgba(255,248,238,0.4) 30%, rgba(255,248,238,0.12) 60%, rgba(255,248,238,0) 85%)",
-    /* rightEdge mirrored. */
-    rightEdge:
-      "linear-gradient(to left, rgba(255,248,238,0.65) 0%, rgba(255,248,238,0.4) 30%, rgba(255,248,238,0.12) 60%, rgba(255,248,238,0) 85%)",
-    /* verticalFade: hard opaque ivory at the extreme top AND bottom
-       (hides the intentional 'torn poster' tricolour edges built into
-       the Heritage Horizon artwork). Through the middle 40 % only
-       0.1 ivory so the India + UAE skylines dominate the section's
-       atmosphere behind the Discover More tiles. */
-    verticalFade:
-      "linear-gradient(to bottom, rgba(255,248,238,1) 0%, rgba(255,248,238,1) 15%, rgba(255,248,238,0.1) 35%, rgba(255,248,238,0.1) 65%, rgba(255,248,238,1) 85%, rgba(255,248,238,1) 100%)",
-  };
-
   return (
-    <>
-      <picture aria-hidden="true">
-        <source srcSet={webp} type="image/webp" />
-        <img
-          src={png}
-          alt=""
-          aria-hidden="true"
-          loading="lazy"
-          decoding="async"
-          width={1983}
-          height={793}
-          className={`pointer-events-none absolute inset-0 -z-20 h-full w-full object-cover ${posClass}`}
-          /* saturate(1.4) + contrast(1.1) pushes the deliberately pastel
-             source artwork (gold mandala line-art, sage waves, soft
-             watercolour skylines) to a visibility level that reads as
-             editorial atmosphere at viewport scale. Without this filter
-             the fine gold lines antialias into the ivory background and
-             effectively vanish once the image is upscaled by object-cover. */
-          style={{ opacity, filter: "saturate(1.4) contrast(1.08)" }}
-        />
-      </picture>
-      <div
+    <picture aria-hidden="true">
+      <source srcSet={webp} type="image/webp" />
+      <img
+        src={png}
+        alt=""
         aria-hidden="true"
-        className="pointer-events-none absolute inset-0 -z-10"
-        style={{ background: overlayStyle[overlay] }}
+        loading="lazy"
+        decoding="async"
+        width={1983}
+        height={793}
+        className={`pointer-events-none absolute inset-0 -z-10 h-full w-full object-cover ${posClass}`}
       />
-    </>
+    </picture>
   );
 }
 
@@ -352,20 +322,13 @@ export default function AboutPage() {
 
       {/* ──────────────── 3 · VISION + VALUES ──────────────── */}
       {/* Image 1 (Gold Mandala + Sage Waves) bleeds full-viewport width
-         behind Vision+Values; same artwork is repeated on Section 4
-         with the opposite horizontal bias for visual continuity. */}
+         behind Vision+Values, rendered UNCHANGED (no filter, no overlay);
+         same artwork repeats on Section 4 with opposite horizontal bias
+         so the mandala + lotus motif reads continuously across both. */}
       <Section
         tone="ivory"
         ariaLabelledBy="about-vision-heading"
-        backdrop={
-          <Backdrop
-            webp={BG_VV_WEBP}
-            png={BG_VV_PNG}
-            opacity={1}
-            objectPos="left"
-            overlay="radial"
-          />
-        }
+        backdrop={<Backdrop webp={BG_VV_WEBP} png={BG_VV_PNG} objectPos="left" />}
       >
         <div className="grid gap-10 lg:grid-cols-[1fr_auto_1fr] lg:items-stretch lg:gap-12">
           {/* VISION */}
@@ -450,23 +413,22 @@ export default function AboutPage() {
       </Section>
 
       {/* ──────────────── 4 · OUR PURPOSE — AIMS & OBJECTIVES ──────────────── */}
-      {/* Same image as Section 3 but mirrored to the opposite side —
-         creates deliberate visual continuity across the Vision+Values
-         -> Aims transition. Opacity slightly lower so the numbered
-         01-10 grid remains the dominant visual. */}
+      {/* Same approved artwork as Section 3, mirrored. The entire
+         Aims & Objectives block (eyebrow + heading + intro + 10
+         numbered items) sits inside ONE white-ivory curved panel.
+         Approved template remains unchanged and visible around the
+         panel. */}
       <Section
         tone="white"
         ariaLabelledBy="about-aims-heading"
-        backdrop={
-          <Backdrop
-            webp={BG_VV_WEBP}
-            png={BG_VV_PNG}
-            opacity={0.9}
-            objectPos="right"
-            overlay="radial"
-          />
-        }
+        backdrop={<Backdrop webp={BG_VV_WEBP} png={BG_VV_PNG} objectPos="right" />}
       >
+        {/* Aims & Objectives — the entire eyebrow / heading / intro /
+           10-item objective grid lives inside ONE large white-ivory
+           curved foreground panel per the founder-approved spec. The
+           approved background template remains fully visible around
+           this panel at the viewport edges. */}
+        <div className="mx-auto max-w-5xl rounded-[2rem] border border-[#D6AD60]/25 bg-[#FFFDF8] p-6 shadow-[0_12px_32px_rgba(11,31,58,0.08)] sm:p-10 lg:rounded-[2.25rem] lg:p-12">
         <div className="text-center">
           <div className="inline-flex items-center gap-3">
             <GoldRule />
@@ -520,26 +482,17 @@ export default function AboutPage() {
             );
           })}
         </ol>
+        </div>
       </Section>
 
       {/* ──────────────── 5 · RESPONSIBILITY IN ACTION ──────────────── */}
       {/* Image 2 (Ivory Mandala Presentation) bleeds full-viewport width
-         with the mandala pulled to the outer right. leftEdge overlay
-         keeps the left half (where the real community-support
-         photograph sits) and the content text clean, while the right
-         half shows the mandala clearly. */}
+         with the mandala pulled toward the outer right. Rendered
+         UNCHANGED — no filter, no overlay. */}
       <Section
         tone="ivory"
         ariaLabelledBy="about-resp-heading"
-        backdrop={
-          <Backdrop
-            webp={BG_RESP_WEBP}
-            png={BG_RESP_PNG}
-            opacity={1}
-            objectPos="right"
-            overlay="leftEdge"
-          />
-        }
+        backdrop={<Backdrop webp={BG_RESP_WEBP} png={BG_RESP_PNG} objectPos="right" />}
       >
         <div className="grid gap-10 lg:grid-cols-[1fr_1.1fr] lg:items-center lg:gap-12">
           <div className="relative min-w-0">
@@ -677,25 +630,19 @@ export default function AboutPage() {
       </Section>
 
       {/* ──────────────── 7 · INDIA × UAE ──────────────── */}
-      {/* Image 3 (Watercolour Skyline Fusion) is the strongest visual
-         moment on the page. opacity 0.7 means the India/UAE skyline
-         illustration bleeds clearly to the viewport's left and right
-         edges; the central radial ivory veil keeps the real IPF
-         photograph + editorial copy readable. The real Jaishankar
-         meeting photograph is preserved — the illustration becomes
-         context, not a replacement. */}
+      {/* Image 3 (Watercolour Skyline Fusion) bleeds full-viewport width
+         behind this section, rendered UNCHANGED — no filter, no
+         overlay. objectPos='center' keeps the India monuments visible
+         on the viewport-left and the UAE skyline on the viewport-right.
+         The real IPF photograph (Jaishankar meeting) remains a separate
+         foreground element on the LEFT. The India x UAE text column
+         sits in its own WHITE curved foreground panel on the RIGHT —
+         the photo and the text panel are TWO independent foreground
+         elements over the single approved background. */}
       <Section
         tone="ivory"
         ariaLabelledBy="about-india-uae-heading"
-        backdrop={
-          <Backdrop
-            webp={BG_IU_WEBP}
-            png={BG_IU_PNG}
-            opacity={1}
-            objectPos="center"
-            overlay="radial"
-          />
-        }
+        backdrop={<Backdrop webp={BG_IU_WEBP} png={BG_IU_PNG} objectPos="center" />}
       >
         <div className="grid gap-10 lg:grid-cols-[1.1fr_1fr] lg:items-center lg:gap-12">
           <div className="relative min-w-0">
@@ -714,7 +661,13 @@ export default function AboutPage() {
               />
             </div>
           </div>
-          <div className="min-w-0">
+          {/* India x UAE text column — the eyebrow + heading + supporting
+             paragraph live inside a WHITE-ivory curved foreground panel
+             per the founder-approved spec. The real IPF photograph on
+             the left remains a SEPARATE foreground element, not inside
+             this panel. The approved India x UAE background template
+             around both elements remains unchanged. */}
+          <div className="relative min-w-0 rounded-[2rem] border border-[#D6AD60]/25 bg-[#FFFDF8] p-6 shadow-[0_12px_32px_rgba(11,31,58,0.08)] sm:p-8 lg:rounded-[2.25rem] lg:p-10">
             <GoldRule />
             <p
               className="mt-2 text-[0.72rem] font-bold uppercase tracking-[0.3em]"
@@ -740,24 +693,14 @@ export default function AboutPage() {
       </Section>
 
       {/* ──────────────── 8 · DISCOVER MORE + CTA ──────────────── */}
-      {/* Image 4 (Heritage Horizon) bleeds full-viewport width in the
-         middle of the section, fading to ivory at both the top AND the
-         bottom via verticalFade. The clean ivory bottom edge gives the
-         real IPF footer artwork (India-UAE skyline) room to breathe —
-         this backdrop is a visual bridge rather than another full
-         illustration above the footer. */}
+      {/* Image 4 (Heritage Horizon) bleeds full-viewport width behind
+         this section, rendered UNCHANGED — no filter, no overlay. The
+         Discover More tiles themselves are already white foreground
+         cards; the closing CTA band is burgundy. */}
       <Section
         tone="white"
         ariaLabelledBy="about-discover-heading"
-        backdrop={
-          <Backdrop
-            webp={BG_CLOSE_WEBP}
-            png={BG_CLOSE_PNG}
-            opacity={0.95}
-            objectPos="center"
-            overlay="verticalFade"
-          />
-        }
+        backdrop={<Backdrop webp={BG_CLOSE_WEBP} png={BG_CLOSE_PNG} objectPos="center" />}
       >
         <div className="text-center">
           <div className="inline-flex items-center gap-3">
