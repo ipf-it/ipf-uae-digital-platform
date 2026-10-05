@@ -55,6 +55,13 @@ type IllustratedHeroProps = {
    *  biases the focal cluster to the right of the hero while keeping the
    *  left ivory negative space behind the text column. */
   artworkPosition?: string;
+  /** Max-width Tailwind class for the text column. Default is wide enough
+   *  that long descriptions (e.g. Support's "coordinated by chapter
+   *  volunteers and professional members.") do not orphan the final
+   *  word onto its own line at desktop. A page may pass a narrower value
+   *  (e.g. History) when its artwork's focal subjects would otherwise
+   *  overlap the H1/description. */
+  textMaxWidth?: string;
 };
 
 const GOLD = "#D6AD60";
@@ -82,6 +89,7 @@ export function IllustratedHero({
   artworkWebp,
   artworkAlt,
   artworkPosition = "object-[72%_center]",
+  textMaxWidth = "max-w-[600px]",
 }: IllustratedHeroProps) {
   const { t } = useLocale();
 
@@ -106,7 +114,7 @@ export function IllustratedHero({
 
       <Container className="relative">
         <div className="flex min-h-[380px] flex-col justify-center py-10 md:min-h-[460px] md:py-14 lg:min-h-[500px] lg:py-16">
-          <div className="max-w-[560px]">
+          <div className={textMaxWidth}>
             {crumbs.length > 0 ? (
               <nav
                 aria-label="Breadcrumb"
@@ -160,7 +168,7 @@ export function IllustratedHero({
             </h1>
 
             <p
-              className="mt-5 max-w-[540px] text-[0.98rem] leading-relaxed sm:text-[1.02rem]"
+              className="mt-5 text-[0.98rem] leading-relaxed sm:text-[1.02rem]"
               style={{ color: INK }}
             >
               {description}

@@ -164,7 +164,13 @@ export default function HistoryPage() {
         artworkPng={HERO_PNG}
         artworkWebp={HERO_WEBP}
         artworkAlt={t("page.historyGov.heroImgAlt")}
-        artworkPosition="object-[72%_center]"
+        /* History's artwork has a dense monument cluster that sits further
+           to the left than the other three heroes. Pull the crop further
+           right AND narrow the text column so the breadcrumb, OUR JOURNEY
+           eyebrow, H1 and description all remain over clean ivory
+           negative space without any overlay. */
+        artworkPosition="object-[85%_center]"
+        textMaxWidth="max-w-[480px]"
       />
 
       {/* ──────────────────────────────────────────────────────────────
