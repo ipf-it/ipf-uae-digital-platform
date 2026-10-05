@@ -163,12 +163,13 @@ function Backdrop({
     /* rightEdge mirrored. */
     rightEdge:
       "linear-gradient(to left, rgba(255,248,238,0) 0%, rgba(255,248,238,0.1) 25%, rgba(255,248,238,0.55) 55%, rgba(255,248,238,0.85) 80%, rgba(255,248,238,0.95) 100%)",
-    /* verticalFade: fully clear through the middle 50 % of the band so
-       the horizon artwork reads boldly; aggressive ivory fade at the
-       top (soft transition from previous section) and the bottom
-       (clean breathing room before the footer). */
+    /* verticalFade: STRONG opaque ivory at top AND bottom (0 - 30 % and
+       70 - 100 %) to hide the intentional "torn poster" tricolour edges
+       built into the Heritage Horizon artwork. The middle 40 % of the
+       band stays lightly veiled so the India + UAE skylines read
+       clearly behind the content. */
     verticalFade:
-      "linear-gradient(to bottom, rgba(255,248,238,0.95) 0%, rgba(255,248,238,0.2) 25%, rgba(255,248,238,0.2) 75%, rgba(255,248,238,0.98) 100%)",
+      "linear-gradient(to bottom, rgba(255,248,238,1) 0%, rgba(255,248,238,0.98) 18%, rgba(255,248,238,0.35) 40%, rgba(255,248,238,0.35) 60%, rgba(255,248,238,0.98) 82%, rgba(255,248,238,1) 100%)",
   };
 
   return (
@@ -355,7 +356,7 @@ export default function AboutPage() {
             webp={BG_VV_WEBP}
             png={BG_VV_PNG}
             opacity={1}
-            objectPos="right"
+            objectPos="left"
             overlay="radial"
           />
         }
@@ -455,7 +456,7 @@ export default function AboutPage() {
             webp={BG_VV_WEBP}
             png={BG_VV_PNG}
             opacity={0.9}
-            objectPos="left"
+            objectPos="right"
             overlay="radial"
           />
         }
