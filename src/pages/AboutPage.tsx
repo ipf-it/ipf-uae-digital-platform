@@ -144,32 +144,32 @@ function Backdrop({
     topRight: "object-[80%_30%]",
   }[objectPos];
 
-  /* Overlay strategy (iteration 3 — stronger artwork visibility).
-     The images render at full opacity; the overlay ivory veil is now
-     much lighter at the centre so the artwork reads boldly behind the
-     content column, with full visibility at the viewport edges. Text
-     contrast is preserved because the main headings are navy serif
-     and the body copy is dark ink on a lightly-tinted warm ivory. */
+  /* Overlay strategy (iteration 4 — significantly reduced ivory veils).
+     Source artwork is deliberately pastel (gold mandala line-art,
+     sage waves, soft watercolour skylines) so even a modest ivory
+     overlay washes it out. Lowering centre densities so the artwork
+     becomes the actual atmosphere of each section while body copy
+     (navy serif headings + dark #1c2430 ink) still reads cleanly. */
   const overlayStyle: Record<BackdropOverlay, string> = {
-    /* Centre dropped from 0.82 to 0.55 — artwork now clearly perceptible
-       even behind body text; outer edges fully clear so the illustration
-       meets the viewport without an ivory halo. */
+    /* Centre only 0.3 ivory — artwork reads boldly behind content;
+       outer stops hit 0 so the illustration bleeds untouched to the
+       viewport edges. */
     radial:
-      "radial-gradient(ellipse 55% 68% at 50% 50%, rgba(255,248,238,0.55) 0%, rgba(255,248,238,0.35) 40%, rgba(255,248,238,0.08) 75%, rgba(255,248,238,0) 100%)",
-    /* leftEdge: content lives on the LEFT, decorative motif reads on
-       the RIGHT. Left half protected at 0.8 ivory, right half fully
-       clear so the mandala reads at full intensity. */
+      "radial-gradient(ellipse 50% 65% at 50% 50%, rgba(255,248,238,0.3) 0%, rgba(255,248,238,0.15) 50%, rgba(255,248,238,0) 85%)",
+    /* leftEdge: content column on left needs more protection; right
+       half (decoration) stays almost clear. */
     leftEdge:
-      "linear-gradient(to right, rgba(255,248,238,0.9) 0%, rgba(255,248,238,0.72) 25%, rgba(255,248,238,0.35) 55%, rgba(255,248,238,0.08) 80%, rgba(255,248,238,0) 100%)",
+      "linear-gradient(to right, rgba(255,248,238,0.65) 0%, rgba(255,248,238,0.4) 30%, rgba(255,248,238,0.12) 60%, rgba(255,248,238,0) 85%)",
     /* rightEdge mirrored. */
     rightEdge:
-      "linear-gradient(to left, rgba(255,248,238,0.9) 0%, rgba(255,248,238,0.72) 25%, rgba(255,248,238,0.35) 55%, rgba(255,248,238,0.08) 80%, rgba(255,248,238,0) 100%)",
-    /* verticalFade: fully opaque ivory at top AND bottom (hides the
-       intentional 'torn poster' tricolour edges in the Heritage Horizon
-       artwork). Middle 40 % drops to only 0.22 ivory so the India +
-       UAE skylines read clearly behind the Discover More tiles. */
+      "linear-gradient(to left, rgba(255,248,238,0.65) 0%, rgba(255,248,238,0.4) 30%, rgba(255,248,238,0.12) 60%, rgba(255,248,238,0) 85%)",
+    /* verticalFade: hard opaque ivory at the extreme top AND bottom
+       (hides the intentional 'torn poster' tricolour edges built into
+       the Heritage Horizon artwork). Through the middle 40 % only
+       0.1 ivory so the India + UAE skylines dominate the section's
+       atmosphere behind the Discover More tiles. */
     verticalFade:
-      "linear-gradient(to bottom, rgba(255,248,238,1) 0%, rgba(255,248,238,0.98) 18%, rgba(255,248,238,0.22) 40%, rgba(255,248,238,0.22) 60%, rgba(255,248,238,0.98) 82%, rgba(255,248,238,1) 100%)",
+      "linear-gradient(to bottom, rgba(255,248,238,1) 0%, rgba(255,248,238,1) 15%, rgba(255,248,238,0.1) 35%, rgba(255,248,238,0.1) 65%, rgba(255,248,238,1) 85%, rgba(255,248,238,1) 100%)",
   };
 
   return (
