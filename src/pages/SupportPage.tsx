@@ -1,7 +1,7 @@
 import { InquiryForm } from "../components/forms/InquiryForm";
 import { PageExtras } from "../cms/PageExtras";
 import { DocumentTitle } from "../components/layout/DocumentTitle";
-import { PageHero } from "../components/layout/PageHero";
+import { IllustratedHero } from "../components/layout/IllustratedHero";
 import { Container } from "../components/ui/Container";
 import { FitImage } from "../components/ui/FitImage";
 import { Section } from "../components/ui/Section";
@@ -18,16 +18,16 @@ export default function SupportPage() {
   const communityBody = sections[1]?.body;
   return (
     <>
-      <DocumentTitle title={t("page.support.title")} />
-      <PageHero
-        eyebrow={t("page.support.eyebrow")}
-        title={t("page.support.title")}
+      <DocumentTitle title={t("nav.support")} />
+      <IllustratedHero
+        eyebrow={t("page.support.heroEyebrow")}
+        title={t("nav.support")}
         description={t("page.support.desc")}
-        crumbs={[{ label: t("page.events.eyebrow"), to: "/news" }, { label: t("page.support.title") }]}
-        image="/images/support/support-hero-art.png"
-        imageWebp="/images/support/support-hero-art.webp"
-        imageMode="artwork"
-        imagePosition="object-center"
+        crumbs={[{ label: t("nav.resources"), to: "/resources" }, { label: t("nav.support") }]}
+        artworkPng="/images/support/support-hero-art.png"
+        artworkWebp="/images/support/support-hero-art.webp"
+        artworkAlt="Hands forming a circle of unity, foliage and tricolour ribbon"
+        artworkPosition="object-[72%_center]"
       />
       <Section id="grievances" tone="white">
         <span id="grievence-counseling" className="sr-only">

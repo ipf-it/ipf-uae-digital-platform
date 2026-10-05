@@ -210,8 +210,14 @@ export default function AboutPage() {
         aria-labelledby="about-hero-heading"
         className="relative isolate overflow-hidden bg-[#FFF8EE]"
       >
-        <Container className="relative py-10 sm:py-12 lg:py-14">
-          <div className="grid gap-8 lg:grid-cols-[1.1fr_1fr] lg:items-center lg:gap-12">
+        <Container className="relative py-8 sm:py-10 lg:py-12">
+          {/* Grid tuned to the founder-approved About hero spec: artwork
+             column now takes slightly MORE width than the text column so
+             the approved illustration lands at ~48% of the usable hero
+             width on desktop (previously ~47%). Vertical padding is
+             trimmed one tier to tighten the overall hero while leaving
+             the premium whitespace around text and frame intact. */}
+          <div className="grid gap-8 lg:grid-cols-[1fr_1.1fr] lg:items-center lg:gap-10">
             {/* Left — editorial text */}
             <div className="min-w-0">
               <nav

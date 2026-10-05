@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { ArrowRight } from "lucide-react";
 import { DocumentTitle } from "../components/layout/DocumentTitle";
+import { IllustratedHero } from "../components/layout/IllustratedHero";
 import { Container } from "../components/ui/Container";
 import { useLocale } from "../i18n/LocaleProvider";
 
@@ -147,98 +148,24 @@ export default function HistoryPage() {
       <DocumentTitle title={t("page.historyGov.title")} />
 
       {/* ──────────────────────────────────────────────────────────────
-       * §1 Hero — distinctive navy ground + founder-supplied artwork slot
+       * §1 Hero — unified light illustrated hero (shared with /leadership,
+       * /yuva, /support). Approved Watercolour Heritage artwork preserved
+       * in its original colours; dark-navy editorial text sits over the
+       * left ivory negative space. No overlay, no colour wash.
        * ────────────────────────────────────────────────────────────── */}
-      <section
-        aria-labelledby="hg-hero-heading"
-        className="relative isolate overflow-hidden"
-        style={{ backgroundColor: "#0B1F3A" }}
-      >
-        {/* Founder-supplied Hero artwork. Dropped in at the path above
-            when ready — until then, onError hides the broken image and
-            the navy + gold fallback shows cleanly. */}
-        <picture aria-hidden="true">
-          <source srcSet={HERO_WEBP} type="image/webp" />
-          <img
-            src={HERO_PNG}
-            alt=""
-            aria-hidden="true"
-            loading="eager"
-            fetchPriority="high"
-            className="pointer-events-none absolute inset-0 h-full w-full object-cover"
-            onError={(e) => {
-              (e.currentTarget as HTMLImageElement).style.display = "none";
-            }}
-          />
-        </picture>
-        {/* Decorative gold corner accents — present whether or not the
-            artwork has loaded, keeping the hero feeling composed in
-            dev before the backdrop is produced. */}
-        <div
-          aria-hidden="true"
-          className="pointer-events-none absolute left-0 top-0 h-24 w-24"
-          style={{
-            background:
-              "linear-gradient(135deg, rgba(214,173,96,0.35) 0%, rgba(214,173,96,0) 70%)",
-          }}
-        />
-        <div
-          aria-hidden="true"
-          className="pointer-events-none absolute bottom-0 right-0 h-24 w-24"
-          style={{
-            background:
-              "linear-gradient(315deg, rgba(214,173,96,0.35) 0%, rgba(214,173,96,0) 70%)",
-          }}
-        />
-
-        <Container className="relative py-20 sm:py-24 lg:py-28">
-          {/* Breadcrumb */}
-          <nav
-            aria-label="Breadcrumb"
-            className="text-[0.72rem] uppercase tracking-[0.2em]"
-            style={{ color: GOLD }}
-          >
-            <ol className="flex flex-wrap items-center gap-x-2 gap-y-1">
-              <li>
-                <Link to="/about" className="hover:underline">
-                  {t("nav.aboutIpf")}
-                </Link>
-              </li>
-              <li aria-hidden="true" className="opacity-60">
-                /
-              </li>
-              <li className="text-[#FFF8EE]/80">{t("nav.historyGov")}</li>
-            </ol>
-          </nav>
-
-          {/* Centered editorial block */}
-          <div className="mx-auto mt-10 max-w-3xl text-center">
-            <div className="flex items-center justify-center gap-3">
-              <GoldRule />
-              <Lotus size={22} />
-              <GoldRule />
-            </div>
-
-            <p
-              className="mt-5 text-[0.72rem] font-bold uppercase tracking-[0.26em]"
-              style={{ color: GOLD }}
-            >
-              {t("page.historyGov.heroEyebrow")}
-            </p>
-
-            <h1
-              id="hg-hero-heading"
-              className="mt-4 font-serif text-[2.1rem] font-bold leading-[1.1] tracking-tight text-[#FFF8EE] sm:text-[2.6rem] lg:text-[3.1rem]"
-            >
-              {t("page.historyGov.title")}
-            </h1>
-
-            <p className="mx-auto mt-6 max-w-2xl text-[0.98rem] leading-relaxed text-[#FFF8EE]/85 sm:text-[1.05rem]">
-              {t("page.historyGov.heroLede")}
-            </p>
-          </div>
-        </Container>
-      </section>
+      <IllustratedHero
+        eyebrow={t("page.history.eyebrow")}
+        title={t("page.historyGov.title")}
+        description={t("page.historyGov.heroLede")}
+        crumbs={[
+          { label: t("nav.aboutIpf"), to: "/about" },
+          { label: t("nav.historyGov") },
+        ]}
+        artworkPng={HERO_PNG}
+        artworkWebp={HERO_WEBP}
+        artworkAlt={t("page.historyGov.heroImgAlt")}
+        artworkPosition="object-[72%_center]"
+      />
 
       {/* ──────────────────────────────────────────────────────────────
        * §2 How It Began — typography-led (no 2014 photo exists)

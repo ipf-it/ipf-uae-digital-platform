@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { DocumentTitle } from "../components/layout/DocumentTitle";
-import { PageHero } from "../components/layout/PageHero";
+import { IllustratedHero } from "../components/layout/IllustratedHero";
 import { Button } from "../components/ui/Button";
 import { Card } from "../components/ui/Card";
 import { Container } from "../components/ui/Container";
@@ -13,15 +13,15 @@ export default function YuvaPage() {
   return (
     <>
       <DocumentTitle title={t("page.yuva.title")} />
-      <PageHero
+      <IllustratedHero
         eyebrow={t("page.yuva.eyebrow")}
         title={t("page.yuva.title")}
         description={t("page.yuva.desc")}
         crumbs={[{ label: t("page.yuva.title") }]}
-        image="/images/yuva/yuva-hero-art.png"
-        imageWebp="/images/yuva/yuva-hero-art.webp"
-        imageMode="artwork"
-        imagePosition="object-[55%_center] md:object-center"
+        artworkPng="/images/yuva/yuva-hero-art.png"
+        artworkWebp="/images/yuva/yuva-hero-art.webp"
+        artworkAlt="Youthful tricolour journey at sunrise through Indian heritage landscape"
+        artworkPosition="object-[72%_center]"
       />
       <Section tone="white">
         <Container className="grid gap-10 lg:grid-cols-[1.1fr,0.9fr] lg:items-start">

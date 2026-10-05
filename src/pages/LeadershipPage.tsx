@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { DocumentTitle } from "../components/layout/DocumentTitle";
-import { PageHero } from "../components/layout/PageHero";
+import { IllustratedHero } from "../components/layout/IllustratedHero";
 import { Button } from "../components/ui/Button";
 import { Container } from "../components/ui/Container";
 import { Section } from "../components/ui/Section";
@@ -18,11 +18,15 @@ export default function LeadershipPage() {
   return (
     <>
       <DocumentTitle title={t("page.leadership.title")} />
-      <PageHero
+      <IllustratedHero
         eyebrow={t("page.leadership.eyebrow")}
         title={t("page.leadership.title")}
         description={t("page.leadership.desc", { name: site.president })}
         crumbs={[{ label: t("nav.aboutIpf"), to: "/about" }, { label: t("page.leadership.title") }]}
+        artworkPng="/images/leadership/leadership-hero-art.png"
+        artworkWebp="/images/leadership/leadership-hero-art.webp"
+        artworkAlt="Indian Parliament and UAE skyline watercolour panorama"
+        artworkPosition="object-[70%_center]"
       />
       <Section tone="white">
         <Container>
