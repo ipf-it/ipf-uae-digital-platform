@@ -4,6 +4,7 @@ import { HomeGallery } from "../components/HomeGallery";
 import { HomeGetInvolved } from "../components/HomeGetInvolved";
 import { HomeHeroVideo } from "../components/HomeHeroVideo";
 import { HomeIdentityStrip } from "../components/HomeIdentityStrip";
+import { HomeNetwork } from "../components/HomeNetwork";
 import { HomePresidentMessage } from "../components/HomePresidentMessage";
 import { HomeWhoWeAre } from "../components/HomeWhoWeAre";
 import { DocumentTitle } from "../components/layout/DocumentTitle";
@@ -70,6 +71,20 @@ export default function HomePage() {
          on the left, approved copy + three heritage values + Discover CTA
          on the right. Replaces the previous compact ivory section. */}
       <HomeWhoWeAre />
+
+      {/* Our Network — Chapters & Councils editorial band.
+         Reproduces the founder-approved two-panel composition supplied in
+         ~/Desktop/chapter & councils: eyebrow + headline + subtitle at
+         top centre, then a 2-column grid where each column has the
+         approved photograph bleeding to the outer edge with an organic
+         S-curve clip and the editorial content card inset toward centre.
+         Eight chapter medallions + three Special Council medallions,
+         every one an independent <Link> to its real page. Wrapped in a
+         div to kill the global home-theme-page saffron/green mandala
+         pseudo-element (same pattern as HomeEvents / HomeGetInvolved). */}
+      <div>
+        <HomeNetwork />
+      </div>
 
       {/* Premium editorial Events carousel on the approved waterfront
          heritage background. Reads directly from content.eventHighlights
