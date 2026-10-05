@@ -94,6 +94,53 @@ export function VandeMataramProvider({ children }: { children: ReactNode }) {
     };
   }, []);
 
+  /* Belt-and-braces: force the <audio> element to pause the moment the
+     page is being unloaded or hidden. Addresses an edge case the founder
+     observed where audio appeared to continue briefly after the user
+     closed the site — modern browsers can keep media alive during tab
+     teardown for the Media Session (notification shade, lock-screen
+     controls, hardware play buttons). Explicitly pausing on pagehide
+     stops that media session so the OS cannot resurrect playback. */
+  useEffect(() => {
+    const el = audioRef.current;
+    if (!el) return;
+    const forcePause = () => {
+      try {
+        el.pause();
+      } catch {
+        /* ignore — element may already be destroyed during teardown */
+      }
+    };
+    window.addEventListener("pagehide", forcePause);
+    window.addEventListener("beforeunload", forcePause);
+    return () => {
+      window.removeEventListener("pagehide", forcePause);
+      window.removeEventListener("beforeunload", forcePause);
+    };
+  }, []);
+
+  /* Explicitly refuse the Media Session play action.
+     Without this, when the user has already played once in a tab, the
+     Chrome/Safari media controls (lock-screen, notification shade,
+     keyboard play key, Bluetooth headset button) can send a `play`
+     action that resumes our <audio> without a visible user click on
+     the website. We override the action handler with a no-op so those
+     external play buttons are ignored for Vande Mataram. */
+  useEffect(() => {
+    if (typeof navigator === "undefined" || !("mediaSession" in navigator)) {
+      return;
+    }
+    try {
+      navigator.mediaSession.setActionHandler("play", null);
+      navigator.mediaSession.setActionHandler("pause", null);
+      navigator.mediaSession.setActionHandler("stop", null);
+      navigator.mediaSession.setActionHandler("seekbackward", null);
+      navigator.mediaSession.setActionHandler("seekforward", null);
+    } catch {
+      /* older browsers that don't fully implement setActionHandler */
+    }
+  }, []);
+
   /* The ONLY code path that can start audio playback. Bound to a real
      user click/tap via <VandeMataramButton>. */
   const toggle = useCallback(() => {
