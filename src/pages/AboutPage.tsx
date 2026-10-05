@@ -144,19 +144,31 @@ function Backdrop({
     topRight: "object-[80%_30%]",
   }[objectPos];
 
-  /* Overlay opacity values are deliberately lighter than they look —
-     the centre (where text sits) is only partially ivory so the
-     artwork still reads behind it. The outer edges are fully clear so
-     the illustration bleeds visibly to the viewport's left/right. */
+  /* Overlay strategy: image renders at near-full opacity so the artwork
+     bleeds clearly at the viewport's outer edges, and the overlay
+     ivory veil ONLY tints the central content column where text sits.
+     Outer stops drop to 0 so no ivory wash sits over the artwork at
+     the edges — the illustration meets the viewport cleanly. */
   const overlayStyle: Record<BackdropOverlay, string> = {
+    /* Centre is a modest ivory veil (0.82) so text + cards read clean;
+       by 55 % of radius the veil is already down to 0.3; from 85 %
+       outward there is NO veil at all so the artwork reads at full
+       intensity at the viewport edges. */
     radial:
-      "radial-gradient(ellipse 55% 70% at 50% 50%, rgba(255,248,238,0.72) 0%, rgba(255,248,238,0.5) 40%, rgba(255,248,238,0.15) 80%, rgba(255,248,238,0) 100%)",
+      "radial-gradient(ellipse 60% 72% at 50% 50%, rgba(255,248,238,0.82) 0%, rgba(255,248,238,0.55) 35%, rgba(255,248,238,0.15) 70%, rgba(255,248,238,0) 90%)",
+    /* leftEdge: viewport-right stays nearly clear so the ornament/
+       artwork reads there; the content-column half fades to ivory. */
     leftEdge:
-      "linear-gradient(to right, rgba(255,248,238,0) 0%, rgba(255,248,238,0.25) 30%, rgba(255,248,238,0.7) 60%, rgba(255,248,238,0.88) 85%, rgba(255,248,238,0.95) 100%)",
+      "linear-gradient(to right, rgba(255,248,238,0) 0%, rgba(255,248,238,0.1) 25%, rgba(255,248,238,0.55) 55%, rgba(255,248,238,0.85) 80%, rgba(255,248,238,0.95) 100%)",
+    /* rightEdge mirrored. */
     rightEdge:
-      "linear-gradient(to left, rgba(255,248,238,0) 0%, rgba(255,248,238,0.25) 30%, rgba(255,248,238,0.7) 60%, rgba(255,248,238,0.88) 85%, rgba(255,248,238,0.95) 100%)",
+      "linear-gradient(to left, rgba(255,248,238,0) 0%, rgba(255,248,238,0.1) 25%, rgba(255,248,238,0.55) 55%, rgba(255,248,238,0.85) 80%, rgba(255,248,238,0.95) 100%)",
+    /* verticalFade: fully clear through the middle 50 % of the band so
+       the horizon artwork reads boldly; aggressive ivory fade at the
+       top (soft transition from previous section) and the bottom
+       (clean breathing room before the footer). */
     verticalFade:
-      "linear-gradient(to bottom, rgba(255,248,238,0.95) 0%, rgba(255,248,238,0.35) 22%, rgba(255,248,238,0.35) 78%, rgba(255,248,238,0.95) 100%)",
+      "linear-gradient(to bottom, rgba(255,248,238,0.95) 0%, rgba(255,248,238,0.2) 25%, rgba(255,248,238,0.2) 75%, rgba(255,248,238,0.98) 100%)",
   };
 
   return (
@@ -342,7 +354,7 @@ export default function AboutPage() {
           <Backdrop
             webp={BG_VV_WEBP}
             png={BG_VV_PNG}
-            opacity={0.55}
+            opacity={1}
             objectPos="right"
             overlay="radial"
           />
@@ -442,7 +454,7 @@ export default function AboutPage() {
           <Backdrop
             webp={BG_VV_WEBP}
             png={BG_VV_PNG}
-            opacity={0.42}
+            opacity={0.9}
             objectPos="left"
             overlay="radial"
           />
@@ -516,7 +528,7 @@ export default function AboutPage() {
           <Backdrop
             webp={BG_RESP_WEBP}
             png={BG_RESP_PNG}
-            opacity={0.55}
+            opacity={1}
             objectPos="right"
             overlay="leftEdge"
           />
@@ -672,7 +684,7 @@ export default function AboutPage() {
           <Backdrop
             webp={BG_IU_WEBP}
             png={BG_IU_PNG}
-            opacity={0.7}
+            opacity={1}
             objectPos="center"
             overlay="radial"
           />
@@ -734,7 +746,7 @@ export default function AboutPage() {
           <Backdrop
             webp={BG_CLOSE_WEBP}
             png={BG_CLOSE_PNG}
-            opacity={0.4}
+            opacity={0.95}
             objectPos="center"
             overlay="verticalFade"
           />
