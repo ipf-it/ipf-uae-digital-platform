@@ -10,7 +10,9 @@
     "seed:admins": "node --env-file=.env scripts/seed-admins.mjs",
     "i18n:build": "tsx scripts/split-messages.mjs",
     "optimize:images": "node scripts/optimize-images.mjs",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "screenshot": "node scripts/screenshot.mjs",
+    "screenshot:prod": "node scripts/screenshot.mjs https://ipf-uae-digital-platform.vercel.app /tmp/ipf-prod-shots"
   },
   "dependencies": {
     "@radix-ui/react-accordion": "^1.2.12",
@@ -44,6 +46,7 @@
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^6.0.4",
     "oxlint": "^1.75.0",
+    "playwright": "^1.63.0",
     "tailwindcss": "^4.3.3",
     "tsx": "^4.23.13",
     "typescript": "~6.0.2",
