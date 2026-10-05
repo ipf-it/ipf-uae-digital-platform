@@ -8,15 +8,12 @@ import { HomePresidentMessage } from "../components/HomePresidentMessage";
 import { HomeWhoWeAre } from "../components/HomeWhoWeAre";
 import { VandeMataramToggle } from "../components/VandeMataramToggle";
 import { DocumentTitle } from "../components/layout/DocumentTitle";
-import { ImageCarousel } from "../components/ui/ImageCarousel";
-import { useCms } from "../cms/ContentProvider";
 import { useLocale } from "../i18n/LocaleProvider";
 import { PageExtras } from "../cms/PageExtras";
 import { PageSectionRenderer } from "../components/PageSectionRenderer";
 
 export default function HomePage() {
   const { t } = useLocale();
-  const { content } = useCms();
 
   return (
     <div className="home-theme-page">
@@ -51,19 +48,6 @@ export default function HomePage() {
         <div id="community-stats">
           <CommunityStats />
         </div>
-      </div>
-
-      <div className="lg:hidden">
-        <section id="home-photos" className="bg-[var(--ipf-navy)] px-2 pb-6">
-          <ImageCarousel
-            framed={false}
-            fit="contain"
-            chrome="below"
-            positionClass="object-center"
-            slides={content.heroSlides}
-            heightClass="aspect-[4/3] h-auto max-h-[52vh] w-full"
-          />
-        </section>
       </div>
 
       <PageSectionRenderer pageId="home-extras" startTone="ivory" />
