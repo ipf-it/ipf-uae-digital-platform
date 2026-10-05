@@ -57,9 +57,6 @@ const HERO_PNG = "/images/history/history-hero-bg.png";
 
 /* Photographic inline images — genuine IPF repository assets. */
 const BEGINNING_IMG = "/legacy-assets/images/Ahlan_Modi.jpeg";
-const COVID_WELFARE_IMG = "/legacy-assets/images/community-support.png";
-const COVID_CHECKPOINT_IMG = "/legacy-assets/images/covid-check-point-sharjah.jpg";
-const AJMAN_INAUGURATION_IMG = "/legacy-assets/images/slider1.jpg";
 
 /* Eight UAE chapters — authoritative list from /api/org/chapters.
    Note: UAE has seven Emirates; "Al Ain" is a city in Abu Dhabi
@@ -127,13 +124,6 @@ export default function HistoryPage() {
     { year: t("page.history.ongoing"), title: t("page.history.m4Title"), detail: t("page.history.m4Detail") },
   ];
 
-  const values = [
-    t("page.historyGov.s6ValIntegrity"),
-    t("page.historyGov.s6ValTransparency"),
-    t("page.historyGov.s6ValProfessionalism"),
-    t("page.historyGov.s6ValAccountability"),
-  ];
-
   return (
     <>
       <DocumentTitle title={t("page.historyGov.title")} />
@@ -165,7 +155,44 @@ export default function HistoryPage() {
       />
 
       {/* ──────────────────────────────────────────────────────────────
-       * §2 THE BEGINNING — editorial 60/40 with a genuine IPF community
+       * PART I — HISTORY chapter marker. Compact centered editorial
+       * header that explicitly separates the historical narrative above
+       * from the governance structure below.
+       * ────────────────────────────────────────────────────────────── */}
+      <section
+        aria-labelledby="hg-part-i-heading"
+        className="relative isolate overflow-hidden bg-[#FFFDF8] py-10 sm:py-12 lg:py-14"
+      >
+        <Container>
+          <div className="mx-auto max-w-3xl text-center">
+            <p
+              className="text-[0.68rem] font-bold uppercase tracking-[0.4em]"
+              style={{ color: GOLD_INK }}
+            >
+              {t("page.historyGov.partI")}
+            </p>
+            <h2
+              id="hg-part-i-heading"
+              className="mt-3 font-serif text-[2rem] font-bold leading-[1.05] tracking-tight sm:text-[2.4rem] lg:text-[2.7rem]"
+              style={{ color: NAVY }}
+            >
+              {t("page.historyGov.partIHeading")}
+            </h2>
+            <div className="mt-4 flex justify-center">
+              <GoldRule />
+            </div>
+            <p
+              className="mx-auto mt-5 max-w-xl text-[0.98rem] leading-relaxed"
+              style={{ color: MUTED }}
+            >
+              {t("page.historyGov.partILede")}
+            </p>
+          </div>
+        </Container>
+      </section>
+
+      {/* ──────────────────────────────────────────────────────────────
+       * 01 OUR BEGINNING — editorial 60/40 with a genuine IPF community
        * photograph on the right. Not a card; a composed editorial band.
        * ────────────────────────────────────────────────────────────── */}
       <Section tone="ivory" ariaLabelledBy="hg-s2-heading">
@@ -326,108 +353,92 @@ export default function HistoryPage() {
       </Section>
 
       {/* ──────────────────────────────────────────────────────────────
-       * §4 Service Through Challenging Times — COVID photographs
+       * TRANSITION — "From journey to structure". A deliberate chapter
+       * break that visually ends History and introduces Governance.
+       * Different warm background tone, generous spacing, fine gold
+       * divider. Not another card; a wide editorial band.
        * ────────────────────────────────────────────────────────────── */}
-      <Section tone="ivory" ariaLabelledBy="hg-s4-heading">
-        <div className="mx-auto max-w-3xl text-center">
-          <div className="flex items-center justify-center gap-3">
-            <GoldRule />
+      <section
+        aria-labelledby="hg-trans-heading"
+        className="relative isolate overflow-hidden bg-[#FBF2DF] py-14 sm:py-16 lg:py-20"
+      >
+        <Container>
+          <div className="mx-auto flex max-w-3xl flex-col items-center text-center">
+            {/* Top gold divider rule */}
+            <div
+              aria-hidden="true"
+              className="h-px w-40"
+              style={{ backgroundColor: `${GOLD}70` }}
+            />
             <p
-              className="text-[0.7rem] font-bold uppercase tracking-[0.26em]"
+              className="mt-6 text-[0.68rem] font-bold uppercase tracking-[0.32em]"
               style={{ color: GOLD_INK }}
             >
-              {t("page.historyGov.s4Eyebrow")}
+              {t("page.historyGov.transEyebrow")}
             </p>
-            <GoldRule />
-          </div>
-          <h2
-            id="hg-s4-heading"
-            className="mt-5 font-serif text-[1.7rem] font-bold leading-tight tracking-tight sm:text-[2rem] lg:text-[2.3rem]"
-            style={{ color: NAVY }}
-          >
-            {t("page.historyGov.s4Heading")}
-          </h2>
-        </div>
-
-        <div className="mx-auto mt-10 grid max-w-5xl gap-6 sm:grid-cols-2">
-          <figure className="overflow-hidden rounded-[1.5rem] border border-[#D6AD60]/25 bg-[#FFFDF8]">
-            <img
-              src={COVID_WELFARE_IMG}
-              alt={t("page.historyGov.s4ImgAlt1")}
-              loading="lazy"
-              decoding="async"
-              className="aspect-[4/3] w-full object-cover"
-            />
-          </figure>
-          <figure className="overflow-hidden rounded-[1.5rem] border border-[#D6AD60]/25 bg-[#FFFDF8]">
-            <img
-              src={COVID_CHECKPOINT_IMG}
-              alt={t("page.historyGov.s4ImgAlt2")}
-              loading="lazy"
-              decoding="async"
-              className="aspect-[4/3] w-full object-cover"
-            />
-          </figure>
-        </div>
-
-        <div
-          className="mx-auto mt-8 max-w-3xl text-center text-[0.98rem] leading-relaxed sm:text-[1.02rem]"
-          style={{ color: INK }}
-        >
-          <p>{t("page.historyGov.s4Body")}</p>
-        </div>
-      </Section>
-
-      {/* ──────────────────────────────────────────────────────────────
-       * §5 Evolution — Ajman inauguration + UAE-wide chapter network
-       * ────────────────────────────────────────────────────────────── */}
-      <Section tone="white" ariaLabelledBy="hg-s5-heading">
-        <div className="mx-auto grid max-w-6xl items-center gap-10 lg:grid-cols-2 lg:gap-12">
-          <div>
-            <div className="flex items-center gap-3">
-              <GoldRule />
-              <p
-                className="text-[0.7rem] font-bold uppercase tracking-[0.26em]"
-                style={{ color: GOLD_INK }}
-              >
-                {t("page.historyGov.s5Eyebrow")}
-              </p>
-            </div>
             <h2
-              id="hg-s5-heading"
-              className="mt-5 font-serif text-[1.7rem] font-bold leading-tight tracking-tight sm:text-[2rem] lg:text-[2.3rem]"
+              id="hg-trans-heading"
+              className="mt-4 font-serif text-[1.65rem] font-bold leading-[1.1] tracking-tight sm:text-[2rem] lg:text-[2.3rem]"
               style={{ color: NAVY }}
             >
-              {t("page.historyGov.s5Heading")}
+              {t("page.historyGov.transHeading")}
             </h2>
-            <div
-              className="mt-6 space-y-4 text-[0.98rem] leading-relaxed sm:text-[1.02rem]"
+            <p
+              className="mt-5 max-w-2xl text-[0.98rem] leading-relaxed"
               style={{ color: INK }}
             >
-              <p>{t("page.historyGov.s5Body1")}</p>
-              <p>{t("page.historyGov.s5Body2")}</p>
-            </div>
-          </div>
-          <figure className="overflow-hidden rounded-[1.75rem] border border-[#D6AD60]/25 bg-[#FFF8EE] lg:order-last">
-            <img
-              src={AJMAN_INAUGURATION_IMG}
-              alt={t("page.historyGov.s5ImgAlt")}
-              loading="lazy"
-              decoding="async"
-              className="aspect-[16/10] w-full object-cover"
+              {t("page.historyGov.transBody")}
+            </p>
+            {/* Bottom gold divider rule */}
+            <div
+              aria-hidden="true"
+              className="mt-8 h-px w-40"
+              style={{ backgroundColor: `${GOLD}70` }}
             />
-            <figcaption
-              className="px-5 py-3 text-[0.78rem] uppercase tracking-[0.2em]"
-              style={{ color: GOLD_INK }}
-            >
-              {t("page.historyGov.s5ImgAlt")}
-            </figcaption>
-          </figure>
-        </div>
-      </Section>
+          </div>
+        </Container>
+      </section>
 
       {/* ──────────────────────────────────────────────────────────────
-       * §6 Governance & Accountability — ONE white curved institutional panel
+       * PART II — GOVERNANCE chapter marker. Mirrors Part I in form,
+       * explicitly declaring the second half of the page.
+       * ────────────────────────────────────────────────────────────── */}
+      <section
+        aria-labelledby="hg-part-ii-heading"
+        className="relative isolate overflow-hidden bg-[#FFFDF8] py-10 sm:py-12 lg:py-14"
+      >
+        <Container>
+          <div className="mx-auto max-w-3xl text-center">
+            <p
+              className="text-[0.68rem] font-bold uppercase tracking-[0.4em]"
+              style={{ color: GOLD_INK }}
+            >
+              {t("page.historyGov.partII")}
+            </p>
+            <h2
+              id="hg-part-ii-heading"
+              className="mt-3 font-serif text-[2rem] font-bold leading-[1.05] tracking-tight sm:text-[2.4rem] lg:text-[2.7rem]"
+              style={{ color: NAVY }}
+            >
+              {t("page.historyGov.partIIHeading")}
+            </h2>
+            <div className="mt-4 flex justify-center">
+              <GoldRule />
+            </div>
+            <p
+              className="mx-auto mt-5 max-w-xl text-[0.98rem] leading-relaxed"
+              style={{ color: MUTED }}
+            >
+              {t("page.historyGov.partIILede")}
+            </p>
+          </div>
+        </Container>
+      </section>
+
+      {/* ──────────────────────────────────────────────────────────────
+       * 03 ORGANISATIONAL STRUCTURE — intro + hierarchy visual.
+       * Opens Part II with the licensed-organisation statement and the
+       * Managing Committee → Chapters + Councils tree.
        * ────────────────────────────────────────────────────────────── */}
       <Section tone="ivory" ariaLabelledBy="hg-s6-heading">
         <div className="mx-auto max-w-3xl text-center">
@@ -437,7 +448,7 @@ export default function HistoryPage() {
               className="text-[0.7rem] font-bold uppercase tracking-[0.26em]"
               style={{ color: GOLD_INK }}
             >
-              {t("page.historyGov.s6Eyebrow")}
+              03 · Organisational Structure
             </p>
             <GoldRule />
           </div>
@@ -446,13 +457,13 @@ export default function HistoryPage() {
             className="mt-5 font-serif text-[1.7rem] font-bold leading-tight tracking-tight sm:text-[2rem] lg:text-[2.3rem]"
             style={{ color: NAVY }}
           >
-            {t("page.historyGov.s6Heading")}
+            How IPF UAE is organised
           </h2>
           <p
             className="mx-auto mt-5 max-w-2xl text-[0.98rem] leading-relaxed"
-            style={{ color: MUTED }}
+            style={{ color: INK }}
           >
-            {t("page.historyGov.s6Intro")}
+            {t("page.historyGov.structureIntro")}
           </p>
         </div>
 
@@ -554,35 +565,65 @@ export default function HistoryPage() {
           </div>
         </div>
 
-        {/* ── Eight-chapter UAE presence — refined compact list, not cards ── */}
-        <div className="mx-auto mt-14 max-w-5xl sm:mt-16">
-          <div className="text-center">
-            <div className="inline-flex items-center gap-3">
-              <GoldRule />
-              <p
-                className="text-[0.7rem] font-bold uppercase tracking-[0.26em]"
-                style={{ color: GOLD_INK }}
-              >
-                {t("page.historyGov.chaptersEyebrow")}
-              </p>
-              <GoldRule />
-            </div>
-            <h3
-              className="mt-4 font-serif text-[1.4rem] font-bold leading-tight tracking-tight sm:text-[1.6rem]"
-              style={{ color: NAVY }}
-            >
-              {t("page.historyGov.chaptersHeading")}
-            </h3>
+      </Section>
+
+      {/* ──────────────────────────────────────────────────────────────
+       * 04 CHAPTERS & COUNCILS — two visually distinguished groups.
+       * CHAPTERS are the geographic UAE presence; COUNCILS are the
+       * thematic / state-of-origin community initiatives. Different
+       * grid treatments make the distinction clear.
+       * ────────────────────────────────────────────────────────────── */}
+      <Section tone="white" ariaLabelledBy="hg-s4-heading">
+        <div className="mx-auto max-w-3xl text-center">
+          <div className="flex items-center justify-center gap-3">
+            <GoldRule />
             <p
-              className="mx-auto mt-4 max-w-2xl text-[0.95rem] leading-relaxed"
-              style={{ color: INK }}
+              className="text-[0.7rem] font-bold uppercase tracking-[0.26em]"
+              style={{ color: GOLD_INK }}
             >
-              {t("page.historyGov.chaptersBody")}
+              04 · Chapters & Councils
             </p>
+            <GoldRule />
           </div>
+          <h2
+            id="hg-s4-heading"
+            className="mt-5 font-serif text-[1.7rem] font-bold leading-tight tracking-tight sm:text-[2rem] lg:text-[2.3rem]"
+            style={{ color: NAVY }}
+          >
+            Two complementary networks
+          </h2>
+        </div>
+
+        {/* ─── CHAPTERS block ─── */}
+        <div className="mx-auto mt-12 max-w-5xl">
+          <div className="flex items-baseline gap-4">
+            <p
+              className="text-[0.7rem] font-bold uppercase tracking-[0.3em]"
+              style={{ color: GOLD_INK }}
+            >
+              {t("page.historyGov.chaptersEyebrow")}
+            </p>
+            <span
+              aria-hidden="true"
+              className="h-px flex-1"
+              style={{ backgroundColor: `${GOLD}55` }}
+            />
+          </div>
+          <h3
+            className="mt-3 font-serif text-[1.35rem] font-bold leading-tight tracking-tight sm:text-[1.55rem]"
+            style={{ color: NAVY }}
+          >
+            {t("page.historyGov.chaptersHeading")}
+          </h3>
+          <p
+            className="mt-3 max-w-3xl text-[0.95rem] leading-relaxed"
+            style={{ color: INK }}
+          >
+            {t("page.historyGov.chaptersBody")}
+          </p>
           <ul
             role="list"
-            className="mx-auto mt-8 grid max-w-4xl grid-cols-2 gap-x-6 gap-y-3 sm:grid-cols-3 lg:grid-cols-4"
+            className="mt-6 grid grid-cols-2 gap-x-6 gap-y-3 sm:grid-cols-3 lg:grid-cols-4"
           >
             {UAE_CHAPTERS.map((name) => (
               <li key={name}>
@@ -607,224 +648,160 @@ export default function HistoryPage() {
           </ul>
         </div>
 
-        {/* The single curved institutional panel */}
-        <div className="mx-auto mt-14 max-w-5xl rounded-[2rem] border border-[#D6AD60]/25 bg-[#FFFDF8] p-6 shadow-[0_12px_32px_rgba(11,31,58,0.08)] sm:mt-16 sm:p-10 lg:rounded-[2.25rem] lg:p-14">
-          {/* ── Sub A — How IPF is governed ── */}
-          <section aria-labelledby="hg-s6-how">
-            <div className="flex items-center gap-3">
-              <span
-                aria-hidden="true"
-                className="inline-block h-px w-6"
-                style={{ backgroundColor: GOLD }}
-              />
-              <p
-                className="text-[0.68rem] font-bold uppercase tracking-[0.26em]"
-                style={{ color: GOLD_INK }}
-              >
-                {t("page.historyGov.s6HowHeading")}
-              </p>
-            </div>
+        {/* ─── COUNCILS block ─── */}
+        <div className="mx-auto mt-14 max-w-5xl sm:mt-16">
+          <div className="flex items-baseline gap-4">
             <p
-              id="hg-s6-how"
-              className="mt-3 font-serif text-[1.1rem] font-semibold leading-snug tracking-tight sm:text-[1.2rem]"
-              style={{ color: NAVY }}
+              className="text-[0.7rem] font-bold uppercase tracking-[0.3em]"
+              style={{ color: GOLD_INK }}
             >
-              {t("page.governance.bye1")}
+              {t("page.historyGov.councilsEyebrow")}
             </p>
-          </section>
-
-          {/* Divider */}
-          <div
-            aria-hidden="true"
-            className="my-8 h-px w-full"
-            style={{ backgroundColor: `${GOLD}33` }}
-          />
-
-          {/* ── Sub B — Governance principles / four values ── */}
-          <section aria-labelledby="hg-s6-values">
-            <div className="flex items-center gap-3">
-              <span
-                aria-hidden="true"
-                className="inline-block h-px w-6"
-                style={{ backgroundColor: GOLD }}
-              />
+            <span
+              aria-hidden="true"
+              className="h-px flex-1"
+              style={{ backgroundColor: `${GOLD}55` }}
+            />
+          </div>
+          <h3
+            className="mt-3 font-serif text-[1.35rem] font-bold leading-tight tracking-tight sm:text-[1.55rem]"
+            style={{ color: NAVY }}
+          >
+            {t("page.historyGov.councilsHeading")}
+          </h3>
+          <p
+            className="mt-3 max-w-3xl text-[0.95rem] leading-relaxed"
+            style={{ color: INK }}
+          >
+            {t("page.historyGov.councilsBody")}
+          </p>
+          <div className="mt-6 grid gap-5 sm:grid-cols-2">
+            <div className="rounded-xl border border-[#D6AD60]/30 bg-[#FFFDF8] p-5">
               <p
-                className="text-[0.68rem] font-bold uppercase tracking-[0.26em]"
+                className="text-[0.62rem] font-bold uppercase tracking-[0.26em]"
                 style={{ color: GOLD_INK }}
               >
-                {t("page.historyGov.s6ValuesHeading")}
+                State councils
               </p>
-            </div>
-            <p
-              id="hg-s6-values"
-              className="mt-3 text-[0.98rem] font-semibold leading-snug sm:text-[1.05rem]"
-              style={{ color: INK }}
-            >
-              {t("page.governance.ethicsLead")}
-            </p>
-            <ul className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-4">
-              {values.map((value) => (
-                <li
-                  key={value}
-                  className="rounded-xl border border-[#D6AD60]/25 bg-[#FFF8EE] px-3 py-3 text-center"
-                >
-                  <p
-                    className="font-serif text-[0.95rem] font-semibold tracking-tight sm:text-[1rem]"
-                    style={{ color: NAVY }}
-                  >
-                    {value}
-                  </p>
-                </li>
-              ))}
-            </ul>
-          </section>
-
-          {/* Divider */}
-          <div
-            aria-hidden="true"
-            className="my-8 h-px w-full"
-            style={{ backgroundColor: `${GOLD}33` }}
-          />
-
-          {/* ── Sub C — Bye Law ── */}
-          <section aria-labelledby="hg-s6-bye">
-            <div className="flex items-center gap-3">
-              <span
-                aria-hidden="true"
-                className="inline-block h-px w-6"
-                style={{ backgroundColor: GOLD }}
-              />
               <p
-                className="text-[0.68rem] font-bold uppercase tracking-[0.26em]"
+                className="mt-3 font-serif text-[1.6rem] font-light leading-none"
+                style={{ color: NAVY }}
+              >
+                24
+              </p>
+              <p
+                className="mt-3 text-[0.9rem] leading-relaxed"
+                style={{ color: INK }}
+              >
+                Community members by their Indian state of origin — from Andhra Pradesh and Kerala to Assam, Punjab and the North-East.
+              </p>
+              <Link
+                to="/councils"
+                className="group mt-5 inline-flex items-center gap-1.5 text-[0.78rem] font-bold uppercase tracking-[0.18em]"
+                style={{ color: BURGUNDY }}
+              >
+                View all councils
+                <ArrowRight className="size-3.5 transition-transform group-hover:translate-x-0.5" />
+              </Link>
+            </div>
+            <div className="rounded-xl border border-[#D6AD60]/30 bg-[#FFFDF8] p-5">
+              <p
+                className="text-[0.62rem] font-bold uppercase tracking-[0.26em]"
                 style={{ color: GOLD_INK }}
               >
-                {t("page.historyGov.s6ByeHeading")}
+                Special councils
               </p>
-            </div>
-            <div
-              id="hg-s6-bye"
-              className="mt-4 space-y-3 text-[0.95rem] leading-relaxed sm:text-[1rem]"
-              style={{ color: INK }}
-            >
-              <p>{t("page.governance.bye2")}</p>
-              <p>{t("page.governance.bye3")}</p>
-            </div>
-          </section>
-
-          {/* Divider */}
-          <div
-            aria-hidden="true"
-            className="my-8 h-px w-full"
-            style={{ backgroundColor: `${GOLD}33` }}
-          />
-
-          {/* ── Sub D — Code of Ethics & Conduct ── */}
-          <section aria-labelledby="hg-s6-ethics">
-            <div className="flex items-center gap-3">
-              <span
-                aria-hidden="true"
-                className="inline-block h-px w-6"
-                style={{ backgroundColor: GOLD }}
-              />
               <p
-                className="text-[0.68rem] font-bold uppercase tracking-[0.26em]"
-                style={{ color: GOLD_INK }}
+                className="mt-3 font-serif text-[1.6rem] font-light leading-none"
+                style={{ color: NAVY }}
               >
-                {t("page.historyGov.s6EthicsHeading")}
+                7
               </p>
-            </div>
-            <ul
-              id="hg-s6-ethics"
-              className="mt-4 space-y-2 text-[0.95rem] leading-relaxed sm:text-[1rem]"
-              style={{ color: INK }}
-            >
-              {[
-                t("page.governance.ethics1"),
-                t("page.governance.ethics2"),
-                t("page.governance.ethics3"),
-                t("page.governance.ethics4"),
-                t("page.governance.ethics5"),
-              ].map((line) => (
-                <li key={line} className="flex gap-3">
-                  <span
-                    aria-hidden="true"
-                    className="mt-[0.5rem] inline-block h-[6px] w-[6px] shrink-0 rounded-full"
-                    style={{ backgroundColor: GOLD }}
-                  />
-                  <span>{line}</span>
-                </li>
-              ))}
-            </ul>
-          </section>
-
-          {/* Divider */}
-          <div
-            aria-hidden="true"
-            className="my-8 h-px w-full"
-            style={{ backgroundColor: `${GOLD}33` }}
-          />
-
-          {/* ── Sub E — IT & Media Policy ── */}
-          <section aria-labelledby="hg-s6-it">
-            <div className="flex items-center gap-3">
-              <span
-                aria-hidden="true"
-                className="inline-block h-px w-6"
-                style={{ backgroundColor: GOLD }}
-              />
               <p
-                className="text-[0.68rem] font-bold uppercase tracking-[0.26em]"
-                style={{ color: GOLD_INK }}
+                className="mt-3 text-[0.9rem] leading-relaxed"
+                style={{ color: INK }}
               >
-                {t("page.historyGov.s6ItHeading")}
+                Members organised by shared interest — Business, Cultural, Media and other thematic groups that shape IPF's community initiatives.
               </p>
+              <Link
+                to="/councils"
+                className="group mt-5 inline-flex items-center gap-1.5 text-[0.78rem] font-bold uppercase tracking-[0.18em]"
+                style={{ color: BURGUNDY }}
+              >
+                Explore special councils
+                <ArrowRight className="size-3.5 transition-transform group-hover:translate-x-0.5" />
+              </Link>
             </div>
-            <div
-              id="hg-s6-it"
-              className="mt-4 space-y-3 text-[0.95rem] leading-relaxed sm:text-[1rem]"
-              style={{ color: INK }}
-            >
-              <p>{t("page.governance.it1")}</p>
-              <p>{t("page.governance.it2")}</p>
-            </div>
-          </section>
+          </div>
         </div>
       </Section>
 
       {/* ──────────────────────────────────────────────────────────────
-       * §7 Leadership CTA — contextual editorial band that leads
-       * naturally from Governance to the Leadership page.
+       * 05 LEADERSHIP & RESPONSIBILITY — compact closing of Part II.
+       * Short para, the four published values, then CTA to /leadership.
+       * Replaces the previous large institutional panel. The Bye Law,
+       * Ethics and IT Policy source paragraphs remain in Supabase CMS
+       * (page.governance.*) and can be surfaced on dedicated policy
+       * pages later; they are no longer repeated inline here.
        * ────────────────────────────────────────────────────────────── */}
-      <Section tone="ivory" ariaLabelledBy="hg-ldr-heading">
-        <div className="mx-auto grid max-w-5xl items-center gap-8 rounded-[1.75rem] border border-[#D6AD60]/30 bg-[#FFFDF8] px-6 py-10 shadow-[0_14px_38px_rgba(11,31,58,0.08)] sm:px-10 sm:py-12 lg:grid-cols-[1.3fr_1fr] lg:gap-12">
-          <div className="min-w-0">
-            <div className="flex items-center gap-3">
-              <GoldRule />
-              <p
-                className="text-[0.7rem] font-bold uppercase tracking-[0.26em]"
-                style={{ color: GOLD_INK }}
-              >
-                {t("page.historyGov.ldrEyebrow")}
-              </p>
-            </div>
-            <h2
-              id="hg-ldr-heading"
-              className="mt-4 font-serif text-[1.6rem] font-bold leading-tight tracking-tight sm:text-[1.9rem] lg:text-[2.1rem]"
-              style={{ color: NAVY }}
-            >
-              {t("page.historyGov.ldrHeading")}
-            </h2>
+      <Section tone="ivory" ariaLabelledBy="hg-s5-heading">
+        <div className="mx-auto max-w-5xl rounded-[1.75rem] border border-[#D6AD60]/30 bg-[#FFFDF8] p-6 shadow-[0_14px_38px_rgba(11,31,58,0.08)] sm:p-10 lg:rounded-[2rem] lg:p-14">
+          <div className="flex items-center gap-3">
+            <GoldRule />
             <p
-              className="mt-5 max-w-xl text-[0.98rem] leading-relaxed"
-              style={{ color: INK }}
+              className="text-[0.7rem] font-bold uppercase tracking-[0.26em]"
+              style={{ color: GOLD_INK }}
+            >
+              05 · Leadership & Responsibility
+            </p>
+          </div>
+          <h2
+            id="hg-s5-heading"
+            className="mt-4 font-serif text-[1.7rem] font-bold leading-tight tracking-tight sm:text-[1.95rem] lg:text-[2.2rem]"
+            style={{ color: NAVY }}
+          >
+            {t("page.historyGov.ldrRespHeading")}
+          </h2>
+          <p
+            className="mt-5 max-w-3xl text-[0.98rem] leading-relaxed"
+            style={{ color: INK }}
+          >
+            {t("page.historyGov.ldrRespBody")}
+          </p>
+
+          {/* Four published values — compact tile row */}
+          <ul className="mt-8 grid grid-cols-2 gap-3 sm:grid-cols-4">
+            {[
+              t("page.historyGov.s6ValIntegrity"),
+              t("page.historyGov.s6ValTransparency"),
+              t("page.historyGov.s6ValProfessionalism"),
+              t("page.historyGov.s6ValAccountability"),
+            ].map((value) => (
+              <li
+                key={value}
+                className="rounded-xl border border-[#D6AD60]/25 bg-[#FFF8EE] px-3 py-3 text-center"
+              >
+                <p
+                  className="font-serif text-[0.95rem] font-semibold tracking-tight sm:text-[1rem]"
+                  style={{ color: NAVY }}
+                >
+                  {value}
+                </p>
+              </li>
+            ))}
+          </ul>
+
+          {/* Leadership CTA */}
+          <div className="mt-8 flex flex-col items-start gap-4 sm:mt-10 sm:flex-row sm:items-center sm:justify-between">
+            <p
+              className="max-w-xl text-[0.95rem] leading-relaxed"
+              style={{ color: MUTED }}
             >
               {t("page.historyGov.ldrBody")}
             </p>
-          </div>
-          <div className="flex min-w-0 justify-start lg:justify-end">
             <Link
               to="/leadership"
-              className="group inline-flex items-center gap-2 rounded-full border border-[var(--ipf-navy)] bg-[var(--ipf-navy)] px-6 py-3 text-[0.8rem] font-bold uppercase tracking-[0.18em] text-[#FFF8EE] transition hover:bg-[#0b1f3a]/90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#D6AD60]"
+              className="group inline-flex shrink-0 items-center gap-2 rounded-full bg-[var(--ipf-navy)] px-6 py-3 text-[0.8rem] font-bold uppercase tracking-[0.18em] text-[#FFF8EE] transition hover:bg-[#0b1f3a]/90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#D6AD60]"
             >
               {t("page.historyGov.ldrCta")}
               <ArrowRight className="size-3.5 transition-transform group-hover:translate-x-0.5" />
