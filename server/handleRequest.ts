@@ -1678,26 +1678,60 @@ export async function handleRequest(req: AppRequest): Promise<AppResponse> {
         children: children(row.id).length > 0 ? children(row.id) : undefined,
       }));
 
-      /* Product-level invariant: IPF Yuva must always appear inside the
-         About dropdown, never as a separate top-level item. The Supabase
-         nav_items table is admin-editable and has repeatedly dropped the
-         Yuva child row; this handler now guarantees the correct shape at
+      /* Product-level invariant for the About dropdown.
+         Founder-locked order (updated 5 Oct 2026):
+           1. About IPF
+           2. History
+           3. Leadership
+           4. IPF Yuva       (always present; injected if admin dropped it)
+           5. Governance
+           6. Support
+         The Supabase nav_items table is admin-editable and has previously
+         both (a) dropped Yuva entirely and (b) stored children in a
+         different order. This handler enforces the canonical sequence at
          the API boundary so every consumer (web header, mobile header,
-         any future client) receives it. The fallback src/data/navigation.ts
-         carries the same shape for the pre-API-response render window. */
+         any future client) receives the same shape. Any extra children
+         admins add in Supabase that are NOT on this canonical list are
+         appended at the end, so admin-authored additions are preserved. */
+      const ABOUT_CANONICAL = [
+        { label: "About IPF", to: "/about" },
+        { label: "History", to: "/history" },
+        { label: "Leadership", to: "/leadership" },
+        { label: "IPF Yuva", to: "/yuva" },
+        { label: "Governance", to: "/governance" },
+        { label: "Support", to: "/support" },
+      ];
       for (const group of primaryNav) {
         if (group.label !== "About" && group.to !== "/about") continue;
         const kids = group.children ? [...group.children] : [];
-        const alreadyThere = kids.some(
-          (child) =>
-            child.to === "/yuva" ||
-            /^IPF\s*Yuva$/i.test(child.label) ||
-            /^Yuva$/i.test(child.label),
-        );
-        if (!alreadyThere) {
-          kids.push({ label: "IPF Yuva", to: "/yuva" });
-          group.children = kids;
+        const matchesSpec = (
+          kid: { label: string; to: string },
+          spec: { label: string; to: string },
+        ) => {
+          if (kid.to === spec.to) return true;
+          if (spec.to === "/yuva" && /^(IPF\s*)?Yuva$/i.test(kid.label)) return true;
+          if (spec.to === "/leadership" && /^Leaders(hip)?$/i.test(kid.label)) return true;
+          return false;
+        };
+        const used = new Set<number>();
+        const ordered: { label: string; to: string }[] = [];
+        for (const spec of ABOUT_CANONICAL) {
+          const idx = kids.findIndex((k, i) => !used.has(i) && matchesSpec(k, spec));
+          if (idx >= 0) {
+            used.add(idx);
+            /* Preserve the DB-authored label (so translations/overrides
+               stay respected) while enforcing position. */
+            ordered.push(kids[idx]);
+          } else {
+            ordered.push({ label: spec.label, to: spec.to });
+          }
         }
+        /* Any admin-authored extras not on the canonical list keep their
+           DB order and are appended at the end. */
+        for (let i = 0; i < kids.length; i += 1) {
+          if (!used.has(i)) ordered.push(kids[i]);
+        }
+        group.children = ordered;
       }
 
       const footerGroups = topLevel("footer").map((row) => ({ title: labelOf(row), links: children(row.id) }));
