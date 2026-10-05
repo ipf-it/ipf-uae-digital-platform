@@ -31,7 +31,13 @@ import { useLocale } from "../i18n/LocaleProvider";
  *   decoration, no scroll reveal. Only link / button hover + focus.
  * ─────────────────────────────────────────────────────────────────── */
 
-const HERO_IMG = "/legacy-assets/images/Ahlan_Modi.jpeg";
+/* About hero artwork — founder-supplied "India's Heritage in Watercolour
+   and Gold" banner, 5 Oct 2026. Replaces the previous Ahlan_Modi
+   community photograph in the right-column framed slot. Hero copy,
+   typography, spacing, section layout and every section below are
+   unchanged per founder instruction. */
+const HERO_WEBP = "/images/about/about-hero-art.webp";
+const HERO_IMG = "/images/about/about-hero-art.png";
 const WHO_IMG = "/legacy-assets/images/IMG-20211003-WA0135.jpg";
 const RESP_IMG = "/legacy-assets/images/community-support.png";
 const INDIA_UAE_IMG = "/legacy-assets/images/IMG-20220902-WA0090.jpg";
@@ -253,21 +259,29 @@ export default function AboutPage() {
               </p>
             </div>
 
-            {/* Right — community photograph with soft organic clip */}
+            {/* Right — founder-supplied hero artwork in the soft organic clip.
+                The source banner is 2152×731 (~2.94:1); within the existing
+                4:3 frame slot, object-position is biased toward the central
+                architectural cluster so the key composition (Konark Wheel,
+                heritage monuments, Burj accent, tricolour wave) remains
+                visible on mobile where the frame reflows below the text. */}
             <div className="relative min-w-0">
               <div
                 className="relative overflow-hidden shadow-[0_14px_40px_rgba(11,31,58,0.18)] ring-1 ring-[#D6AD60]/35"
                 style={{ borderRadius: "2rem 5rem 2rem 5rem" }}
               >
-                <img
-                  src={HERO_IMG}
-                  alt={t("page.about.alt.hero")}
-                  loading="eager"
-                  decoding="async"
-                  width={1600}
-                  height={1066}
-                  className="aspect-[4/3] w-full object-cover"
-                />
+                <picture className="block">
+                  <source srcSet={HERO_WEBP} type="image/webp" />
+                  <img
+                    src={HERO_IMG}
+                    alt={t("page.about.alt.hero")}
+                    loading="eager"
+                    decoding="async"
+                    width={2152}
+                    height={731}
+                    className="block aspect-[4/3] w-full object-cover object-[55%_center] md:object-center"
+                  />
+                </picture>
               </div>
             </div>
           </div>

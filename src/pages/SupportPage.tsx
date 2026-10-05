@@ -24,6 +24,10 @@ export default function SupportPage() {
         title={t("page.support.title")}
         description={t("page.support.desc")}
         crumbs={[{ label: t("page.events.eyebrow"), to: "/news" }, { label: t("page.support.title") }]}
+        image="/images/support/support-hero-art.png"
+        imageWebp="/images/support/support-hero-art.webp"
+        imageMode="artwork"
+        imagePosition="object-center"
       />
       <Section id="grievances" tone="white">
         <span id="grievence-counseling" className="sr-only">

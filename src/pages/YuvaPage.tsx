@@ -18,6 +18,10 @@ export default function YuvaPage() {
         title={t("page.yuva.title")}
         description={t("page.yuva.desc")}
         crumbs={[{ label: t("page.yuva.title") }]}
+        image="/images/yuva/yuva-hero-art.png"
+        imageWebp="/images/yuva/yuva-hero-art.webp"
+        imageMode="artwork"
+        imagePosition="object-[55%_center] md:object-center"
       />
       <Section tone="white">
         <Container className="grid gap-10 lg:grid-cols-[1.1fr,0.9fr] lg:items-start">
