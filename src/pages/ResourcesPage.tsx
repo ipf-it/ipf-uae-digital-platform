@@ -11,7 +11,7 @@ export default function ResourcesPage() {
     { title: t("page.drishti.title"), description: t("page.drishti.desc"), to: "/drishti" },
     { title: t("nav.support"), description: t("page.support.desc"), to: "/support" },
     { title: t("nav.ipfCares"), description: t("page.councils.caresBody"), to: "/support#community" },
-    { title: t("nav.governance"), description: t("page.events.standing"), to: "/governance" },
+    { title: t("nav.historyGov"), description: t("page.about.tile.historyGovDesc"), to: "/history" },
     { title: t("nav.news"), description: t("page.news.desc"), to: "/news" },
     { title: t("nav.events"), description: t("page.events.desc"), to: "/events" },
   ];

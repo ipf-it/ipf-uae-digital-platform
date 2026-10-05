@@ -14,20 +14,19 @@ export const primaryNav: NavGroup[] = [
   {
     label: "About",
     to: "/about",
-    /* Founder-locked About dropdown order (updated 5 Oct 2026):
-         About IPF -> History -> Leadership -> Yuva -> Governance -> Support
-       IMPORTANT: Yuva lives here, NOT as a separate top-level item.
-       The live Supabase nav table has previously dropped it AND stored
-       the children in a different order; the /api/nav server handler
-       both reorders to the founder-locked sequence above AND injects
-       IPF Yuva at position 4 if missing (see server/handleRequest.ts
-       /api/nav path). This local fallback mirrors that guaranteed order. */
+    /* Founder-locked About dropdown order (revised 5 Oct 2026 after
+       combining History + Governance into one destination):
+         About IPF -> History & Governance -> Leadership -> IPF Yuva -> Support
+       The former standalone Governance item is retired from this menu;
+       /governance redirects to /history (see src/App.tsx). The server
+       /api/nav handler's ABOUT_CANONICAL mirror enforces this same
+       order so any admin-authored entry in Supabase cannot resurrect
+       a Governance child here. */
     children: [
       { label: "About IPF", to: "/about" },
-      { label: "History", to: "/history" },
+      { label: "History & Governance", to: "/history" },
       { label: "Leadership", to: "/leadership" },
       { label: "IPF Yuva", to: "/yuva" },
-      { label: "Governance", to: "/governance" },
       { label: "Support", to: "/support" },
     ],
   },
@@ -58,10 +57,10 @@ export const footerGroups = [
     title: "Organisation",
     links: [
       { label: "About IPF", to: "/about" },
+      { label: "History & Governance", to: "/history" },
       { label: "Leadership", to: "/leadership" },
       { label: "Chapters", to: "/chapters" },
       { label: "Councils", to: "/councils" },
-      { label: "Governance", to: "/governance" },
     ],
   },
   {

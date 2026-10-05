@@ -1,5 +1,5 @@
 import { lazy, Suspense } from "react";
-import { BrowserRouter, Route, Routes } from "react-router-dom";
+import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import { SiteLayout } from "./components/layout/SiteLayout";
 import { PageLoader } from "./components/layout/PageLoader";
 import { AdminLayout } from "./admin/AdminLayout";
@@ -8,7 +8,11 @@ import HomePage from "./pages/HomePage";
 
 const AboutPage = lazy(() => import("./pages/AboutPage"));
 const LeadershipPage = lazy(() => import("./pages/LeadershipPage"));
-const GovernancePage = lazy(() => import("./pages/GovernancePage"));
+/* GovernancePage was formerly mounted at /governance. The combined
+   History & Governance page at /history now owns that content; the
+   /governance route is a <Navigate /> redirect (see below) and this
+   lazy loader is intentionally retired. The GovernancePage.tsx file
+   is NOT deleted — cleanup is scheduled for a later phase. */
 const HistoryPage = lazy(() => import("./pages/HistoryPage"));
 const ChaptersPage = lazy(() => import("./pages/ChaptersPage"));
 const ChapterPage = lazy(() => import("./pages/ChapterPage"));
@@ -69,7 +73,12 @@ function App() {
           <Route index element={<HomePage />} />
           <Route path="about" element={<AboutPage />} />
           <Route path="leadership" element={<LeadershipPage />} />
-          <Route path="governance" element={<GovernancePage />} />
+          {/* /governance → /history: the former Governance page has been
+              merged into the combined History & Governance page. The old
+              GovernancePage component is intentionally kept in the tree
+              for later cleanup; the redirect means every /governance
+              link, bookmark and index entry safely lands on /history. */}
+          <Route path="governance" element={<Navigate to="/history" replace />} />
           <Route path="history" element={<HistoryPage />} />
           <Route path="chapters" element={<ChaptersPage />} />
           <Route path="chapters/:chapterId" element={<ChapterPage />} />

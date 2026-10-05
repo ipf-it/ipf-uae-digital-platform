@@ -1693,12 +1693,20 @@ export async function handleRequest(req: AppRequest): Promise<AppResponse> {
          any future client) receives the same shape. Any extra children
          admins add in Supabase that are NOT on this canonical list are
          appended at the end, so admin-authored additions are preserved. */
+      /* Founder-locked canonical order (revised 5 Oct 2026 after combining
+         History + Governance into one destination):
+           About IPF -> History & Governance -> Leadership -> IPF Yuva -> Support
+         /governance is served by a client-side <Navigate /> redirect to
+         /history (see src/App.tsx), so this list does NOT contain a
+         Governance entry. If an admin added a Governance child in
+         Supabase, the merge below will leave it as an admin-authored
+         extra appended at the end, where it will still resolve to the
+         same destination via the redirect. */
       const ABOUT_CANONICAL = [
         { label: "About IPF", to: "/about" },
-        { label: "History", to: "/history" },
+        { label: "History & Governance", to: "/history" },
         { label: "Leadership", to: "/leadership" },
         { label: "IPF Yuva", to: "/yuva" },
-        { label: "Governance", to: "/governance" },
         { label: "Support", to: "/support" },
       ];
       for (const group of primaryNav) {
@@ -1711,6 +1719,13 @@ export async function handleRequest(req: AppRequest): Promise<AppResponse> {
           if (kid.to === spec.to) return true;
           if (spec.to === "/yuva" && /^(IPF\s*)?Yuva$/i.test(kid.label)) return true;
           if (spec.to === "/leadership" && /^Leaders(hip)?$/i.test(kid.label)) return true;
+          /* Fold any admin-authored "History" (to /history) OR
+             "Governance" (to /governance) child into the single
+             canonical "History & Governance" entry (to /history).
+             Prevents the dropdown from showing both the combined
+             entry AND a stale sibling that was authored before the
+             merge. */
+          if (spec.to === "/history" && (kid.to === "/history" || kid.to === "/governance")) return true;
           return false;
         };
         const used = new Set<number>();
@@ -1727,9 +1742,15 @@ export async function handleRequest(req: AppRequest): Promise<AppResponse> {
           }
         }
         /* Any admin-authored extras not on the canonical list keep their
-           DB order and are appended at the end. */
+           DB order and are appended at the end — EXCEPT any additional
+           /history or /governance entries, which would duplicate the
+           combined "History & Governance" tile that is already placed
+           earlier in the ordered list. */
         for (let i = 0; i < kids.length; i += 1) {
-          if (!used.has(i)) ordered.push(kids[i]);
+          if (used.has(i)) continue;
+          const kid = kids[i];
+          if (kid.to === "/history" || kid.to === "/governance") continue;
+          ordered.push(kid);
         }
         group.children = ordered;
       }

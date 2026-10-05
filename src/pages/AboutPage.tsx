@@ -722,20 +722,20 @@ export default function AboutPage() {
           </h2>
         </div>
 
-        <div className="mt-8 grid gap-4 sm:mt-10 sm:grid-cols-2 lg:grid-cols-4 lg:gap-5">
+        <div className="mt-8 grid gap-4 sm:mt-10 sm:grid-cols-2 lg:grid-cols-3 lg:gap-5">
           {/* Tile `desc` values use dedicated page.about.tile.*Desc keys
              rather than page.{sibling}.desc because two of the sibling
              .desc keys contain unsafe content for public tiles:
                - page.leadership.desc has an unfilled {name} placeholder
                - page.governance.desc has developer-facing text about
                  "old broken sign-in links"
-             Those sibling pages will be redesigned in Phase 2+ of the
-             About family roadmap; About IPF never shows that copy. */}
+             History & Governance are now ONE tile pointing to /history,
+             matching the combined destination and the About dropdown. */}
           {[
             {
-              eyebrow: t("page.history.eyebrow"),
-              label: t("nav.history"),
-              desc: t("page.about.tile.historyDesc"),
+              eyebrow: t("page.historyGov.heroEyebrow"),
+              label: t("nav.historyGov"),
+              desc: t("page.about.tile.historyGovDesc"),
               to: "/history",
             },
             {
@@ -743,12 +743,6 @@ export default function AboutPage() {
               label: t("nav.leadership"),
               desc: t("page.about.tile.leadershipDesc"),
               to: "/leadership",
-            },
-            {
-              eyebrow: t("page.governance.eyebrow"),
-              label: t("nav.governance"),
-              desc: t("page.about.tile.governanceDesc"),
-              to: "/governance",
             },
             {
               eyebrow: t("page.support.eyebrow"),
