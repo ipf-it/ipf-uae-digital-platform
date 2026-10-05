@@ -160,7 +160,7 @@ function MedallionBlock({
         height={120}
         /* The approved medallions already contain their circular treatment —
            do NOT add another ring, bg, border or crop. */
-        className="h-12 w-12 object-contain transition-transform group-hover:scale-[1.05] sm:h-14 sm:w-14 lg:h-[62px] lg:w-[62px]"
+        className="h-10 w-10 object-contain transition-transform group-hover:scale-[1.05] sm:h-11 sm:w-11 lg:h-[52px] lg:w-[52px]"
       />
       <span className="whitespace-pre-line text-center text-[0.68rem] font-semibold leading-tight text-[#1c2430] sm:text-[0.72rem]">
         {label}
@@ -301,17 +301,15 @@ export function HomeNetwork() {
         className="pointer-events-none absolute"
       >
         <defs>
-          {/* Chapters photo: left edge is viewport-bleed (straight line
-             on x=0), right edge is one soft sweeping curve from top to
-             bottom that eases inward around the vertical middle. The
-             curve is a gentle convex-then-concave single bezier, closer
-             to the reference's long leaf-like edge than a tight S. */}
+          {/* Chapters photo: single sweeping gentle curve on the right
+             edge, closely matching the reference's long leaf-like
+             boundary. */}
           <clipPath id={CHAPTER_CURVE_ID} clipPathUnits="objectBoundingBox">
-            <path d="M 0,0 L 0.72,0 C 0.54,0.28 0.68,0.5 0.52,0.62 C 0.4,0.78 0.6,0.96 0.52,1 L 0,1 Z" />
+            <path d="M 0,0 L 0.9,0 C 0.65,0.4 0.8,0.6 0.6,1 L 0,1 Z" />
           </clipPath>
           {/* Councils photo: mirrored. */}
           <clipPath id={COUNCIL_CURVE_ID} clipPathUnits="objectBoundingBox">
-            <path d="M 1,0 L 0.28,0 C 0.46,0.28 0.32,0.5 0.48,0.62 C 0.6,0.78 0.4,0.96 0.48,1 L 1,1 Z" />
+            <path d="M 1,0 L 0.1,0 C 0.35,0.4 0.2,0.6 0.4,1 L 1,1 Z" />
           </clipPath>
         </defs>
       </svg>
@@ -349,11 +347,12 @@ export function HomeNetwork() {
       {/* ═══════════════════════════════════════════════════════════════
          Desktop & tablet composition (≥md) — FULL-BLEED band
          ═══════════════════════════════════════════════════════════════ */}
-      <div className="relative mt-6 hidden w-full md:block lg:mt-8">
-        {/* Composition band: ~2.67:1 aspect at 1440+, taller at narrower
-           tablet widths. min-h floor keeps content legible under heavy
-           crops. */}
-        <div className="relative h-[min(640px,calc(100vw*0.42))] min-h-[480px]">
+      <div className="relative mt-4 hidden w-full md:block lg:mt-5">
+        {/* Composition band — compact wide cinematic ratio matching the
+           founder-approved reference (2048 x 768 / aspect 2.67:1).
+           Height formula: ~37 vw at desktop, clamped so icons stay
+           readable at narrower breakpoints. */}
+        <div className="relative h-[min(540px,calc(100vw*0.37))] min-h-[420px]">
           {/* LEFT PHOTO — bleeds from viewport-left, clipped by chapter curve */}
           <picture aria-hidden="true">
             <source
@@ -365,7 +364,7 @@ export function HomeNetwork() {
               alt=""
               loading="lazy"
               decoding="async"
-              className="pointer-events-none absolute inset-y-0 left-0 h-full w-[62%] object-cover lg:w-[58%]"
+              className="pointer-events-none absolute inset-y-0 left-0 h-full w-[48%] object-cover lg:w-[46%]"
               style={{ clipPath: `url(#${CHAPTER_CURVE_ID})` }}
             />
           </picture>
@@ -381,18 +380,29 @@ export function HomeNetwork() {
               alt=""
               loading="lazy"
               decoding="async"
-              className="pointer-events-none absolute inset-y-0 right-0 h-full w-[62%] object-cover lg:w-[58%]"
+              className="pointer-events-none absolute inset-y-0 right-0 h-full w-[48%] object-cover lg:w-[46%]"
               style={{ clipPath: `url(#${COUNCIL_CURVE_ID})` }}
             />
           </picture>
 
-          {/* Centre overlay — two content panels in the ivory negative space */}
+          {/* Centre overlay — two content panels in the ivory negative space.
+             Each panel has a soft translucent ivory bg with large organic
+             rounded corners so it integrates with the photos behind rather
+             than sitting as a hard-edged rectangle. */}
           <div className="absolute inset-0 grid grid-cols-2">
             {/* ────── CHAPTERS content ────── */}
-            <div className="flex items-center justify-end pr-3 lg:pr-6">
-              <div className="w-full max-w-[22rem] lg:max-w-[24rem]">
+            <div className="flex items-center justify-end pr-2 lg:pr-4">
+              <div
+                className="w-full max-w-[20rem] rounded-[2.5rem] bg-[#FFFDF8]/88 px-5 py-5 backdrop-blur-[2px] lg:max-w-[22rem] lg:px-6 lg:py-6"
+                style={{
+                  borderTopLeftRadius: "4rem",
+                  borderBottomLeftRadius: "4rem",
+                  borderTopRightRadius: "1.75rem",
+                  borderBottomRightRadius: "1.75rem",
+                }}
+              >
                 <GoldRule />
-                <h3 className="mt-2 font-serif text-[1.75rem] font-bold leading-[0.95] tracking-tight sm:text-[2rem] lg:text-[2.3rem]">
+                <h3 className="mt-1.5 font-serif text-[1.5rem] font-bold leading-[0.95] tracking-tight sm:text-[1.75rem] lg:text-[2rem]">
                   <span className="block" style={{ color: GOLD_INK }}>
                     OUR
                   </span>
@@ -400,9 +410,9 @@ export function HomeNetwork() {
                     CHAPTERS
                   </span>
                 </h3>
-                <GoldRule className="mt-2" />
+                <GoldRule className="mt-1.5" />
                 <p
-                  className="mt-3 text-[0.84rem] leading-snug sm:text-[0.9rem]"
+                  className="mt-2.5 text-[0.78rem] leading-snug sm:text-[0.82rem]"
                   style={{ color: INK }}
                 >
                   Our chapters bring IPF closer to people across the Emirates,
@@ -431,17 +441,25 @@ export function HomeNetwork() {
                   </ul>
                 ) : null}
 
-                <p className="mt-4">
+                <p className="mt-3">
                   <PillLink to="/chapters">Explore Chapters</PillLink>
                 </p>
               </div>
             </div>
 
             {/* ────── COUNCILS content ────── */}
-            <div className="flex items-center justify-start pl-3 lg:pl-6">
-              <div className="w-full max-w-[22rem] lg:max-w-[24rem]">
+            <div className="flex items-center justify-start pl-2 lg:pl-4">
+              <div
+                className="w-full max-w-[20rem] rounded-[2.5rem] bg-[#FFFDF8]/88 px-5 py-5 backdrop-blur-[2px] lg:max-w-[22rem] lg:px-6 lg:py-6"
+                style={{
+                  borderTopRightRadius: "4rem",
+                  borderBottomRightRadius: "4rem",
+                  borderTopLeftRadius: "1.75rem",
+                  borderBottomLeftRadius: "1.75rem",
+                }}
+              >
                 <GoldRule />
-                <h3 className="mt-2 font-serif text-[1.75rem] font-bold leading-[0.95] tracking-tight sm:text-[2rem] lg:text-[2.3rem]">
+                <h3 className="mt-1.5 font-serif text-[1.5rem] font-bold leading-[0.95] tracking-tight sm:text-[1.75rem] lg:text-[2rem]">
                   <span className="block" style={{ color: GOLD_INK }}>
                     OUR
                   </span>
@@ -449,9 +467,9 @@ export function HomeNetwork() {
                     COUNCILS
                   </span>
                 </h3>
-                <GoldRule className="mt-2" />
+                <GoldRule className="mt-1.5" />
                 <p
-                  className="mt-3 text-[0.84rem] leading-snug sm:text-[0.9rem]"
+                  className="mt-2.5 text-[0.78rem] leading-snug sm:text-[0.82rem]"
                   style={{ color: INK }}
                 >
                   Our councils provide strategic guidance and leadership across
@@ -484,7 +502,7 @@ export function HomeNetwork() {
                   )}
                 </ul>
 
-                <p className="mt-4">
+                <p className="mt-3">
                   <PillLink to="/councils">Explore Councils</PillLink>
                 </p>
               </div>
