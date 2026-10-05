@@ -87,7 +87,7 @@ function Section({ tone = "ivory", children, ariaLabelledBy }: SectionProps) {
   return (
     <section
       aria-labelledby={ariaLabelledBy}
-      className={`relative py-12 sm:py-14 lg:py-16 ${
+      className={`relative isolate overflow-hidden py-12 sm:py-14 lg:py-16 ${
         tone === "ivory" ? "bg-[#FFF8EE]" : "bg-[#FFFDF8]"
       }`}
     >
@@ -95,6 +95,95 @@ function Section({ tone = "ivory", children, ariaLabelledBy }: SectionProps) {
     </section>
   );
 }
+
+/* ───────────────────────────────────────────────────────────────────
+ * Backdrop — decorative background layer for an About section.
+ *
+ * Renders the approved artwork via <picture> (WebP primary, PNG
+ * fallback) at a controllable opacity + object-position, and lays a
+ * soft ivory overlay on top so body copy / cards remain fully
+ * readable. The overlay style determines how the artwork "emerges"
+ * from the section:
+ *   - radial    : visible around the outer edges, ivory in the centre
+ *                 behind text (best for sections with centred content)
+ *   - leftEdge  : visible on the left, fades to ivory on the right
+ *   - rightEdge : visible on the right, fades to ivory on the left
+ *   - verticalFade : visible in the middle, fades to ivory at the
+ *                    top AND bottom edges so section boundaries are
+ *                    soft rather than hard rectangles
+ *
+ * `objectPos` biases the <img> inside its own box so the key artwork
+ * motif (mandala, horizon, etc.) lands where we want it on screen.
+ * ───────────────────────────────────────────────────────────────── */
+
+type BackdropOverlay = "radial" | "leftEdge" | "rightEdge" | "verticalFade";
+
+function Backdrop({
+  webp,
+  png,
+  opacity,
+  objectPos = "center",
+  overlay = "radial",
+}: {
+  webp: string;
+  png: string;
+  opacity: number;
+  objectPos?: "left" | "center" | "right" | "topLeft" | "topRight";
+  overlay?: BackdropOverlay;
+}) {
+  const posClass = {
+    left: "object-[20%_center]",
+    right: "object-[80%_center]",
+    center: "object-center",
+    topLeft: "object-[20%_30%]",
+    topRight: "object-[80%_30%]",
+  }[objectPos];
+
+  const overlayStyle: Record<BackdropOverlay, string> = {
+    radial:
+      "radial-gradient(ellipse 60% 70% at 50% 50%, rgba(255,248,238,0.92) 0%, rgba(255,248,238,0.75) 45%, rgba(255,248,238,0.35) 85%, rgba(255,248,238,0) 100%)",
+    leftEdge:
+      "linear-gradient(to right, rgba(255,248,238,0.1) 0%, rgba(255,248,238,0.55) 35%, rgba(255,248,238,0.92) 65%, rgba(255,248,238,1) 100%)",
+    rightEdge:
+      "linear-gradient(to left, rgba(255,248,238,0.1) 0%, rgba(255,248,238,0.55) 35%, rgba(255,248,238,0.92) 65%, rgba(255,248,238,1) 100%)",
+    verticalFade:
+      "linear-gradient(to bottom, rgba(255,248,238,1) 0%, rgba(255,248,238,0.4) 18%, rgba(255,248,238,0.4) 82%, rgba(255,248,238,1) 100%)",
+  };
+
+  return (
+    <>
+      <picture aria-hidden="true">
+        <source srcSet={webp} type="image/webp" />
+        <img
+          src={png}
+          alt=""
+          aria-hidden="true"
+          loading="lazy"
+          decoding="async"
+          width={1983}
+          height={793}
+          className={`pointer-events-none absolute inset-0 -z-20 h-full w-full object-cover ${posClass}`}
+          style={{ opacity }}
+        />
+      </picture>
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-0 -z-10"
+        style={{ background: overlayStyle[overlay] }}
+      />
+    </>
+  );
+}
+
+/* Asset paths — approved artwork copied from ~/Desktop/ipf about */
+const BG_VV_WEBP = "/images/about/about-vision-values-bg.webp";
+const BG_VV_PNG = "/images/about/about-vision-values-bg.png";
+const BG_RESP_WEBP = "/images/about/about-responsibility-bg.webp";
+const BG_RESP_PNG = "/images/about/about-responsibility-bg.png";
+const BG_IU_WEBP = "/images/about/about-india-uae-bg.webp";
+const BG_IU_PNG = "/images/about/about-india-uae-bg.png";
+const BG_CLOSE_WEBP = "/images/about/about-closing-bg.webp";
+const BG_CLOSE_PNG = "/images/about/about-closing-bg.png";
 
 /* ─────────────────────────────────────────────────────────────────── */
 
@@ -234,7 +323,17 @@ export default function AboutPage() {
       </Section>
 
       {/* ──────────────── 3 · VISION + VALUES ──────────────── */}
+      {/* Image 1 (Gold Mandala + Sage Waves) subtly behind Vision+Values;
+         same artwork is repeated with left-biased position on Section 4
+         for visual continuity across the two sections. */}
       <Section tone="ivory" ariaLabelledBy="about-vision-heading">
+        <Backdrop
+          webp={BG_VV_WEBP}
+          png={BG_VV_PNG}
+          opacity={0.22}
+          objectPos="right"
+          overlay="radial"
+        />
         <div className="grid gap-10 lg:grid-cols-[1fr_auto_1fr] lg:items-stretch lg:gap-12">
           {/* VISION */}
           <div className="min-w-0">
@@ -318,7 +417,18 @@ export default function AboutPage() {
       </Section>
 
       {/* ──────────────── 4 · OUR PURPOSE — AIMS & OBJECTIVES ──────────────── */}
+      {/* Same image as Section 3 but biased to the opposite side so the
+         mandala + waves motif reads as one continuous environmental
+         treatment across the Vision+Values -> Aims flow. Opacity drops
+         to 0.15 so the numbered list stays prominent. */}
       <Section tone="white" ariaLabelledBy="about-aims-heading">
+        <Backdrop
+          webp={BG_VV_WEBP}
+          png={BG_VV_PNG}
+          opacity={0.15}
+          objectPos="left"
+          overlay="radial"
+        />
         <div className="text-center">
           <div className="inline-flex items-center gap-3">
             <GoldRule />
@@ -375,7 +485,19 @@ export default function AboutPage() {
       </Section>
 
       {/* ──────────────── 5 · RESPONSIBILITY IN ACTION ──────────────── */}
+      {/* Image 2 (Ivory Mandala Presentation) with the mandala pulled to
+         the outer right so the Container photograph (on the left) and
+         the text column (centre) stay unobstructed. opacity 0.22 means
+         the ornament is clearly perceptible without competing with the
+         real community-support photograph. */}
       <Section tone="ivory" ariaLabelledBy="about-resp-heading">
+        <Backdrop
+          webp={BG_RESP_WEBP}
+          png={BG_RESP_PNG}
+          opacity={0.22}
+          objectPos="right"
+          overlay="leftEdge"
+        />
         <div className="grid gap-10 lg:grid-cols-[1fr_1.1fr] lg:items-center lg:gap-12">
           <div className="relative min-w-0">
             <div
@@ -512,7 +634,21 @@ export default function AboutPage() {
       </Section>
 
       {/* ──────────────── 7 · INDIA × UAE ──────────────── */}
+      {/* Image 3 (Watercolour Skyline Fusion) is the strongest visual
+         moment on the page. opacity 0.3 at the outer edges reads as a
+         full illustrated environment, but the central radial ivory
+         veil keeps the real IPF photograph (left) and the editorial
+         copy (right) perfectly readable. The real Jaishankar meeting
+         photograph is explicitly preserved — the illustration becomes
+         context, not a replacement. */}
       <Section tone="ivory" ariaLabelledBy="about-india-uae-heading">
+        <Backdrop
+          webp={BG_IU_WEBP}
+          png={BG_IU_PNG}
+          opacity={0.3}
+          objectPos="center"
+          overlay="radial"
+        />
         <div className="grid gap-10 lg:grid-cols-[1.1fr_1fr] lg:items-center lg:gap-12">
           <div className="relative min-w-0">
             <div
@@ -556,7 +692,21 @@ export default function AboutPage() {
       </Section>
 
       {/* ──────────────── 8 · DISCOVER MORE + CTA ──────────────── */}
+      {/* Image 4 (Heritage Horizon) kept intentionally faint
+         (opacity 0.14) with a vertical-fade overlay so the artwork
+         bleeds in the middle of the section but fades to ivory at both
+         the top AND the bottom. The clean ivory bottom edge gives the
+         real IPF footer artwork (India-UAE skyline illustration) room
+         to breathe — this backdrop is a visual bridge, not another
+         full illustration. */}
       <Section tone="white" ariaLabelledBy="about-discover-heading">
+        <Backdrop
+          webp={BG_CLOSE_WEBP}
+          png={BG_CLOSE_PNG}
+          opacity={0.14}
+          objectPos="center"
+          overlay="verticalFade"
+        />
         <div className="text-center">
           <div className="inline-flex items-center gap-3">
             <GoldRule />
@@ -578,29 +728,37 @@ export default function AboutPage() {
         </div>
 
         <div className="mt-8 grid gap-4 sm:mt-10 sm:grid-cols-2 lg:grid-cols-4 lg:gap-5">
+          {/* Tile `desc` values use dedicated page.about.tile.*Desc keys
+             rather than page.{sibling}.desc because two of the sibling
+             .desc keys contain unsafe content for public tiles:
+               - page.leadership.desc has an unfilled {name} placeholder
+               - page.governance.desc has developer-facing text about
+                 "old broken sign-in links"
+             Those sibling pages will be redesigned in Phase 2+ of the
+             About family roadmap; About IPF never shows that copy. */}
           {[
             {
               eyebrow: t("page.history.eyebrow"),
               label: t("nav.history"),
-              desc: t("page.history.desc"),
+              desc: t("page.about.tile.historyDesc"),
               to: "/history",
             },
             {
               eyebrow: t("page.leadership.eyebrow"),
               label: t("nav.leadership"),
-              desc: t("page.leadership.desc"),
+              desc: t("page.about.tile.leadershipDesc"),
               to: "/leadership",
             },
             {
               eyebrow: t("page.governance.eyebrow"),
               label: t("nav.governance"),
-              desc: t("page.governance.desc"),
+              desc: t("page.about.tile.governanceDesc"),
               to: "/governance",
             },
             {
               eyebrow: t("page.support.eyebrow"),
               label: t("nav.support"),
-              desc: t("page.support.desc"),
+              desc: t("page.about.tile.supportDesc"),
               to: "/support",
             },
           ].map((tile) => (
