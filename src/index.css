@@ -169,7 +169,36 @@ html:not([lang="en"]) thead th {
 .ipf-ticker-track {
   display: inline-block;
   white-space: nowrap;
-  animation: ipf-ticker 42s linear infinite;
+  /* 48 s per full cycle (previously 42 s). The track now carries thin
+     heritage-gold separators between items which add ~2.2 rem per gap
+     to the measured track width; the extra second-and-a-half keeps the
+     per-pixel reading speed roughly constant. */
+  animation: ipf-ticker 48s linear infinite;
+}
+
+/* Headlines are rendered as individual <span class="ipf-ticker-item">
+   nodes with a thin heritage-gold vertical pipe between each pair.
+   Keeping the item inline-block prevents whitespace collapse that used
+   to visually merge headlines when a plain " • " separator was inlined. */
+.ipf-ticker-item {
+  display: inline-block;
+  vertical-align: baseline;
+}
+
+/* Premium separator between ticker headlines.
+   - 1 px wide, 13 px tall — short, never touching the top/bottom of the
+     announcement strip
+   - heritage gold (#D6AD60) at 75 % opacity
+   - generous 1.1 rem horizontal breathing room on either side
+   - rendered as a <span> (NOT a bullet) so it reads as a quiet divider
+     rather than a list glyph. */
+.ipf-ticker-sep {
+  display: inline-block;
+  width: 1px;
+  height: 13px;
+  margin: 0 1.1rem;
+  vertical-align: -2px;
+  background: rgba(214, 173, 96, 0.75);
 }
 
 @keyframes ipf-ticker {

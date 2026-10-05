@@ -14,12 +14,19 @@ export const primaryNav: NavGroup[] = [
   {
     label: "About",
     to: "/about",
+    /* Founder-locked About dropdown order (5 Oct 2026):
+         About IPF -> History -> Governance -> Support -> Leaders -> Yuva
+       IMPORTANT: Yuva lives here, NOT as a separate top-level item.
+       The live Supabase nav table has previously dropped it; the
+       /api/nav server handler now injects "IPF Yuva" into About.children
+       whenever it is missing (see server/handleRequest.ts /api/nav
+       path). This local fallback mirrors the same guaranteed shape. */
     children: [
       { label: "About IPF", to: "/about" },
       { label: "History", to: "/history" },
-      { label: "Leadership", to: "/leadership" },
       { label: "Governance", to: "/governance" },
       { label: "Support", to: "/support" },
+      { label: "Leadership", to: "/leadership" },
       { label: "IPF Yuva", to: "/yuva" },
     ],
   },

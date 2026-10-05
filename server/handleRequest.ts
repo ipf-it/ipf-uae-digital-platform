@@ -1677,6 +1677,29 @@ export async function handleRequest(req: AppRequest): Promise<AppResponse> {
         mega: row.mega ?? undefined,
         children: children(row.id).length > 0 ? children(row.id) : undefined,
       }));
+
+      /* Product-level invariant: IPF Yuva must always appear inside the
+         About dropdown, never as a separate top-level item. The Supabase
+         nav_items table is admin-editable and has repeatedly dropped the
+         Yuva child row; this handler now guarantees the correct shape at
+         the API boundary so every consumer (web header, mobile header,
+         any future client) receives it. The fallback src/data/navigation.ts
+         carries the same shape for the pre-API-response render window. */
+      for (const group of primaryNav) {
+        if (group.label !== "About" && group.to !== "/about") continue;
+        const kids = group.children ? [...group.children] : [];
+        const alreadyThere = kids.some(
+          (child) =>
+            child.to === "/yuva" ||
+            /^IPF\s*Yuva$/i.test(child.label) ||
+            /^Yuva$/i.test(child.label),
+        );
+        if (!alreadyThere) {
+          kids.push({ label: "IPF Yuva", to: "/yuva" });
+          group.children = kids;
+        }
+      }
+
       const footerGroups = topLevel("footer").map((row) => ({ title: labelOf(row), links: children(row.id) }));
       const mobileTabs = topLevel("mobile").map((row) => ({ label: labelOf(row), to: row.to_path }));
       const utilityLinks = topLevel("utility").map((row) => ({ label: labelOf(row), to: row.to_path }));

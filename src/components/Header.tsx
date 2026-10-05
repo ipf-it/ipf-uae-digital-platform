@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { Fragment, useEffect, useRef, useState } from "react";
 import { Link, NavLink, useLocation } from "react-router-dom";
 import { ChevronDown, Menu, X } from "lucide-react";
 import { useMember } from "../cms/MemberProvider";
@@ -48,7 +48,7 @@ function isGroupActive(pathname: string, groupTo: string, childTos: string[]) {
 
 const linkClass = (active: boolean) =>
   cn(
-    "rounded-lg px-1.5 py-1.5 leading-tight transition hover:bg-[var(--ipf-ivory)] hover:text-[var(--ipf-green)]",
+    "rounded-lg px-2.5 py-1.5 leading-tight transition hover:bg-[var(--ipf-ivory)] hover:text-[var(--ipf-green)]",
     active && "text-[var(--ipf-green)]",
   );
 
@@ -96,20 +96,40 @@ export function Header({ logoSrc }: HeaderProps) {
   return (
     <header ref={headerRef} className="sticky top-0 z-40">
       {/* Top announcement bar on burgundy. Desktop-only (md:block). Final
-         layout: [LATEST] [ scrolling ticker ] [ Sign in ] [ EN ]. Donate and
-         the IPF email that previously lived here have been retired from
-         this strip — both remain available elsewhere on the site. */}
-      <div className="hidden border-b border-white/10 bg-[var(--ipf-burgundy)] text-[13px] text-[#FFF8EE]/85 md:block">
+         layout: [LATEST] [ scrolling ticker with thin heritage-gold vertical
+         separators between headlines ] [ Sign in ] [ EN ]. Donate and the
+         IPF email that previously lived here have been retired from this
+         strip — both remain available elsewhere on the site.
+
+         Typography: 14 px / weight 500 / ivory #FFF8EE at 95 % opacity
+         for clear reading against the burgundy fill. Links use 90 %
+         opacity to recede slightly from the primary ticker. */}
+      <div className="hidden border-b border-white/10 bg-[var(--ipf-burgundy)] text-[14px] font-medium text-[#FFF8EE]/95 md:block">
         <Container className="flex items-center justify-between gap-x-4 py-1.5">
           <p className="min-w-0 flex-1 overflow-hidden pr-2">
             {headlines.length > 0 ? (
-              <Link to="/news" className="flex items-center gap-2 text-[#FFF8EE]/85 hover:text-[#FFF8EE]">
+              <Link to="/news" className="flex items-center gap-2 text-[#FFF8EE]/95 hover:text-[#FFF8EE]">
                 <span className="shrink-0 rounded bg-[var(--ipf-saffron)] px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-[0.14em] text-[#3A0913]">
                   {t("nav.latest")}
                 </span>
                 <span className="ipf-ticker min-w-0">
+                  {/* The track is doubled so transform:translateX(-50%)
+                     reveals the second identical copy at the moment the
+                     first finishes — seamless loop with no visible jump.
+                     Between every two headlines (except the very first)
+                     a thin heritage-gold vertical pipe acts as a premium
+                     separator; the pipe is a <span> styled by CSS, not a
+                     bullet, so it reads as a quiet divider rather than a
+                     list glyph. */}
                   <span className="ipf-ticker-track">
-                    {`${headlines.join("  •  ")}  •  ${headlines.join("  •  ")}`}
+                    {[...headlines, ...headlines].map((headline, index) => (
+                      <Fragment key={index}>
+                        {index > 0 ? (
+                          <span className="ipf-ticker-sep" aria-hidden="true" />
+                        ) : null}
+                        <span className="ipf-ticker-item">{headline}</span>
+                      </Fragment>
+                    ))}
                   </span>
                 </span>
               </Link>
@@ -121,7 +141,7 @@ export function Header({ logoSrc }: HeaderProps) {
             {links.map((item) => (
               <Link
                 key={item.to}
-                className="rounded-md px-1 py-0.5 text-[13px] font-medium text-[#FFF8EE]/90 transition hover:text-[var(--ipf-gold)]"
+                className="rounded-md px-1 py-0.5 text-[14px] font-medium text-[#FFF8EE]/90 transition hover:text-[var(--ipf-gold)]"
                 to={item.to}
               >
                 {item.label}
@@ -154,7 +174,14 @@ export function Header({ logoSrc }: HeaderProps) {
             </span>
           </Link>
 
-          <nav className="hidden min-w-0 flex-1 items-center justify-end gap-0.5 overflow-visible text-[12px] font-medium text-[var(--ipf-navy)] xl:flex">
+          {/* Desktop primary navigation.
+             Typography: 14 px (previously 12 px) with font-medium — a
+             confident institutional read without becoming heavy. Items
+             get `px-2.5 py-1.5` so the larger glyph still sits inside a
+             comfortable hit area, and `gap-1` keeps breathing room
+             without crowding at 1280. Chevrons bump from size-3.5 to
+             size-4 to stay proportional. */}
+          <nav className="hidden min-w-0 flex-1 items-center justify-end gap-1 overflow-visible text-[14px] font-medium text-[var(--ipf-navy)] xl:flex">
             <NavLink to="/" end className={({ isActive }) => linkClass(isActive)} onMouseEnter={() => setMega(null)}>
               {t("nav.home")}
             </NavLink>
@@ -176,7 +203,7 @@ export function Header({ logoSrc }: HeaderProps) {
                       aria-haspopup="true"
                     >
                       {navLabel(group.label)}
-                      <ChevronDown className="size-3.5 opacity-60" />
+                      <ChevronDown className="size-4 opacity-60" />
                     </Link>
                   </div>
                 );
