@@ -56,9 +56,24 @@ const HERO_WEBP = "/images/history/history-hero-bg.webp";
 const HERO_PNG = "/images/history/history-hero-bg.png";
 
 /* Photographic inline images — genuine IPF repository assets. */
+const BEGINNING_IMG = "/legacy-assets/images/Ahlan_Modi.jpeg";
 const COVID_WELFARE_IMG = "/legacy-assets/images/community-support.png";
 const COVID_CHECKPOINT_IMG = "/legacy-assets/images/covid-check-point-sharjah.jpg";
 const AJMAN_INAUGURATION_IMG = "/legacy-assets/images/slider1.jpg";
+
+/* Eight UAE chapters — authoritative list from /api/org/chapters.
+   Note: UAE has seven Emirates; "Al Ain" is a city in Abu Dhabi
+   Emirate, counted here as its own chapter per project data. */
+const UAE_CHAPTERS = [
+  "Abu Dhabi",
+  "Ajman",
+  "Al Ain",
+  "Dubai",
+  "Fujairah",
+  "Ras Al Khaimah",
+  "Sharjah",
+  "Umm Al Quwain",
+] as const;
 
 const GOLD = "#D6AD60";
 const GOLD_INK = "#8B6A1F";
@@ -74,30 +89,6 @@ function GoldRule({ className = "" }: { className?: string }) {
       className={`inline-block h-px w-10 ${className}`}
       style={{ backgroundColor: `${GOLD}99` }}
     />
-  );
-}
-
-function Lotus({ size = 28 }: { size?: number }) {
-  return (
-    <svg
-      viewBox="0 0 48 48"
-      width={size}
-      height={size}
-      aria-hidden="true"
-      className="block"
-    >
-      <g fill="none" stroke={GOLD} strokeWidth="1.2" strokeLinecap="round">
-        <path d="M24 6 C 20 12, 20 18, 24 24 C 28 18, 28 12, 24 6 Z" />
-        <path d="M24 42 C 20 36, 20 30, 24 24 C 28 30, 28 36, 24 42 Z" />
-        <path d="M6 24 C 12 20, 18 20, 24 24 C 18 28, 12 28, 6 24 Z" />
-        <path d="M42 24 C 36 20, 30 20, 24 24 C 30 28, 36 28, 42 24 Z" />
-        <path d="M12 12 C 16 15, 20 19, 24 24 C 19 20, 15 16, 12 12 Z" />
-        <path d="M36 12 C 32 15, 28 19, 24 24 C 29 20, 33 16, 36 12 Z" />
-        <path d="M12 36 C 16 33, 20 29, 24 24 C 19 28, 15 32, 12 36 Z" />
-        <path d="M36 36 C 32 33, 28 29, 24 24 C 29 28, 33 32, 36 36 Z" />
-      </g>
-      <circle cx="24" cy="24" r="3" fill={GOLD} />
-    </svg>
   );
 }
 
@@ -170,43 +161,52 @@ export default function HistoryPage() {
            eyebrow, H1 and description all remain over clean ivory
            negative space without any overlay. */
         artworkPosition="object-[85%_center]"
-        textMaxWidth="max-w-[480px]"
+        textMaxWidth="max-w-[520px]"
       />
 
       {/* ──────────────────────────────────────────────────────────────
-       * §2 How It Began — typography-led (no 2014 photo exists)
+       * §2 THE BEGINNING — editorial 60/40 with a genuine IPF community
+       * photograph on the right. Not a card; a composed editorial band.
        * ────────────────────────────────────────────────────────────── */}
       <Section tone="ivory" ariaLabelledBy="hg-s2-heading">
-        <div className="mx-auto max-w-3xl text-center">
-          <div className="flex items-center justify-center gap-3">
-            <GoldRule />
-            <p
-              className="text-[0.7rem] font-bold uppercase tracking-[0.26em]"
-              style={{ color: GOLD_INK }}
+        <div className="mx-auto grid max-w-6xl items-center gap-10 lg:grid-cols-[6fr_5fr] lg:gap-14">
+          <div className="min-w-0">
+            <div className="flex items-center gap-3">
+              <GoldRule />
+              <p
+                className="text-[0.7rem] font-bold uppercase tracking-[0.26em]"
+                style={{ color: GOLD_INK }}
+              >
+                {t("page.historyGov.s2Eyebrow")}
+              </p>
+            </div>
+            <h2
+              id="hg-s2-heading"
+              className="mt-5 font-serif text-[1.8rem] font-bold leading-[1.1] tracking-tight sm:text-[2.1rem] lg:text-[2.4rem]"
+              style={{ color: NAVY }}
             >
-              {t("page.historyGov.s2Eyebrow")}
-            </p>
-            <GoldRule />
+              {t("page.historyGov.s2Heading")}
+            </h2>
+            <div
+              className="mt-6 space-y-4 text-[0.98rem] leading-relaxed sm:text-[1.02rem]"
+              style={{ color: INK }}
+            >
+              <p>{t("page.historyGov.s2Body1")}</p>
+              <p>{t("page.historyGov.s2Body2")}</p>
+            </div>
           </div>
-          <h2
-            id="hg-s2-heading"
-            className="mt-5 font-serif text-[1.7rem] font-bold leading-tight tracking-tight sm:text-[2rem] lg:text-[2.3rem]"
-            style={{ color: NAVY }}
+          <figure
+            className="relative overflow-hidden shadow-[0_12px_36px_rgba(11,31,58,0.1)] ring-1 ring-[#D6AD60]/30"
+            style={{ borderRadius: "2rem 5rem 2rem 5rem" }}
           >
-            {t("page.historyGov.s2Heading")}
-          </h2>
-        </div>
-
-        <div
-          className="mx-auto mt-10 max-w-2xl space-y-5 text-[0.98rem] leading-relaxed sm:text-[1.02rem]"
-          style={{ color: INK }}
-        >
-          <p>{t("page.historyGov.s2Body1")}</p>
-          <p>{t("page.historyGov.s2Body2")}</p>
-        </div>
-
-        <div className="mt-10 flex justify-center">
-          <Lotus size={36} />
+            <img
+              src={BEGINNING_IMG}
+              alt="IPF UAE community gathering, Ahlan Modi welcome programme"
+              loading="lazy"
+              decoding="async"
+              className="block aspect-[4/3] w-full object-cover"
+            />
+          </figure>
         </div>
       </Section>
 
@@ -456,8 +456,159 @@ export default function HistoryPage() {
           </p>
         </div>
 
+        {/* ── Governance hierarchy visual ── IPF UAE → Managing Committee
+           (Central + Chapter Convenors) → 8 Chapters → 31 Councils.
+           Thin gold connectors, no ugly flowchart boxes. */}
+        <div
+          className="mx-auto mt-12 max-w-4xl text-center sm:mt-14"
+          aria-label="IPF UAE governance hierarchy"
+        >
+          {/* Tier 1: IPF UAE */}
+          <div className="inline-flex flex-col items-center">
+            <p
+              className="text-[0.62rem] font-bold uppercase tracking-[0.3em]"
+              style={{ color: GOLD_INK }}
+            >
+              Forum
+            </p>
+            <p
+              className="mt-2 font-serif text-[1.3rem] font-bold leading-tight tracking-tight sm:text-[1.5rem]"
+              style={{ color: NAVY }}
+            >
+              IPF UAE
+            </p>
+          </div>
+
+          {/* Gold connector */}
+          <div
+            aria-hidden="true"
+            className="mx-auto mt-4 h-6 w-px"
+            style={{ backgroundColor: `${GOLD}99` }}
+          />
+
+          {/* Tier 2: Managing Committee */}
+          <div className="mx-auto inline-flex max-w-md flex-col items-center rounded-xl border border-[#D6AD60]/35 bg-[#FFFDF8] px-6 py-3">
+            <p
+              className="text-[0.62rem] font-bold uppercase tracking-[0.28em]"
+              style={{ color: GOLD_INK }}
+            >
+              Managing Committee
+            </p>
+            <p
+              className="mt-1 text-[0.9rem] font-semibold"
+              style={{ color: NAVY }}
+            >
+              Central Committee + Chapter Convenors
+            </p>
+          </div>
+
+          {/* Gold connector */}
+          <div
+            aria-hidden="true"
+            className="mx-auto mt-4 h-6 w-px"
+            style={{ backgroundColor: `${GOLD}99` }}
+          />
+
+          {/* Tier 3: two parallel branches */}
+          <div className="mx-auto grid max-w-2xl grid-cols-1 gap-4 sm:grid-cols-2">
+            <div className="flex flex-col items-center rounded-xl border border-[#D6AD60]/35 bg-[#FFFDF8] px-5 py-4">
+              <p
+                className="font-serif text-[1.8rem] font-light leading-none"
+                style={{ color: NAVY }}
+              >
+                8
+              </p>
+              <p
+                className="mt-2 text-[0.62rem] font-bold uppercase tracking-[0.28em]"
+                style={{ color: GOLD_INK }}
+              >
+                UAE Chapters
+              </p>
+              <p
+                className="mt-1 text-[0.82rem] leading-relaxed"
+                style={{ color: MUTED }}
+              >
+                Local community activity per Emirate
+              </p>
+            </div>
+            <div className="flex flex-col items-center rounded-xl border border-[#D6AD60]/35 bg-[#FFFDF8] px-5 py-4">
+              <p
+                className="font-serif text-[1.8rem] font-light leading-none"
+                style={{ color: NAVY }}
+              >
+                31
+              </p>
+              <p
+                className="mt-2 text-[0.62rem] font-bold uppercase tracking-[0.28em]"
+                style={{ color: GOLD_INK }}
+              >
+                Councils
+              </p>
+              <p
+                className="mt-1 text-[0.82rem] leading-relaxed"
+                style={{ color: MUTED }}
+              >
+                State and Special community councils
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* ── Eight-chapter UAE presence — refined compact list, not cards ── */}
+        <div className="mx-auto mt-14 max-w-5xl sm:mt-16">
+          <div className="text-center">
+            <div className="inline-flex items-center gap-3">
+              <GoldRule />
+              <p
+                className="text-[0.7rem] font-bold uppercase tracking-[0.26em]"
+                style={{ color: GOLD_INK }}
+              >
+                {t("page.historyGov.chaptersEyebrow")}
+              </p>
+              <GoldRule />
+            </div>
+            <h3
+              className="mt-4 font-serif text-[1.4rem] font-bold leading-tight tracking-tight sm:text-[1.6rem]"
+              style={{ color: NAVY }}
+            >
+              {t("page.historyGov.chaptersHeading")}
+            </h3>
+            <p
+              className="mx-auto mt-4 max-w-2xl text-[0.95rem] leading-relaxed"
+              style={{ color: INK }}
+            >
+              {t("page.historyGov.chaptersBody")}
+            </p>
+          </div>
+          <ul
+            role="list"
+            className="mx-auto mt-8 grid max-w-4xl grid-cols-2 gap-x-6 gap-y-3 sm:grid-cols-3 lg:grid-cols-4"
+          >
+            {UAE_CHAPTERS.map((name) => (
+              <li key={name}>
+                <Link
+                  to={`/chapters/${name.toLowerCase().replace(/ /g, "-")}`}
+                  className="group flex items-center gap-2 border-b border-[#D6AD60]/25 py-2 text-[0.95rem] transition hover:border-[#D6AD60]"
+                  style={{ color: NAVY }}
+                >
+                  <span
+                    aria-hidden="true"
+                    className="inline-block h-[6px] w-[6px] shrink-0 rounded-full"
+                    style={{ backgroundColor: GOLD }}
+                  />
+                  <span className="font-semibold">{name}</span>
+                  <ArrowRight
+                    aria-hidden="true"
+                    className="ml-auto size-3 opacity-40 transition group-hover:opacity-80 group-hover:translate-x-0.5"
+                  />
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </div>
+
         {/* The single curved institutional panel */}
-        <div className="mx-auto mt-10 max-w-5xl rounded-[2rem] border border-[#D6AD60]/25 bg-[#FFFDF8] p-6 shadow-[0_12px_32px_rgba(11,31,58,0.08)] sm:mt-12 sm:p-10 lg:rounded-[2.25rem] lg:p-14">
+        <div className="mx-auto mt-14 max-w-5xl rounded-[2rem] border border-[#D6AD60]/25 bg-[#FFFDF8] p-6 shadow-[0_12px_32px_rgba(11,31,58,0.08)] sm:mt-16 sm:p-10 lg:rounded-[2.25rem] lg:p-14">
           {/* ── Sub A — How IPF is governed ── */}
           <section aria-labelledby="hg-s6-how">
             <div className="flex items-center gap-3">
@@ -641,7 +792,49 @@ export default function HistoryPage() {
       </Section>
 
       {/* ──────────────────────────────────────────────────────────────
-       * §7 Continuing the Journey + reused Join/Contact CTA
+       * §7 Leadership CTA — contextual editorial band that leads
+       * naturally from Governance to the Leadership page.
+       * ────────────────────────────────────────────────────────────── */}
+      <Section tone="ivory" ariaLabelledBy="hg-ldr-heading">
+        <div className="mx-auto grid max-w-5xl items-center gap-8 rounded-[1.75rem] border border-[#D6AD60]/30 bg-[#FFFDF8] px-6 py-10 shadow-[0_14px_38px_rgba(11,31,58,0.08)] sm:px-10 sm:py-12 lg:grid-cols-[1.3fr_1fr] lg:gap-12">
+          <div className="min-w-0">
+            <div className="flex items-center gap-3">
+              <GoldRule />
+              <p
+                className="text-[0.7rem] font-bold uppercase tracking-[0.26em]"
+                style={{ color: GOLD_INK }}
+              >
+                {t("page.historyGov.ldrEyebrow")}
+              </p>
+            </div>
+            <h2
+              id="hg-ldr-heading"
+              className="mt-4 font-serif text-[1.6rem] font-bold leading-tight tracking-tight sm:text-[1.9rem] lg:text-[2.1rem]"
+              style={{ color: NAVY }}
+            >
+              {t("page.historyGov.ldrHeading")}
+            </h2>
+            <p
+              className="mt-5 max-w-xl text-[0.98rem] leading-relaxed"
+              style={{ color: INK }}
+            >
+              {t("page.historyGov.ldrBody")}
+            </p>
+          </div>
+          <div className="flex min-w-0 justify-start lg:justify-end">
+            <Link
+              to="/leadership"
+              className="group inline-flex items-center gap-2 rounded-full border border-[var(--ipf-navy)] bg-[var(--ipf-navy)] px-6 py-3 text-[0.8rem] font-bold uppercase tracking-[0.18em] text-[#FFF8EE] transition hover:bg-[#0b1f3a]/90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#D6AD60]"
+            >
+              {t("page.historyGov.ldrCta")}
+              <ArrowRight className="size-3.5 transition-transform group-hover:translate-x-0.5" />
+            </Link>
+          </div>
+        </div>
+      </Section>
+
+      {/* ──────────────────────────────────────────────────────────────
+       * §8 Continuing the Journey + reused Join/Contact CTA
        * ────────────────────────────────────────────────────────────── */}
       <Section tone="white" ariaLabelledBy="hg-s7-heading">
         <div className="mx-auto max-w-3xl text-center">
