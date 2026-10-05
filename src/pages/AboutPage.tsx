@@ -81,9 +81,13 @@ type SectionProps = {
   tone?: "ivory" | "white";
   children: React.ReactNode;
   ariaLabelledBy?: string;
+  /* Full-viewport backdrop layer rendered OUTSIDE the Container, so the
+     approved artwork bleeds to the viewport's left and right edges
+     instead of being constrained to the max-w-6xl content column. */
+  backdrop?: React.ReactNode;
 };
 
-function Section({ tone = "ivory", children, ariaLabelledBy }: SectionProps) {
+function Section({ tone = "ivory", children, ariaLabelledBy, backdrop }: SectionProps) {
   return (
     <section
       aria-labelledby={ariaLabelledBy}
@@ -91,6 +95,7 @@ function Section({ tone = "ivory", children, ariaLabelledBy }: SectionProps) {
         tone === "ivory" ? "bg-[#FFF8EE]" : "bg-[#FFFDF8]"
       }`}
     >
+      {backdrop}
       <Container className="relative">{children}</Container>
     </section>
   );
@@ -139,15 +144,19 @@ function Backdrop({
     topRight: "object-[80%_30%]",
   }[objectPos];
 
+  /* Overlay opacity values are deliberately lighter than they look —
+     the centre (where text sits) is only partially ivory so the
+     artwork still reads behind it. The outer edges are fully clear so
+     the illustration bleeds visibly to the viewport's left/right. */
   const overlayStyle: Record<BackdropOverlay, string> = {
     radial:
-      "radial-gradient(ellipse 60% 70% at 50% 50%, rgba(255,248,238,0.92) 0%, rgba(255,248,238,0.75) 45%, rgba(255,248,238,0.35) 85%, rgba(255,248,238,0) 100%)",
+      "radial-gradient(ellipse 55% 70% at 50% 50%, rgba(255,248,238,0.72) 0%, rgba(255,248,238,0.5) 40%, rgba(255,248,238,0.15) 80%, rgba(255,248,238,0) 100%)",
     leftEdge:
-      "linear-gradient(to right, rgba(255,248,238,0.1) 0%, rgba(255,248,238,0.55) 35%, rgba(255,248,238,0.92) 65%, rgba(255,248,238,1) 100%)",
+      "linear-gradient(to right, rgba(255,248,238,0) 0%, rgba(255,248,238,0.25) 30%, rgba(255,248,238,0.7) 60%, rgba(255,248,238,0.88) 85%, rgba(255,248,238,0.95) 100%)",
     rightEdge:
-      "linear-gradient(to left, rgba(255,248,238,0.1) 0%, rgba(255,248,238,0.55) 35%, rgba(255,248,238,0.92) 65%, rgba(255,248,238,1) 100%)",
+      "linear-gradient(to left, rgba(255,248,238,0) 0%, rgba(255,248,238,0.25) 30%, rgba(255,248,238,0.7) 60%, rgba(255,248,238,0.88) 85%, rgba(255,248,238,0.95) 100%)",
     verticalFade:
-      "linear-gradient(to bottom, rgba(255,248,238,1) 0%, rgba(255,248,238,0.4) 18%, rgba(255,248,238,0.4) 82%, rgba(255,248,238,1) 100%)",
+      "linear-gradient(to bottom, rgba(255,248,238,0.95) 0%, rgba(255,248,238,0.35) 22%, rgba(255,248,238,0.35) 78%, rgba(255,248,238,0.95) 100%)",
   };
 
   return (
@@ -323,17 +332,22 @@ export default function AboutPage() {
       </Section>
 
       {/* ──────────────── 3 · VISION + VALUES ──────────────── */}
-      {/* Image 1 (Gold Mandala + Sage Waves) subtly behind Vision+Values;
-         same artwork is repeated with left-biased position on Section 4
-         for visual continuity across the two sections. */}
-      <Section tone="ivory" ariaLabelledBy="about-vision-heading">
-        <Backdrop
-          webp={BG_VV_WEBP}
-          png={BG_VV_PNG}
-          opacity={0.22}
-          objectPos="right"
-          overlay="radial"
-        />
+      {/* Image 1 (Gold Mandala + Sage Waves) bleeds full-viewport width
+         behind Vision+Values; same artwork is repeated on Section 4
+         with the opposite horizontal bias for visual continuity. */}
+      <Section
+        tone="ivory"
+        ariaLabelledBy="about-vision-heading"
+        backdrop={
+          <Backdrop
+            webp={BG_VV_WEBP}
+            png={BG_VV_PNG}
+            opacity={0.55}
+            objectPos="right"
+            overlay="radial"
+          />
+        }
+      >
         <div className="grid gap-10 lg:grid-cols-[1fr_auto_1fr] lg:items-stretch lg:gap-12">
           {/* VISION */}
           <div className="min-w-0">
@@ -417,18 +431,23 @@ export default function AboutPage() {
       </Section>
 
       {/* ──────────────── 4 · OUR PURPOSE — AIMS & OBJECTIVES ──────────────── */}
-      {/* Same image as Section 3 but biased to the opposite side so the
-         mandala + waves motif reads as one continuous environmental
-         treatment across the Vision+Values -> Aims flow. Opacity drops
-         to 0.15 so the numbered list stays prominent. */}
-      <Section tone="white" ariaLabelledBy="about-aims-heading">
-        <Backdrop
-          webp={BG_VV_WEBP}
-          png={BG_VV_PNG}
-          opacity={0.15}
-          objectPos="left"
-          overlay="radial"
-        />
+      {/* Same image as Section 3 but mirrored to the opposite side —
+         creates deliberate visual continuity across the Vision+Values
+         -> Aims transition. Opacity slightly lower so the numbered
+         01-10 grid remains the dominant visual. */}
+      <Section
+        tone="white"
+        ariaLabelledBy="about-aims-heading"
+        backdrop={
+          <Backdrop
+            webp={BG_VV_WEBP}
+            png={BG_VV_PNG}
+            opacity={0.42}
+            objectPos="left"
+            overlay="radial"
+          />
+        }
+      >
         <div className="text-center">
           <div className="inline-flex items-center gap-3">
             <GoldRule />
@@ -485,19 +504,24 @@ export default function AboutPage() {
       </Section>
 
       {/* ──────────────── 5 · RESPONSIBILITY IN ACTION ──────────────── */}
-      {/* Image 2 (Ivory Mandala Presentation) with the mandala pulled to
-         the outer right so the Container photograph (on the left) and
-         the text column (centre) stay unobstructed. opacity 0.22 means
-         the ornament is clearly perceptible without competing with the
-         real community-support photograph. */}
-      <Section tone="ivory" ariaLabelledBy="about-resp-heading">
-        <Backdrop
-          webp={BG_RESP_WEBP}
-          png={BG_RESP_PNG}
-          opacity={0.22}
-          objectPos="right"
-          overlay="leftEdge"
-        />
+      {/* Image 2 (Ivory Mandala Presentation) bleeds full-viewport width
+         with the mandala pulled to the outer right. leftEdge overlay
+         keeps the left half (where the real community-support
+         photograph sits) and the content text clean, while the right
+         half shows the mandala clearly. */}
+      <Section
+        tone="ivory"
+        ariaLabelledBy="about-resp-heading"
+        backdrop={
+          <Backdrop
+            webp={BG_RESP_WEBP}
+            png={BG_RESP_PNG}
+            opacity={0.55}
+            objectPos="right"
+            overlay="leftEdge"
+          />
+        }
+      >
         <div className="grid gap-10 lg:grid-cols-[1fr_1.1fr] lg:items-center lg:gap-12">
           <div className="relative min-w-0">
             <div
@@ -635,20 +659,25 @@ export default function AboutPage() {
 
       {/* ──────────────── 7 · INDIA × UAE ──────────────── */}
       {/* Image 3 (Watercolour Skyline Fusion) is the strongest visual
-         moment on the page. opacity 0.3 at the outer edges reads as a
-         full illustrated environment, but the central radial ivory
-         veil keeps the real IPF photograph (left) and the editorial
-         copy (right) perfectly readable. The real Jaishankar meeting
-         photograph is explicitly preserved — the illustration becomes
+         moment on the page. opacity 0.7 means the India/UAE skyline
+         illustration bleeds clearly to the viewport's left and right
+         edges; the central radial ivory veil keeps the real IPF
+         photograph + editorial copy readable. The real Jaishankar
+         meeting photograph is preserved — the illustration becomes
          context, not a replacement. */}
-      <Section tone="ivory" ariaLabelledBy="about-india-uae-heading">
-        <Backdrop
-          webp={BG_IU_WEBP}
-          png={BG_IU_PNG}
-          opacity={0.3}
-          objectPos="center"
-          overlay="radial"
-        />
+      <Section
+        tone="ivory"
+        ariaLabelledBy="about-india-uae-heading"
+        backdrop={
+          <Backdrop
+            webp={BG_IU_WEBP}
+            png={BG_IU_PNG}
+            opacity={0.7}
+            objectPos="center"
+            overlay="radial"
+          />
+        }
+      >
         <div className="grid gap-10 lg:grid-cols-[1.1fr_1fr] lg:items-center lg:gap-12">
           <div className="relative min-w-0">
             <div
@@ -692,21 +721,25 @@ export default function AboutPage() {
       </Section>
 
       {/* ──────────────── 8 · DISCOVER MORE + CTA ──────────────── */}
-      {/* Image 4 (Heritage Horizon) kept intentionally faint
-         (opacity 0.14) with a vertical-fade overlay so the artwork
-         bleeds in the middle of the section but fades to ivory at both
-         the top AND the bottom. The clean ivory bottom edge gives the
-         real IPF footer artwork (India-UAE skyline illustration) room
-         to breathe — this backdrop is a visual bridge, not another
-         full illustration. */}
-      <Section tone="white" ariaLabelledBy="about-discover-heading">
-        <Backdrop
-          webp={BG_CLOSE_WEBP}
-          png={BG_CLOSE_PNG}
-          opacity={0.14}
-          objectPos="center"
-          overlay="verticalFade"
-        />
+      {/* Image 4 (Heritage Horizon) bleeds full-viewport width in the
+         middle of the section, fading to ivory at both the top AND the
+         bottom via verticalFade. The clean ivory bottom edge gives the
+         real IPF footer artwork (India-UAE skyline) room to breathe —
+         this backdrop is a visual bridge rather than another full
+         illustration above the footer. */}
+      <Section
+        tone="white"
+        ariaLabelledBy="about-discover-heading"
+        backdrop={
+          <Backdrop
+            webp={BG_CLOSE_WEBP}
+            png={BG_CLOSE_PNG}
+            opacity={0.4}
+            objectPos="center"
+            overlay="verticalFade"
+          />
+        }
+      >
         <div className="text-center">
           <div className="inline-flex items-center gap-3">
             <GoldRule />
