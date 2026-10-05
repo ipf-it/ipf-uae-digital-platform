@@ -289,7 +289,7 @@ export function HomeNetwork() {
   return (
     <section
       aria-labelledby="ipf-network-eyebrow"
-      className="relative isolate overflow-hidden bg-[#FFF8EE]"
+      className="relative isolate overflow-hidden bg-[#FFF8EE] pb-6 lg:pb-8"
     >
       {/* Inline SVG definitions — one sweeping organic curve per side.
          Clip paths use objectBoundingBox units so the curves scale with
@@ -316,12 +316,12 @@ export function HomeNetwork() {
 
       {/* Introductory header — constrained width inside the Container. */}
       <Container>
-        <div className="pt-10 text-center sm:pt-12 lg:pt-14">
+        <div className="pt-8 text-center sm:pt-9 lg:pt-10">
           <div className="inline-flex items-center gap-3">
             <GoldRule />
             <p
               id="ipf-network-eyebrow"
-              className="text-[0.72rem] font-bold uppercase tracking-[0.3em]"
+              className="text-[0.68rem] font-bold uppercase tracking-[0.3em]"
               style={{ color: GOLD_INK }}
             >
               Our Network
@@ -329,13 +329,13 @@ export function HomeNetwork() {
             <GoldRule />
           </div>
           <h2
-            className="mt-3 font-serif text-[1.65rem] font-bold leading-[1.1] tracking-tight sm:text-[2rem] lg:text-[2.3rem]"
+            className="mt-2 font-serif text-[1.5rem] font-bold leading-[1.1] tracking-tight sm:text-[1.85rem] lg:text-[2.1rem]"
             style={{ color: NAVY }}
           >
             People. Communities. A Stronger Tomorrow.
           </h2>
           <p
-            className="mx-auto mt-2 max-w-2xl text-[0.9rem] leading-relaxed sm:text-[0.95rem]"
+            className="mx-auto mt-1.5 max-w-2xl text-[0.85rem] leading-snug sm:text-[0.9rem]"
             style={{ color: MUTED }}
           >
             Through our Chapters and Councils, IPF UAE connects people, ideas
@@ -347,12 +347,12 @@ export function HomeNetwork() {
       {/* ═══════════════════════════════════════════════════════════════
          Desktop & tablet composition (≥md) — FULL-BLEED band
          ═══════════════════════════════════════════════════════════════ */}
-      <div className="relative mt-4 hidden w-full md:block lg:mt-5">
+      <div className="relative mt-2 hidden w-full md:block lg:mt-3">
         {/* Composition band — compact wide cinematic ratio matching the
            founder-approved reference (2048 x 768 / aspect 2.67:1).
-           Height formula: ~37 vw at desktop, clamped so icons stay
+           Height formula: ~30 vw at desktop, clamped so icons stay
            readable at narrower breakpoints. */}
-        <div className="relative h-[min(540px,calc(100vw*0.37))] min-h-[420px]">
+        <div className="relative h-[min(460px,calc(100vw*0.30))] min-h-[380px]">
           {/* LEFT PHOTO — bleeds from viewport-left, clipped by chapter curve */}
           <picture aria-hidden="true">
             <source
