@@ -185,7 +185,13 @@ function Backdrop({
           width={1983}
           height={793}
           className={`pointer-events-none absolute inset-0 -z-20 h-full w-full object-cover ${posClass}`}
-          style={{ opacity }}
+          /* saturate(1.4) + contrast(1.1) pushes the deliberately pastel
+             source artwork (gold mandala line-art, sage waves, soft
+             watercolour skylines) to a visibility level that reads as
+             editorial atmosphere at viewport scale. Without this filter
+             the fine gold lines antialias into the ivory background and
+             effectively vanish once the image is upscaled by object-cover. */
+          style={{ opacity, filter: "saturate(1.4) contrast(1.08)" }}
         />
       </picture>
       <div
