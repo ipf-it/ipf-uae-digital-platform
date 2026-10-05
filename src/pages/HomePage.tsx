@@ -6,7 +6,6 @@ import { HomeHeroVideo } from "../components/HomeHeroVideo";
 import { HomeIdentityStrip } from "../components/HomeIdentityStrip";
 import { HomePresidentMessage } from "../components/HomePresidentMessage";
 import { HomeWhoWeAre } from "../components/HomeWhoWeAre";
-import { VandeMataramToggle } from "../components/VandeMataramToggle";
 import { DocumentTitle } from "../components/layout/DocumentTitle";
 import { useLocale } from "../i18n/LocaleProvider";
 import { PageExtras } from "../cms/PageExtras";
@@ -22,19 +21,23 @@ export default function HomePage() {
       {/* HOMEPAGE HERO — the approved IPF UAE WebM is the hero. All former
          overlay content (BrandLoader/BrandMark/badge/h1/subtitle/tricolour
          divider/intro paragraph/Join + Yuva + Meet the leaders CTAs/scroll
-         chevron) has been removed. The Vande Mataram audio toggle is the
-         only interactive element over the video. */}
+         chevron) was removed in the current redesign.
+
+         The Vande Mataram audio control now lives at the <SiteLayout>
+         level (see VandeMataramController.tsx + layout/SiteLayout.tsx) as
+         a single persistent floating button. That lets the song survive
+         SPA route changes without restarting and guarantees there is only
+         ever ONE <audio> element across the site. HomePage.tsx therefore
+         does not render the audio toggle itself any more. */}
       <div className="lg:hidden">
         <section className="ipf-home-hero relative flex min-h-[calc(100svh-var(--ipf-header-h,4.85rem)-var(--ipf-tabbar-h,4.75rem))] flex-col overflow-hidden">
           <HomeHeroVideo />
-          <VandeMataramToggle />
         </section>
       </div>
 
       <div className="hidden lg:block">
         <section className="ipf-home-hero relative flex min-h-[calc(100svh-var(--ipf-header-h,6rem))] overflow-hidden">
           <HomeHeroVideo />
-          <VandeMataramToggle />
         </section>
       </div>
 
