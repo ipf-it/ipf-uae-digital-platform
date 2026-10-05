@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 import { Link } from "react-router-dom";
-import { ArrowRight, Phone } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import { chapterPath, councilPath } from "../data/orgNav";
 import { useOrgChapters, useOrgCouncils } from "../hooks/useOrgDirectory";
 import { useLocale } from "../i18n/LocaleProvider";
@@ -115,59 +115,102 @@ export function ChaptersMegaMenu({ onNavigate }: MenuProps) {
   );
 }
 
+/* Trim trailing " Council" from state-council display labels inside this
+ * menu only. The section header "STATE COUNCILS" already provides that
+ * context, so repeating "Council" on every row wastes horizontal space and
+ * forces long names like "Arunachal Pradesh Council" to wrap at narrow
+ * column widths. This is a DISPLAY tweak — database records, routes and
+ * accessible names elsewhere on the site are unchanged. */
+function trimCouncilSuffix(name: string): string {
+  return name.replace(/\s*Council\s*$/i, "");
+}
+
 export function CouncilsMegaMenu({ onNavigate }: MenuProps) {
   const { t } = useLocale();
   const { councils } = useOrgCouncils();
   const stateCouncils = councils.filter((item) => item.kind === "state");
   const specialCouncils = councils.filter((item) => item.kind === "special");
-  // ~29 state councils in one column would run well past a typical viewport height with no way
-  // to scan it at a glance — splitting into two sub-columns (same pattern as the chapters menu)
-  // roughly halves the scroll length.
-  const half = Math.ceil(stateCouncils.length / 2);
-  const stateLeft = stateCouncils.slice(0, half);
-  const stateRight = stateCouncils.slice(half);
 
   return (
-    <NavPanel columns={3}>
-      <div className="flex min-w-0 flex-col px-4 py-5 sm:px-5">
-        <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-[var(--ipf-green)]">{t("nav.stateCouncils")}</p>
-        <div className="mt-1.5 h-0.5 w-11 rounded-full bg-[var(--ipf-green)]" />
-        <div className="mt-2 grid grid-cols-2 divide-x divide-[var(--ipf-line)]">
-          <ul className="pr-4">
-            {stateLeft.map((item) => (
-              <MegaLink key={item.id} to={councilPath(item.id)} label={item.name} bullet="green" onNavigate={onNavigate} />
+    <div className="px-5 py-5 lg:px-6 lg:py-6">
+      <div className="grid gap-6 lg:grid-cols-[minmax(0,2.6fr)_1px_minmax(0,1fr)] lg:gap-7">
+        {/* ────── STATE COUNCILS — compact 3-column grid ────── */}
+        <div className="min-w-0">
+          <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-[var(--ipf-green)]">
+            {t("nav.stateCouncils")}
+          </p>
+          <div className="mt-1.5 h-0.5 w-11 rounded-full bg-[var(--ipf-green)]" />
+          <ul
+            role="list"
+            className="mt-3 grid grid-cols-2 gap-x-5 gap-y-0.5 sm:grid-cols-3"
+          >
+            {stateCouncils.map((item) => (
+              <li key={item.id} className="min-w-0">
+                <Link
+                  to={councilPath(item.id)}
+                  onClick={onNavigate}
+                  aria-label={item.name}
+                  className="flex items-center gap-2 py-1 text-[13px] leading-tight text-[var(--ipf-navy)] transition hover:text-[var(--ipf-green)]"
+                >
+                  <span
+                    aria-hidden="true"
+                    className="size-1.5 shrink-0 rounded-full bg-[var(--ipf-green)]"
+                  />
+                  <span className="truncate">{trimCouncilSuffix(item.name)}</span>
+                </Link>
+              </li>
             ))}
           </ul>
-          <ul className="pl-4">
-            {stateRight.map((item) => (
-              <MegaLink key={item.id} to={councilPath(item.id)} label={item.name} bullet="green" onNavigate={onNavigate} />
+        </div>
+
+        {/* Thin vertical rule separating the two groups (desktop only). */}
+        <div
+          aria-hidden="true"
+          className="hidden self-stretch bg-[var(--ipf-line)] lg:block"
+        />
+
+        {/* ────── SPECIAL COUNCILS — compact column ────── */}
+        <div className="min-w-0">
+          <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-[var(--ipf-navy)]">
+            {t("nav.specialCouncils")}
+          </p>
+          <div className="mt-1.5 h-0.5 w-11 rounded-full bg-[var(--ipf-navy)]" />
+          <ul role="list" className="mt-3 flex flex-col gap-0.5">
+            {specialCouncils.map((item) => (
+              <li key={item.id}>
+                <Link
+                  to={councilPath(item.id)}
+                  onClick={onNavigate}
+                  className="flex items-center gap-2 py-1 text-[13px] leading-tight text-[var(--ipf-navy)] transition hover:text-[#5A0F1E]"
+                >
+                  <span
+                    aria-hidden="true"
+                    className="size-1.5 shrink-0 rounded-full bg-[#5A0F1E]"
+                  />
+                  <span className="truncate">{item.name}</span>
+                </Link>
+              </li>
             ))}
           </ul>
         </div>
       </div>
-      <MegaColumn title={t("nav.specialCouncils")} titleClass="text-[var(--ipf-navy)]" barClass="bg-[var(--ipf-navy)]">
-        {specialCouncils.map((item) => (
-          <MegaLink key={item.id} to={councilPath(item.id)} label={item.name} bullet="navy" onNavigate={onNavigate} />
-        ))}
-      </MegaColumn>
-      <MegaColumn
-        title={t("nav.ipfCares")}
-        titleClass="text-[#c41e3a]"
-        barClass="bg-[#c41e3a]"
-        footer={
-          <Link
-            to="/support#community"
-            onClick={onNavigate}
-            className="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-lg border border-[#e8a0a8] bg-[#fdf2f2] px-3 py-2.5 text-[13px] font-bold tracking-wide text-[#c41e3a] transition hover:bg-[#fae6e8]"
-          >
-            <Phone className="size-4" />
-            {t("nav.ipfCares")}
-          </Link>
-        }
-      >
-        <li className="py-2 text-[13px] leading-6 text-[var(--ipf-muted)]">{t("page.councils.caresBody")}</li>
-      </MegaColumn>
-    </NavPanel>
+
+      {/* View all councils — restrained editorial link, not a marketing button. */}
+      <div className="mt-5 flex items-center gap-3 border-t border-[var(--ipf-line)] pt-4">
+        <span
+          aria-hidden="true"
+          className="h-px w-8 bg-[#D6AD60]/60"
+        />
+        <Link
+          to="/councils"
+          onClick={onNavigate}
+          className="group inline-flex items-center gap-1.5 text-[13px] font-semibold uppercase tracking-[0.14em] text-[var(--ipf-navy)] transition hover:text-[var(--ipf-green)]"
+        >
+          <span>View all councils</span>
+          <ArrowRight className="size-3.5 transition-transform group-hover:translate-x-0.5" />
+        </Link>
+      </div>
+    </div>
   );
 }
 
@@ -214,20 +257,41 @@ export function CouncilsMobileList({ onNavigate }: MenuProps) {
   return (
     <div className="space-y-4">
       <div>
-        <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-[var(--ipf-green)]">{t("nav.stateCouncils")}</p>
-        <MobileLinks items={stateCouncils.map((item) => ({ id: item.id, to: councilPath(item.id), name: item.name }))} onNavigate={onNavigate} />
+        <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-[var(--ipf-green)]">
+          {t("nav.stateCouncils")}
+        </p>
+        <MobileLinks
+          items={stateCouncils.map((item) => ({
+            id: item.id,
+            to: councilPath(item.id),
+            name: item.name,
+          }))}
+          onNavigate={onNavigate}
+        />
       </div>
       <div>
-        <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-[var(--ipf-navy)]">{t("nav.specialCouncils")}</p>
-        <MobileLinks items={specialCouncils.map((item) => ({ id: item.id, to: councilPath(item.id), name: item.name }))} onNavigate={onNavigate} />
+        <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-[var(--ipf-navy)]">
+          {t("nav.specialCouncils")}
+        </p>
+        <MobileLinks
+          items={specialCouncils.map((item) => ({
+            id: item.id,
+            to: councilPath(item.id),
+            name: item.name,
+          }))}
+          onNavigate={onNavigate}
+        />
       </div>
+      {/* IPF Cares button intentionally removed from the Councils mobile list.
+         IPF Cares remains reachable via the Support navigation / page as
+         before — it just no longer lives inside this Councils menu. */}
       <Link
-        to="/support#community"
-        className="inline-flex items-center gap-2 rounded-lg border border-[#e8a0a8] bg-[#fdf2f2] px-3 py-2 text-sm font-bold text-[#c41e3a]"
+        to="/councils"
+        className="inline-flex items-center gap-1.5 text-sm font-semibold uppercase tracking-[0.12em] text-[var(--ipf-navy)]"
         onClick={onNavigate}
       >
-        <Phone className="size-4" />
-        {t("nav.ipfCares")}
+        View all councils
+        <ArrowRight className="size-3.5" />
       </Link>
     </div>
   );
