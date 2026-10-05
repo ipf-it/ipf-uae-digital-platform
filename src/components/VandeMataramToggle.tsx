@@ -34,13 +34,24 @@ const USER_PAUSED_KEY = "ipf.vande-mataram.user-paused";
  */
 export function VandeMataramToggle() {
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const buttonRef = useRef<HTMLButtonElement | null>(null);
   const [playing, setPlaying] = useState<boolean>(false);
   const userPausedRef = useRef<boolean>(false);
 
-  /* Attempt autoplay on mount. Respects the session-scoped pause flag. */
+  /* Attempt autoplay on mount. Respects the session-scoped pause flag.
+     Short-circuits for HIDDEN instances — HomePage.tsx renders the hero
+     inside TWO responsive branches (<div class="lg:hidden"> and
+     <div class="hidden lg:block">) so React mounts two copies of this
+     component; only the branch whose parent is actually visible (its
+     offsetParent is non-null) should own playback. Without this guard
+     both <audio> elements would autoplay the same track on desktop. */
   useEffect(() => {
     const el = audioRef.current;
-    if (!el) return;
+    const btn = buttonRef.current;
+    if (!el || !btn) return;
+    /* offsetParent is null when the element OR any ancestor is
+       display:none — the canonical cross-browser visibility probe. */
+    if (btn.offsetParent === null) return;
     try {
       userPausedRef.current = sessionStorage.getItem(USER_PAUSED_KEY) === "1";
     } catch {
@@ -127,6 +138,7 @@ export function VandeMataramToggle() {
         aria-hidden="true"
       />
       <button
+        ref={buttonRef}
         type="button"
         onClick={toggle}
         aria-label={label}
