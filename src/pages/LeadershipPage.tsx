@@ -266,7 +266,10 @@ export default function LeadershipPage() {
         </Container>
       </section>
 
-      {/* ──────────────── 02 · OFFICE OF THE PRESIDENT ──────────────── */}
+      {/* ──────────────── 02 · OFFICE OF THE PRESIDENT (upper feature) ────────────────
+          Portrait + identity + opening salutation only. Full letter lives
+          immediately below in §02b so this upper band stays visually
+          premium rather than becoming a long column of body text. */}
       {president ? (
         <section
           aria-labelledby="ldr-president-heading"
@@ -276,13 +279,17 @@ export default function LeadershipPage() {
             <div className="mx-auto max-w-[1180px]">
               <div className="mb-10 flex items-center justify-center gap-3 sm:mb-12">
                 <span aria-hidden="true" className="inline-block h-px w-10" style={{ backgroundColor: `${GOLD}99` }} />
-                <p className="text-[0.7rem] font-bold uppercase tracking-[0.3em]" style={{ color: GOLD_INK }}>
+                <p
+                  id="ldr-president-heading"
+                  className="text-[0.7rem] font-bold uppercase tracking-[0.3em]"
+                  style={{ color: GOLD_INK }}
+                >
                   Office of the President
                 </p>
                 <span aria-hidden="true" className="inline-block h-px w-10" style={{ backgroundColor: `${GOLD}99` }} />
               </div>
 
-              <div className="grid gap-10 lg:grid-cols-[minmax(0,380px)_minmax(0,1fr)] lg:items-start lg:gap-14 xl:grid-cols-[minmax(0,420px)_minmax(0,1fr)]">
+              <div className="grid gap-10 lg:grid-cols-[minmax(0,380px)_minmax(0,1fr)] lg:items-center lg:gap-14 xl:grid-cols-[minmax(0,420px)_minmax(0,1fr)]">
                 {/* Portrait */}
                 <div className="mx-auto w-full max-w-[380px] lg:mx-0 xl:max-w-[420px]">
                   <PortraitFrame
@@ -290,82 +297,167 @@ export default function LeadershipPage() {
                     alt={`${president.personName}, ${president.positionTitle}`}
                     name={president.personName}
                   />
-                  <div className="mt-5 text-center lg:text-left">
-                    <p className="font-serif text-[1.4rem] font-bold leading-tight tracking-tight sm:text-[1.55rem]" style={{ color: NAVY }}>
-                      {president.personName}
-                    </p>
-                    <p className="mt-2 text-[0.78rem] font-semibold uppercase tracking-[0.2em]" style={{ color: GOLD_INK }}>
-                      {president.positionTitle}
-                    </p>
-                  </div>
                 </div>
 
-                {/* Letter */}
-                <article className="relative min-w-0 overflow-hidden rounded-[20px] border border-[#D6AD60]/35 bg-[linear-gradient(180deg,#FFFBF2_0%,#FFFDF8_100%)] px-6 py-10 shadow-[0_10px_30px_rgba(11,31,58,0.06)] sm:px-10 sm:py-12 lg:px-14 lg:py-14">
-                  {/* Very subtle Ashoka-inspired watermark in the top-right */}
-                  <svg
-                    aria-hidden="true"
-                    viewBox="0 0 160 160"
-                    className="pointer-events-none absolute -right-6 -top-6 h-40 w-40 opacity-[0.07] sm:-right-8 sm:-top-8 sm:h-48 sm:w-48"
-                  >
-                    <g fill="none" stroke="#D6AD60" strokeWidth="1">
-                      <circle cx="80" cy="80" r="70" />
-                      <circle cx="80" cy="80" r="54" />
-                      <circle cx="80" cy="80" r="38" />
-                      {Array.from({ length: 24 }).map((_, i) => {
-                        const a = (i * Math.PI) / 12;
-                        return (
-                          <line
-                            key={i}
-                            x1={80 + Math.cos(a) * 38}
-                            y1={80 + Math.sin(a) * 38}
-                            x2={80 + Math.cos(a) * 70}
-                            y2={80 + Math.sin(a) * 70}
-                          />
-                        );
-                      })}
-                    </g>
-                  </svg>
-
-                  <h2
-                    id="ldr-president-heading"
-                    className="font-serif text-[1.6rem] font-bold leading-tight tracking-tight sm:text-[1.9rem]"
-                    style={{ color: NAVY }}
-                  >
-                    A message from the President
+                {/* Identity + salutation only */}
+                <div className="min-w-0 text-center lg:text-left">
+                  <h2 className="font-serif text-[1.9rem] font-bold leading-[1.08] tracking-tight sm:text-[2.3rem] lg:text-[2.6rem]" style={{ color: NAVY }}>
+                    {president.personName}
                   </h2>
+                  <p className="mt-3 text-[0.78rem] font-semibold uppercase tracking-[0.22em]" style={{ color: GOLD_INK }}>
+                    {president.positionTitle} &nbsp;·&nbsp; Indian People's Forum UAE
+                  </p>
                   <div
                     aria-hidden="true"
-                    className="mt-4 h-px w-16"
+                    className="mx-auto mt-6 h-px w-16 lg:mx-0"
                     style={{ backgroundColor: `${GOLD}99` }}
                   />
-
-                  <div className="mt-8 space-y-5 text-[1rem] leading-[1.75] sm:text-[1.05rem]" style={{ color: INK }}>
-                    {presidentMessageBody.map((paragraph) => (
-                      <p key={paragraph.slice(0, 60)}>{paragraph}</p>
+                  <div className="mx-auto mt-6 max-w-[560px] space-y-4 text-[1.02rem] leading-[1.7] lg:mx-0" style={{ color: INK }}>
+                    {presidentMessageBody.slice(0, 2).map((paragraph) => (
+                      <p key={paragraph.slice(0, 60)} className={paragraph === "Dear Friends," ? "font-serif text-[1.15rem] italic" : undefined} style={paragraph === "Dear Friends," ? { color: NAVY } : undefined}>
+                        {paragraph}
+                      </p>
                     ))}
                   </div>
-
-                  <div
-                    aria-hidden="true"
-                    className="mt-10 h-px w-16"
-                    style={{ backgroundColor: `${GOLD}99` }}
-                  />
-                  <p
-                    className="mt-5 font-serif text-[1.15rem] font-bold leading-tight tracking-tight sm:text-[1.25rem]"
-                    style={{ color: NAVY }}
-                  >
-                    {president.personName}
+                  <p className="mt-5 text-[0.78rem] font-semibold uppercase tracking-[0.2em]" style={{ color: GOLD_INK }}>
+                    Full address below
                   </p>
-                  <p
-                    className="mt-1 text-[0.78rem] font-semibold uppercase tracking-[0.2em]"
-                    style={{ color: GOLD_INK }}
-                  >
-                    {president.positionTitle}
-                  </p>
-                </article>
+                </div>
               </div>
             </div>
+          </Container>
+        </section>
+      ) : null}
+
+      {/* ──────────────── 02b · PRESIDENT'S MESSAGE (editorial letter) ────────────────
+          Full-width warm-ivory panel, antique-gold border, restrained
+          mandala corner detailing, narrow reading column (~760px). The
+          complete approved message is rendered inline — nothing hidden,
+          no accordion, no scrolling textbox. Letter closes with the
+          founder-approved signature block beneath the final paragraph. */}
+      {president ? (
+        <section
+          aria-labelledby="ldr-president-letter-heading"
+          className="relative isolate overflow-hidden bg-[#FFF8EE] py-16 sm:py-20 lg:py-24"
+        >
+          <Container>
+            <article className="relative mx-auto max-w-[1100px] overflow-hidden rounded-[22px] border border-[#D6AD60]/40 bg-[linear-gradient(180deg,#FFFBF2_0%,#FFFDF8_55%,#FFFBF2_100%)] px-5 py-14 shadow-[0_14px_38px_rgba(11,31,58,0.08)] sm:px-10 sm:py-16 lg:px-16 lg:py-20">
+              {/* Mandala corner ornaments — top-left + bottom-right.
+                  Pure SVG, very low opacity, decorative only. */}
+              <svg aria-hidden="true" viewBox="0 0 180 180" className="pointer-events-none absolute -left-6 -top-6 h-36 w-36 opacity-[0.09] sm:-left-8 sm:-top-8 sm:h-44 sm:w-44 lg:h-56 lg:w-56">
+                <g fill="none" stroke="#D6AD60" strokeWidth="1">
+                  <circle cx="90" cy="90" r="78" />
+                  <circle cx="90" cy="90" r="60" />
+                  <circle cx="90" cy="90" r="42" />
+                  <circle cx="90" cy="90" r="24" />
+                  {Array.from({ length: 24 }).map((_, i) => {
+                    const a = (i * Math.PI) / 12;
+                    return (
+                      <line
+                        key={i}
+                        x1={90 + Math.cos(a) * 24}
+                        y1={90 + Math.sin(a) * 24}
+                        x2={90 + Math.cos(a) * 78}
+                        y2={90 + Math.sin(a) * 78}
+                      />
+                    );
+                  })}
+                </g>
+              </svg>
+              <svg aria-hidden="true" viewBox="0 0 180 180" className="pointer-events-none absolute -bottom-6 -right-6 h-36 w-36 rotate-180 opacity-[0.09] sm:-bottom-8 sm:-right-8 sm:h-44 sm:w-44 lg:h-56 lg:w-56">
+                <g fill="none" stroke="#D6AD60" strokeWidth="1">
+                  <circle cx="90" cy="90" r="78" />
+                  <circle cx="90" cy="90" r="60" />
+                  <circle cx="90" cy="90" r="42" />
+                  <circle cx="90" cy="90" r="24" />
+                  {Array.from({ length: 24 }).map((_, i) => {
+                    const a = (i * Math.PI) / 12;
+                    return (
+                      <line
+                        key={i}
+                        x1={90 + Math.cos(a) * 24}
+                        y1={90 + Math.sin(a) * 24}
+                        x2={90 + Math.cos(a) * 78}
+                        y2={90 + Math.sin(a) * 78}
+                      />
+                    );
+                  })}
+                </g>
+              </svg>
+
+              {/* Hair-thin tricolour accent, extremely restrained */}
+              <div aria-hidden="true" className="absolute left-1/2 top-0 flex -translate-x-1/2 overflow-hidden rounded-b-[2px]">
+                <span className="block h-[3px] w-10 bg-[#FF9933]/70" />
+                <span className="block h-[3px] w-10 bg-white/80" />
+                <span className="block h-[3px] w-10 bg-[#138808]/70" />
+              </div>
+
+              <div className="relative mx-auto max-w-[760px]">
+                <div className="text-center">
+                  <p className="text-[0.68rem] font-bold uppercase tracking-[0.3em]" style={{ color: GOLD_INK }}>
+                    President's Message
+                  </p>
+                  <h2
+                    id="ldr-president-letter-heading"
+                    className="mt-4 font-serif text-[1.75rem] font-bold leading-tight tracking-tight sm:text-[2rem] lg:text-[2.2rem]"
+                    style={{ color: NAVY }}
+                  >
+                    A letter to the Indian community in the UAE
+                  </h2>
+                  <div aria-hidden="true" className="mx-auto mt-5 h-px w-20" style={{ backgroundColor: `${GOLD}99` }} />
+                </div>
+
+                {/* Full approved message. Paragraphs 0-1 are the salutation
+                    (also shown in the upper feature); paragraph 2 is the
+                    first substantive paragraph and receives the drop-cap. */}
+                <div className="mt-10 space-y-6 text-[1.02rem] leading-[1.85] sm:text-[1.05rem] sm:leading-[1.9]" style={{ color: INK }}>
+                  {presidentMessageBody.map((paragraph, i) => {
+                    const isGreeting = paragraph === "Dear Friends,";
+                    const isFirstBody = i === 2;
+                    if (isGreeting) {
+                      return (
+                        <p
+                          key={paragraph}
+                          className="font-serif text-[1.2rem] italic sm:text-[1.3rem]"
+                          style={{ color: NAVY }}
+                        >
+                          {paragraph}
+                        </p>
+                      );
+                    }
+                    if (isFirstBody) {
+                      return (
+                        <p key={paragraph.slice(0, 60)}>
+                          <span
+                            className="float-left mr-3 mt-1 font-serif text-[3.2rem] font-bold leading-[0.85] sm:text-[3.8rem]"
+                            style={{ color: GOLD_INK }}
+                            aria-hidden="true"
+                          >
+                            {paragraph.charAt(0)}
+                          </span>
+                          {paragraph.slice(1)}
+                        </p>
+                      );
+                    }
+                    return <p key={paragraph.slice(0, 60)}>{paragraph}</p>;
+                  })}
+                </div>
+
+                {/* Letter closing signature block */}
+                <div aria-hidden="true" className="mt-12 h-px w-24" style={{ backgroundColor: `${GOLD}99` }} />
+                <div className="mt-6">
+                  <p className="font-serif text-[1.35rem] font-bold leading-tight tracking-tight sm:text-[1.5rem]" style={{ color: NAVY }}>
+                    {president.personName}
+                  </p>
+                  <p className="mt-2 text-[0.78rem] font-semibold uppercase tracking-[0.22em]" style={{ color: GOLD_INK }}>
+                    President
+                  </p>
+                  <p className="mt-1 text-[0.78rem] font-semibold uppercase tracking-[0.22em]" style={{ color: GOLD_INK }}>
+                    Indian People's Forum UAE
+                  </p>
+                </div>
+              </div>
+            </article>
           </Container>
         </section>
       ) : null}
@@ -422,39 +514,105 @@ export default function LeadershipPage() {
         </Section>
       ) : null}
 
-      {/* ──────────────── 03b · EXTENDED CENTRAL COMMITTEE ──────────────── */}
+      {/* ──────────────── 03b · EXTENDED CENTRAL COMMITTEE ────────────────
+          One premium contained institutional directory. The warm India
+          + UAE heritage watercolour previously used behind the About
+          page "Discover More / Explore IPF further." section is reused
+          here as a subtle backdrop. Strong ivory wash on top of it so
+          names and designations stay extremely readable. 3-column desktop,
+          2-column tablet, 1-column mobile. No cards, no fake photos. */}
       {extended.length > 0 ? (
-        <Section tone="white" className="py-14 sm:py-16 lg:py-18">
+        <section
+          aria-labelledby="ldr-extended-heading"
+          className="relative isolate overflow-hidden bg-[#FFF8EE] py-16 sm:py-20 lg:py-24"
+        >
           <Container>
-            <div className="mx-auto max-w-[1180px]">
-              <div className="flex items-baseline gap-4">
-                <span aria-hidden="true" className="inline-block h-px w-10" style={{ backgroundColor: `${GOLD}99` }} />
-                <p className="text-[0.68rem] font-bold uppercase tracking-[0.28em]" style={{ color: GOLD_INK }}>
-                  Extended Central Committee
-                </p>
-              </div>
-              <h3 className="mt-3 font-serif text-[1.35rem] font-bold leading-tight tracking-tight sm:text-[1.5rem]" style={{ color: NAVY }}>
-                The wider central team
-              </h3>
+            <div className="relative mx-auto max-w-[1200px] overflow-hidden rounded-[22px] border border-[#D6AD60]/35 shadow-[0_14px_38px_rgba(11,31,58,0.08)]">
+              {/* Reused heritage artwork — about-closing-bg.
+                  Positioned so its quiet central ivory region sits behind
+                  the directory. Decorative only, aria-hidden. */}
+              <picture aria-hidden="true">
+                <source srcSet="/images/about/about-closing-bg.webp" type="image/webp" />
+                <img
+                  src="/images/about/about-closing-bg.png"
+                  alt=""
+                  aria-hidden="true"
+                  loading="lazy"
+                  decoding="async"
+                  className="pointer-events-none absolute inset-0 h-full w-full object-cover object-center"
+                />
+              </picture>
+              {/* Ivory wash — keeps directory readability without hiding
+                  the artwork character. Slightly stronger in the centre
+                  via radial-gradient so text contrast peaks where the
+                  names sit. */}
+              <div
+                aria-hidden="true"
+                className="pointer-events-none absolute inset-0"
+                style={{
+                  background:
+                    "radial-gradient(ellipse at center, rgba(255,248,238,0.95) 0%, rgba(255,248,238,0.88) 55%, rgba(255,248,238,0.78) 100%)",
+                }}
+              />
 
-              <ul
-                role="list"
-                className="mt-8 grid grid-cols-1 gap-x-10 gap-y-0 border-t border-[#D6AD60]/30 sm:grid-cols-2"
-              >
-                {extended.map((member) => (
-                  <li key={member.id} className="border-b border-[#D6AD60]/25 py-4 sm:py-5">
-                    <p className="font-serif text-[1.02rem] font-semibold leading-tight tracking-tight" style={{ color: NAVY }}>
-                      {member.personName}
+              <div className="relative px-5 py-14 sm:px-10 sm:py-16 lg:px-16 lg:py-20">
+                <div className="mx-auto max-w-3xl text-center">
+                  <div className="inline-flex items-center gap-3">
+                    <span aria-hidden="true" className="inline-block h-px w-10" style={{ backgroundColor: `${GOLD}99` }} />
+                    <p className="text-[0.7rem] font-bold uppercase tracking-[0.3em]" style={{ color: GOLD_INK }}>
+                      Extended Central Committee
                     </p>
-                    <p className="mt-1.5 text-[0.78rem] font-semibold uppercase tracking-[0.14em]" style={{ color: GOLD_INK }}>
-                      {member.positionTitle}
-                    </p>
-                  </li>
-                ))}
-              </ul>
+                    <span aria-hidden="true" className="inline-block h-px w-10" style={{ backgroundColor: `${GOLD}99` }} />
+                  </div>
+                  <h2
+                    id="ldr-extended-heading"
+                    className="mt-4 font-serif text-[1.55rem] font-bold leading-tight tracking-tight sm:text-[1.8rem] lg:text-[2rem]"
+                    style={{ color: NAVY }}
+                  >
+                    The wider team behind IPF UAE
+                  </h2>
+                  <p className="mx-auto mt-4 max-w-xl text-[0.95rem] leading-relaxed" style={{ color: INK }}>
+                    Senior volunteers who sit on the Central Committee alongside the leadership featured above.
+                  </p>
+                </div>
+
+                <ul
+                  role="list"
+                  className="mx-auto mt-10 grid max-w-[1050px] grid-cols-1 gap-x-10 gap-y-0 sm:mt-12 sm:grid-cols-2 lg:grid-cols-3"
+                >
+                  {extended.map((member) => (
+                    <li
+                      key={member.id}
+                      className="border-b border-[#D6AD60]/30 py-5 last:border-b-0 sm:py-6"
+                    >
+                      <div className="flex items-start gap-3">
+                        <span
+                          aria-hidden="true"
+                          className="mt-2 inline-block h-[6px] w-[6px] shrink-0 rotate-45"
+                          style={{ backgroundColor: GOLD }}
+                        />
+                        <div className="min-w-0">
+                          <p
+                            className="font-serif text-[1.05rem] font-bold leading-tight tracking-tight"
+                            style={{ color: NAVY }}
+                          >
+                            {member.personName}
+                          </p>
+                          <p
+                            className="mt-1.5 text-[0.75rem] font-semibold uppercase tracking-[0.16em]"
+                            style={{ color: GOLD_INK }}
+                          >
+                            {member.positionTitle}
+                          </p>
+                        </div>
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              </div>
             </div>
           </Container>
-        </Section>
+        </section>
       ) : null}
 
       {/* ──────────────── 04 · CHAPTER LEADERSHIP (4 + 3) ──────────────── */}
