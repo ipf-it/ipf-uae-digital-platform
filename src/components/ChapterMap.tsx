@@ -34,23 +34,27 @@ const INK = "#1c2430";
 const MUTED = "#55606d";
 const SAFFRON = "#E8871E";
 
-/* Seven authoritative UAE chapters — same order as ChaptersPage. */
-const SEVEN_CHAPTER_IDS = new Set([
+/* Eight currently-routed chapter experiences — matches ChaptersPage.
+   NOTE: authoritative 2026 count is 7, but 8 routes are live in prod
+   (incl. Al Ain). Preserved pending Rockstar reconciliation. */
+const EIGHT_CHAPTER_IDS = new Set([
   "dubai",
   "abu-dhabi",
   "sharjah",
   "ajman",
+  "umm-al-quwain",
   "ras-al-khaimah",
   "fujairah",
-  "umm-al-quwain",
+  "al-ain",
 ]);
 
 const chapterById = Object.fromEntries(
-  chapters.filter((c) => SEVEN_CHAPTER_IDS.has(c.id)).map((c) => [c.id, c]),
+  chapters.filter((c) => EIGHT_CHAPTER_IDS.has(c.id)).map((c) => [c.id, c]),
 );
 
 const PINS: { id: string; x: number; y: number; label: string }[] = [
   { id: "abu-dhabi", x: 425, y: 305, label: "Abu Dhabi" },
+  { id: "al-ain", x: 638, y: 332, label: "Al Ain" },
   { id: "dubai", x: 555, y: 178, label: "Dubai" },
   { id: "sharjah", x: 605, y: 142, label: "Sharjah" },
   { id: "ajman", x: 622, y: 122, label: "Ajman" },
@@ -64,9 +68,10 @@ const CHAPTER_BUTTON_ORDER = [
   "abu-dhabi",
   "sharjah",
   "ajman",
+  "umm-al-quwain",
   "ras-al-khaimah",
   "fujairah",
-  "umm-al-quwain",
+  "al-ain",
 ];
 
 function regionClass(selected: boolean) {
@@ -88,7 +93,7 @@ export function ChapterMap() {
     [],
   );
   const otherEmirates = useMemo(
-    () => uaeMap.locations.filter((item) => item.id !== "abu-dhabi" && item.id !== "al-ain"),
+    () => uaeMap.locations.filter((item) => item.id !== "abu-dhabi"),
     [],
   );
 
@@ -132,14 +137,25 @@ export function ChapterMap() {
               </path>
             ))}
             {abuDhabi ? (
-              <path
-                d={abuDhabi.path}
-                mask="url(#ipf-abu-dhabi-mask)"
-                className={regionClass(active === "abu-dhabi")}
-                onClick={() => selectChapter("abu-dhabi")}
-              >
-                <title>Abu Dhabi</title>
-              </path>
+              <>
+                <path
+                  d={abuDhabi.path}
+                  mask="url(#ipf-abu-dhabi-mask)"
+                  className={regionClass(active === "abu-dhabi")}
+                  onClick={() => selectChapter("abu-dhabi")}
+                >
+                  <title>Abu Dhabi</title>
+                </path>
+                {/* Al Ain renders as a clipped sub-region of Abu Dhabi */}
+                <path
+                  d={uaeMap.alAinClip}
+                  clipPath="url(#ipf-abu-dhabi-land)"
+                  className={cn(regionClass(active === "al-ain"), "stroke-[2]")}
+                  onClick={() => selectChapter("al-ain")}
+                >
+                  <title>Al Ain</title>
+                </path>
+              </>
             ) : null}
             {PINS.map((pin) => {
               const isActive = active === pin.id;

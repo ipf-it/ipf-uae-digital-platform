@@ -1,12 +1,12 @@
 import { useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { ArrowRight } from "lucide-react";
+import { ChapterCard } from "../components/ChapterCard";
 import { ChapterMap } from "../components/ChapterMap";
 import { DocumentTitle } from "../components/layout/DocumentTitle";
 import { Container } from "../components/ui/Container";
 import { chapterPath } from "../data/orgNav";
 import {
-  CHAPTER_COUNT,
   STATE_COUNCIL_COUNT,
   SPECIAL_COUNCIL_COUNT,
   TOTAL_COUNCIL_COUNT,
@@ -69,56 +69,27 @@ type ChapterDef = {
   slug: string;
   name: string;
   descriptor: string;
-  art: string;
 };
 
-/* Seven authoritative UAE chapters in editorial order (Dubai → Abu
-   Dhabi → Sharjah → Ajman → Ras Al Khaimah → Fujairah → Umm Al Quwain).
-   Each card reuses the existing medallion artwork from the home
-   Network band — same visual identity across the site. */
+/* Eight currently-routed chapter experiences in editorial order:
+     Row 1 (desktop xl 4-col): Dubai · Abu Dhabi · Sharjah · Ajman
+     Row 2 (desktop xl 4-col): Umm Al Quwain · Ras Al Khaimah · Fujairah · Al Ain
+   Each card reuses the chapter's own hero artwork at /theme/place-art/{slug}.webp
+   plus its chapter theme via chapterTheme() — identical visual identity
+   to the destination /chapters/{slug} page.
+   NOTE: The authoritative 2026 count is 7 chapters, but 8 chapter routes
+   (including Al Ain) are currently live in production. Flagged for
+   Rockstar reconciliation; this visual task preserves all 8 routed
+   experiences until that reconciliation lands. */
 const CHAPTER_ORDER: ChapterDef[] = [
-  {
-    slug: "dubai",
-    name: "Dubai",
-    descriptor: "Culture · Welfare · Service",
-    art: "/images/home/network/chapter-dubai.png",
-  },
-  {
-    slug: "abu-dhabi",
-    name: "Abu Dhabi",
-    descriptor: "Embassy coordination · Capital community",
-    art: "/images/home/network/chapter-abu-dhabi.png",
-  },
-  {
-    slug: "sharjah",
-    name: "Sharjah",
-    descriptor: "Programmes · Counselling · Cultural events",
-    art: "/images/home/network/chapter-sharjah.png",
-  },
-  {
-    slug: "ajman",
-    name: "Ajman",
-    descriptor: "Home of the registered office",
-    art: "/images/home/network/chapter-ajman.png",
-  },
-  {
-    slug: "ras-al-khaimah",
-    name: "Ras Al Khaimah",
-    descriptor: "Northern chapter · Cultural & welfare activity",
-    art: "/images/home/network/chapter-ras-al-khaimah.png",
-  },
-  {
-    slug: "fujairah",
-    name: "Fujairah",
-    descriptor: "East-coast community programmes",
-    art: "/images/home/network/chapter-fujairah.png",
-  },
-  {
-    slug: "umm-al-quwain",
-    name: "Umm Al Quwain",
-    descriptor: "Northern emirate · Local engagement",
-    art: "/images/home/network/chapter-umm-al-quwain.png",
-  },
+  { slug: "dubai",          name: "Dubai",          descriptor: "Metropolitan community · Skyline & creek heritage" },
+  { slug: "abu-dhabi",      name: "Abu Dhabi",      descriptor: "Capital of tolerance · Grand Mosque & Liwa" },
+  { slug: "sharjah",        name: "Sharjah",        descriptor: "Heart of culture · Museums & heritage districts" },
+  { slug: "ajman",          name: "Ajman",          descriptor: "Community by the coast · Fort & dhow" },
+  { slug: "umm-al-quwain",  name: "Umm Al Quwain",  descriptor: "Pearls & mangroves · Lagoon & islands" },
+  { slug: "ras-al-khaimah", name: "Ras Al Khaimah", descriptor: "From mountain to sea · Jebel Jais" },
+  { slug: "fujairah",       name: "Fujairah",       descriptor: "The eastern coast · Hajar mountains & sea" },
+  { slug: "al-ain",         name: "Al Ain",         descriptor: "The garden city · Oasis & Jebel Hafeet" },
 ];
 
 export default function ChaptersPage() {
@@ -133,8 +104,6 @@ export default function ChaptersPage() {
       navigate(chapterPath(id), { replace: true });
   }, [location.hash, navigate, chapters]);
 
-  /* Prefer the live DB name when available, otherwise fall back to the
-     editorial name baked into CHAPTER_ORDER. */
   const liveNameBySlug = new Map(chapters.map((c) => [c.id, c.name]));
 
   return (
@@ -202,7 +171,7 @@ export default function ChaptersPage() {
                 </h1>
                 <div aria-hidden="true" className="mt-4 h-px w-14" style={{ backgroundColor: `${GOLD}99` }} />
                 <p className="mt-4 max-w-[480px] text-[0.95rem] leading-relaxed sm:text-[1rem]" style={{ color: INK }}>
-                  {CHAPTER_COUNT === 7 ? "Seven" : CHAPTER_COUNT} chapters connecting Indians across the UAE through community service, culture, welfare and engagement.
+                  Chapters connecting Indians across the UAE through community service, culture, welfare and engagement.
                 </p>
               </div>
             </Container>
@@ -225,7 +194,7 @@ export default function ChaptersPage() {
               className="mt-4 font-serif text-[1.55rem] font-bold leading-tight tracking-tight sm:text-[1.85rem] lg:text-[2.05rem]"
               style={{ color: NAVY }}
             >
-              Seven chapters. One connected network.
+              One connected network across the Emirates.
             </h2>
             <p className="mx-auto mt-5 max-w-2xl text-[0.95rem] leading-relaxed" style={{ color: INK }}>
               Our UAE Chapters bring the community closer at the local level through cultural programmes, welfare initiatives, volunteer activities and meaningful engagement.
@@ -234,66 +203,25 @@ export default function ChaptersPage() {
         </Container>
       </section>
 
-      {/* ──────────────── 7 PREMIUM CHAPTER CARDS ──────────────── */}
+      {/* ──────────────── 8 PREMIUM CHAPTER CARDS ────────────────
+          Grid: 1 col mobile → 2 cols sm → 2 cols lg → 4 cols xl (4×2
+          at ≥1280 px). Each card reuses the chapter's own hero artwork
+          and theme values via <ChapterCard>. */}
       <section className="bg-[#FFF8EE] pb-16 pt-10 sm:pb-20 sm:pt-12 lg:pb-24 lg:pt-14">
         <Container>
           <ul
             role="list"
-            className="mx-auto grid max-w-[1200px] grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 lg:gap-7 xl:gap-8"
+            className="mx-auto grid max-w-[1320px] grid-cols-1 gap-6 sm:grid-cols-2 lg:gap-7 xl:grid-cols-4 xl:gap-7"
           >
-            {CHAPTER_ORDER.map((def, i) => {
+            {CHAPTER_ORDER.map((def) => {
               const name = liveNameBySlug.get(def.slug) ?? def.name;
               return (
-                <li
-                  key={def.slug}
-                  className={
-                    /* Centre the orphan 7th card on the lg grid so Row 3
-                       doesn't look accidental. On xl+ the grid stays 3-col
-                       and the 7th wraps naturally. */
-                    i === 6 ? "lg:col-start-2 xl:col-start-auto" : ""
-                  }
-                >
-                  <Link
-                    to={chapterPath(def.slug)}
-                    className="group relative flex h-full flex-col overflow-hidden rounded-[20px] border border-[#D6AD60]/35 bg-[#FFFBF2] shadow-[0_8px_22px_rgba(11,31,58,0.06)] transition-all duration-200 hover:-translate-y-0.5 hover:border-[#D6AD60]/70 hover:shadow-[0_14px_32px_rgba(11,31,58,0.12)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--ipf-gold)]"
-                  >
-                    {/* Artwork — chapter-specific medallion */}
-                    <div className="relative flex aspect-[5/3] w-full items-center justify-center overflow-hidden bg-[#FFF8EE]">
-                      <img
-                        src={def.art}
-                        alt={`${name} chapter illustration`}
-                        loading="lazy"
-                        decoding="async"
-                        className="h-full w-auto max-w-full object-contain p-6 transition-transform duration-500 group-hover:scale-[1.03] sm:p-7"
-                      />
-                    </div>
-
-                    {/* Body */}
-                    <div className="flex flex-1 flex-col px-6 pb-6 pt-5 sm:px-7 sm:pb-7">
-                      <p
-                        className="text-[0.68rem] font-bold tabular-nums tracking-[0.24em]"
-                        style={{ color: GOLD_INK }}
-                      >
-                        {String(i + 1).padStart(2, "0")}
-                      </p>
-                      <p
-                        className="mt-2 font-serif text-[1.2rem] font-bold leading-tight tracking-tight sm:text-[1.3rem]"
-                        style={{ color: NAVY }}
-                      >
-                        {name} Chapter
-                      </p>
-                      <p className="mt-2 text-[0.82rem] leading-relaxed" style={{ color: MUTED }}>
-                        {def.descriptor}
-                      </p>
-                      <span
-                        className="mt-5 inline-flex items-center gap-1.5 text-[0.72rem] font-bold uppercase tracking-[0.18em]"
-                        style={{ color: NAVY }}
-                      >
-                        Explore chapter
-                        <ArrowRight aria-hidden="true" className="size-3.5 transition-transform group-hover:translate-x-0.5" />
-                      </span>
-                    </div>
-                  </Link>
+                <li key={def.slug} className="min-w-0">
+                  <ChapterCard
+                    slug={def.slug}
+                    name={name}
+                    description={def.descriptor}
+                  />
                 </li>
               );
             })}
