@@ -235,7 +235,7 @@ export function ChapterMap() {
               <div className="mt-4 flex flex-wrap gap-3">
                 <Link
                   to={chapterPath(active)}
-                  className="group inline-flex items-center gap-1.5 rounded-full bg-[var(--ipf-navy)] px-5 py-2 text-[0.72rem] font-bold uppercase tracking-[0.18em] text-[#FFF8EE] transition hover:bg-[#0b1f3a]/90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--ipf-gold)]"
+                  className="group inline-flex items-center gap-1.5 rounded-full bg-[var(--ipf-burgundy)] px-5 py-2 text-[0.72rem] font-bold uppercase tracking-[0.18em] text-white transition hover:bg-[var(--ipf-burgundy-soft)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--ipf-gold)]"
                   onClick={() => goChapter(active)}
                 >
                   Explore chapter

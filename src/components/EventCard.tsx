@@ -42,7 +42,7 @@ export function EventCard({ event }: { event: PublicEvent }) {
           </p>
         ) : null}
         <div className="mt-auto pt-4">
-          <span className="inline-flex min-h-11 items-center rounded-lg bg-[var(--ipf-navy)] px-3 text-xs font-semibold text-white">
+          <span className="inline-flex min-h-11 items-center rounded-lg bg-[var(--ipf-burgundy)] px-3 text-xs font-semibold text-white">
             {t("page.events.viewEvent")}
           </span>
         </div>

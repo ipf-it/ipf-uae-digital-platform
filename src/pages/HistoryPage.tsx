@@ -848,7 +848,7 @@ export default function HistoryPage() {
               </p>
               <Link
                 to="/leadership"
-                className="group inline-flex shrink-0 items-center gap-2 rounded-full bg-[var(--ipf-navy)] px-6 py-3 text-[0.78rem] font-bold uppercase tracking-[0.18em] text-[#FFF8EE] transition hover:bg-[#0b1f3a]/90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#D6AD60]"
+                className="group inline-flex shrink-0 items-center gap-2 rounded-full bg-[var(--ipf-burgundy)] px-6 py-3 text-[0.78rem] font-bold uppercase tracking-[0.18em] text-white transition hover:bg-[var(--ipf-burgundy-soft)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#D6AD60]"
               >
                 {t("page.historyGov.ldrCta")}
                 <ArrowRight className="size-3.5 transition-transform group-hover:translate-x-0.5" />

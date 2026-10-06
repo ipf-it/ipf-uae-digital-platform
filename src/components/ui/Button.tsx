@@ -8,8 +8,12 @@ const buttonVariants = cva(
   {
     variants: {
       variant: {
+        /* IPF primary CTA — burgundy fill + white text. Platform-wide
+           rule: ALL filled primary CTAs use --ipf-burgundy (#5a0f1e)
+           with --ipf-burgundy-soft (#7a1f30) as the hover variant.
+           Contrast ratio ~11.3:1 on white text — WCAG AAA. */
         primary:
-          "bg-[var(--ipf-navy)] text-white shadow-[0_4px_14px_rgba(11,31,58,0.25)] hover:-translate-y-0.5 hover:bg-[var(--ipf-navy-soft)] hover:shadow-[0_8px_20px_rgba(11,31,58,0.3)]",
+          "bg-[var(--ipf-burgundy)] text-white shadow-[0_4px_14px_rgba(90,15,30,0.3)] hover:-translate-y-0.5 hover:bg-[var(--ipf-burgundy-soft)] hover:shadow-[0_8px_20px_rgba(90,15,30,0.35)]",
         secondary: "border border-white/40 bg-white/10 text-white backdrop-blur-sm hover:-translate-y-0.5 hover:bg-white/20",
         outline:
           "border border-[var(--ipf-line)] bg-white text-[var(--ipf-navy)] hover:-translate-y-0.5 hover:border-[var(--ipf-navy)] hover:bg-[var(--ipf-ivory)] hover:shadow-sm",
