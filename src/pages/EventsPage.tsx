@@ -95,15 +95,22 @@ export default function EventsPage() {
             </p>
           </div>
 
+          {/* Featured Events video — founder-supplied IPF mega-events
+             film (848×478, ~6:08 duration, with audio). Centered inside
+             the standard 1120 px container with the shared rounded
+             frame; aspect-ratio preserved via the source dimensions
+             rather than a forced 16:9 so the film is never stretched. */}
           <figure className="mx-auto mt-10 max-w-[1120px] overflow-hidden rounded-2xl shadow-[0_14px_38px_rgba(11,31,58,0.14)] ring-1 ring-[#D6AD60]/25 sm:mt-12 sm:rounded-[1.75rem]">
             <video
               controls
               playsInline
               preload="metadata"
-              poster="/hero/ipf-uae-hero-desktop-poster.webp"
-              className="block aspect-video w-full bg-[#0b1f3a]"
+              poster="/videos/ipf-events-mega-events-poster.webp"
+              width={848}
+              height={478}
+              className="block w-full bg-[#0b1f3a]"
             >
-              <source src="/hero/ipf-uae-hero-desktop.webm" type="video/webm" />
+              <source src="/videos/ipf-events-mega-events.mp4" type="video/mp4" />
               Your browser does not support the video tag.
             </video>
           </figure>
