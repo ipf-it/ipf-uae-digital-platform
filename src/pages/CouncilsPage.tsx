@@ -37,21 +37,23 @@ export default function CouncilsPage() {
       <DocumentTitle title={t("nav.councils")} />
 
       {/* ──────────────── HERO — approved India's Heritage in Watercolour ────────────────
-          Supplied artwork at /images/councils/councils-hero.{webp,png}
-          (2103×748 panorama) with a deliberate ivory negative space on
-          the LEFT and the detailed India heritage composition on the
-          RIGHT (Red Fort + flag, Taj, mountains, elephant, performers,
-          temple tower, tricolour watercolour ribbon). Rendered with
-          object-fit:contain so no monument top gets clipped at any
-          width — image anchors to bottom-right, blank area blends with
-          the section's ivory background and holds the HTML text.
-          Zero overlay / filter / tint / gradient — image renders at
-          natural opacity. */}
+          FULL-BLEED panoramic banner: artwork spans the entire hero
+          width via object-fit:cover + object-position:center top. The
+          image's natural ivory/cream negative space on the LEFT holds
+          the HTML text, and a soft ivory→transparent gradient wash
+          restores text contrast without applying any colour tint to
+          the artwork itself. object-position:center top preserves
+          monument tops (Red Fort + flag, Taj, temple tower, mountain
+          peaks, mandala corner); the bottom tricolour watercolour wave
+          sits toward the bottom edge of the hero at close-to-natural
+          aspect because the hero clamp(340..520) tracks the image's
+          2.81:1 panoramic ratio. ZERO colour overlay, no filter,
+          no blend-mode — image renders at natural opacity. */}
       <section
         aria-labelledby="councils-page-heading"
         className="relative isolate overflow-hidden bg-[#FFF8EE]"
       >
-        <div className="relative w-full" style={{ height: "clamp(320px, 32vw, 440px)" }}>
+        <div className="relative w-full" style={{ height: "clamp(340px, 34vw, 520px)" }}>
           <picture>
             <source srcSet="/images/councils/councils-hero.webp" type="image/webp" />
             <img
@@ -62,10 +64,22 @@ export default function CouncilsPage() {
               fetchPriority="high"
               width={2103}
               height={748}
-              className="absolute inset-0 block h-full w-full object-contain"
-              style={{ objectPosition: "bottom right", filter: "none", opacity: 1 }}
+              className="absolute inset-0 block h-full w-full object-cover"
+              style={{ objectPosition: "center top", filter: "none", opacity: 1 }}
             />
           </picture>
+
+          {/* Ivory wash on the LEFT only — fades to transparent by 68%
+              of width so the India composition remains fully visible on
+              the right. No tint applied to the artwork itself. */}
+          <div
+            aria-hidden="true"
+            className="pointer-events-none absolute inset-0"
+            style={{
+              background:
+                "linear-gradient(90deg, rgba(255,248,238,0.92) 0%, rgba(255,248,238,0.78) 30%, rgba(255,248,238,0.35) 52%, rgba(255,248,238,0) 68%)",
+            }}
+          />
 
           <div className="absolute inset-0 flex items-center">
             <Container>
