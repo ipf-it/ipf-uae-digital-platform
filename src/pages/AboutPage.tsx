@@ -187,8 +187,10 @@ const BG_RESP_WEBP = "/images/about/about-responsibility-bg.webp";
 const BG_RESP_PNG = "/images/about/about-responsibility-bg.png";
 const BG_IU_WEBP = "/images/about/about-india-uae-bg.webp";
 const BG_IU_PNG = "/images/about/about-india-uae-bg.png";
-const BG_CLOSE_WEBP = "/images/about/about-closing-bg.webp";
-const BG_CLOSE_PNG = "/images/about/about-closing-bg.png";
+/* Previously-used BG_CLOSE_* constants retired — the Discover More
+   section no longer has a background artwork per founder direction.
+   The approved image files remain in public/images/about/ for
+   potential future reuse but are not referenced from this page. */
 
 /* ─────────────────────────────────────────────────────────────────── */
 
@@ -655,10 +657,11 @@ export default function AboutPage() {
          this section, rendered UNCHANGED — no filter, no overlay. The
          Discover More tiles themselves are already white foreground
          cards; the closing CTA band is burgundy. */}
+      {/* Background artwork removed per founder direction — the Discover
+         More section now uses the clean warm-ivory Section tone only. */}
       <Section
-        tone="white"
+        tone="ivory"
         ariaLabelledBy="about-discover-heading"
-        backdrop={<Backdrop webp={BG_CLOSE_WEBP} png={BG_CLOSE_PNG} objectPos="center" />}
       >
         <div className="text-center">
           <div className="inline-flex items-center gap-3">
