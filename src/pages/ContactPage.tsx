@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { Mail, MapPin, MessageSquare, Send, Users } from "lucide-react";
+import { Mail, MapPin, Send } from "lucide-react";
 import { InquiryForm } from "../components/forms/InquiryForm";
 import { DocumentTitle } from "../components/layout/DocumentTitle";
 import { Container } from "../components/ui/Container";
@@ -117,16 +117,27 @@ export default function ContactPage() {
         </div>
       </section>
 
-      {/* ──────────────── MAIN CONTACT COMPOSITION ──────────────── */}
-      <section className="relative bg-[#FFF8EE] py-14 sm:py-16 lg:py-20">
+      {/* ──────────────── MAIN CONTACT COMPOSITION ────────────────
+          ONE master two-column grid. Both columns are flex-column
+          containers so the "Write to IPF" and "Get in touch" headings
+          share the same horizontal baseline. The grid uses
+          align-items:stretch at lg+ so both columns reach the same
+          vertical height; `flex-1` on the LEFT form panel and on the
+          RIGHT Functional-desks panel absorbs any remaining space in
+          their column, which makes the bottom edges of the two columns
+          align visually.
+
+          Below lg the grid stacks naturally (single column) and the
+          flex-1 stretching is a no-op — natural panel heights only. */}
+      <section className="relative bg-[#FFF8EE] pb-16 pt-14 sm:pb-20 sm:pt-16 lg:pb-24 lg:pt-20">
         <Container>
-          <div className="mx-auto max-w-[1200px]">
-            <div className="grid gap-10 lg:grid-cols-[1.62fr_1fr] lg:items-start lg:gap-12">
-              {/* ─── LEFT · WRITE TO IPF ─── */}
-              <div className="min-w-0">
-                <article className="relative overflow-hidden rounded-[22px] border border-[#D6AD60]/35 bg-white px-6 py-8 shadow-[0_14px_38px_rgba(11,31,58,0.08)] sm:px-10 sm:py-10 lg:px-12 lg:py-12">
+          <div className="mx-auto max-w-[1160px]">
+            <div className="grid gap-10 lg:grid-cols-[minmax(0,1.08fr)_minmax(360px,0.72fr)] lg:items-stretch lg:gap-x-12 lg:gap-y-0 xl:gap-x-14">
+              {/* ─── LEFT COLUMN ─── */}
+              <div className="flex min-w-0 flex-col">
+                <header>
                   <h2
-                    className="font-serif text-[1.5rem] font-bold leading-tight tracking-tight sm:text-[1.75rem] lg:text-[1.9rem]"
+                    className="font-serif text-[1.45rem] font-bold leading-tight tracking-tight sm:text-[1.65rem] lg:text-[1.8rem]"
                     style={{ color: NAVY }}
                   >
                     Write to IPF
@@ -141,31 +152,27 @@ export default function ContactPage() {
                     </span>{" "}
                     are required. Responses are handled by IPF volunteers.
                   </p>
-                  <div
-                    aria-hidden="true"
-                    className="mt-6 h-px w-16"
-                    style={{ backgroundColor: `${GOLD}99` }}
+                </header>
+
+                <article className="mt-6 flex flex-1 flex-col overflow-hidden rounded-[22px] border border-[#D6AD60]/35 bg-white px-6 py-7 shadow-[0_14px_38px_rgba(11,31,58,0.08)] sm:px-9 sm:py-8 lg:px-10 lg:py-9">
+                  <InquiryForm
+                    intent="contact"
+                    variant="bare"
+                    submitLabel={
+                      <span className="inline-flex items-center gap-2">
+                        Send message
+                        <Send aria-hidden="true" className="size-4" />
+                      </span>
+                    }
                   />
-                  <div className="mt-8">
-                    <InquiryForm
-                      intent="contact"
-                      variant="bare"
-                      submitLabel={
-                        <span className="inline-flex items-center gap-2">
-                          Send message
-                          <Send aria-hidden="true" className="size-4" />
-                        </span>
-                      }
-                    />
-                  </div>
                 </article>
               </div>
 
-              {/* ─── RIGHT · GET IN TOUCH ─── */}
-              <aside className="min-w-0 space-y-6">
-                <div>
+              {/* ─── RIGHT COLUMN ─── */}
+              <aside className="flex min-w-0 flex-col">
+                <header>
                   <h2
-                    className="font-serif text-[1.4rem] font-bold leading-tight tracking-tight sm:text-[1.55rem] lg:text-[1.7rem]"
+                    className="font-serif text-[1.45rem] font-bold leading-tight tracking-tight sm:text-[1.65rem] lg:text-[1.8rem]"
                     style={{ color: NAVY }}
                   >
                     Get in touch
@@ -173,217 +180,139 @@ export default function ContactPage() {
                   <p className="mt-2 text-[0.92rem] leading-relaxed" style={{ color: MUTED }}>
                     Reach out to our registered office or functional desks for specific queries.
                   </p>
-                </div>
+                </header>
 
-                {/* Registered office panel */}
-                <div className="relative overflow-hidden rounded-[18px] border border-[#D6AD60]/35 bg-[#FFFBF2] p-6 shadow-[0_8px_22px_rgba(11,31,58,0.05)] sm:p-7">
-                  <div className="flex items-start gap-4">
-                    <span
+                <div className="mt-6 flex flex-1 flex-col gap-5">
+                  {/* Registered office panel */}
+                  <div className="relative overflow-hidden rounded-[18px] border border-[#D6AD60]/35 bg-[#FFFBF2] p-6 shadow-[0_8px_22px_rgba(11,31,58,0.05)] sm:p-7">
+                    <div className="flex items-start gap-4">
+                      <span
+                        aria-hidden="true"
+                        className="mt-0.5 inline-flex size-9 shrink-0 items-center justify-center rounded-full border bg-[#FFF8EE]"
+                        style={{ borderColor: `${GOLD}80`, color: GOLD_INK }}
+                      >
+                        <MapPin className="size-4" />
+                      </span>
+                      <div className="min-w-0">
+                        <p
+                          className="text-[0.7rem] font-bold uppercase tracking-[0.24em]"
+                          style={{ color: GOLD_INK }}
+                        >
+                          {t("page.contact.office")}
+                        </p>
+                        <p
+                          className="mt-2 text-[0.95rem] leading-relaxed whitespace-pre-line"
+                          style={{ color: INK }}
+                        >
+                          {site.office}
+                        </p>
+                      </div>
+                    </div>
+                    <div
                       aria-hidden="true"
-                      className="mt-0.5 inline-flex size-9 shrink-0 items-center justify-center rounded-full border bg-[#FFF8EE]"
-                      style={{ borderColor: `${GOLD}80`, color: GOLD_INK }}
-                    >
-                      <MapPin className="size-4" />
-                    </span>
-                    <div className="min-w-0">
-                      <p
-                        className="text-[0.7rem] font-bold uppercase tracking-[0.24em]"
-                        style={{ color: GOLD_INK }}
+                      className="my-5 h-px w-full"
+                      style={{ backgroundColor: `${GOLD}40` }}
+                    />
+                    <div className="flex items-start gap-4">
+                      <span
+                        aria-hidden="true"
+                        className="mt-0.5 inline-flex size-9 shrink-0 items-center justify-center rounded-full border bg-[#FFF8EE]"
+                        style={{ borderColor: `${GOLD}80`, color: GOLD_INK }}
                       >
-                        {t("page.contact.office")}
-                      </p>
-                      <p
-                        className="mt-2 text-[0.95rem] leading-relaxed whitespace-pre-line"
-                        style={{ color: INK }}
-                      >
-                        {site.office}
-                      </p>
+                        <Mail className="size-4" />
+                      </span>
+                      <div className="min-w-0">
+                        <p
+                          className="text-[0.7rem] font-bold uppercase tracking-[0.24em]"
+                          style={{ color: GOLD_INK }}
+                        >
+                          {t("common.email")}
+                        </p>
+                        <p className="mt-2">
+                          <a
+                            className="break-all text-[0.95rem] font-semibold underline-offset-4 hover:underline"
+                            style={{ color: NAVY }}
+                            href={`mailto:${site.email}`}
+                          >
+                            {site.email}
+                          </a>
+                        </p>
+                      </div>
                     </div>
                   </div>
-                  <div
-                    aria-hidden="true"
-                    className="my-5 h-px w-full"
-                    style={{ backgroundColor: `${GOLD}40` }}
-                  />
-                  <div className="flex items-start gap-4">
-                    <span
-                      aria-hidden="true"
-                      className="mt-0.5 inline-flex size-9 shrink-0 items-center justify-center rounded-full border bg-[#FFF8EE]"
-                      style={{ borderColor: `${GOLD}80`, color: GOLD_INK }}
+
+                  {/* Functional desks panel — flex-1 so it absorbs any
+                     remaining column height, pulling its bottom edge in
+                     line with the LEFT form panel's bottom. */}
+                  <div className="relative flex flex-1 flex-col overflow-hidden rounded-[18px] border border-[#D6AD60]/35 bg-[#FFFBF2] p-6 shadow-[0_8px_22px_rgba(11,31,58,0.05)] sm:p-7">
+                    <p
+                      className="text-[0.7rem] font-bold uppercase tracking-[0.24em]"
+                      style={{ color: GOLD_INK }}
                     >
-                      <Mail className="size-4" />
-                    </span>
-                    <div className="min-w-0">
-                      <p
-                        className="text-[0.7rem] font-bold uppercase tracking-[0.24em]"
-                        style={{ color: GOLD_INK }}
-                      >
-                        {t("common.email")}
-                      </p>
-                      <p className="mt-2">
-                        <a
-                          className="break-all text-[0.95rem] font-semibold underline-offset-4 hover:underline"
+                      Functional desks
+                    </p>
+                    <p className="mt-2 text-[0.9rem] leading-relaxed" style={{ color: MUTED }}>
+                      For focused assistance, you can also reach:
+                    </p>
+                    <ul className="mt-4 flex-1 text-[0.93rem] leading-relaxed">
+                      <li className="border-b border-[#D6AD60]/25 py-4 first:pt-0 last:border-b-0 last:pb-0">
+                        <Link
+                          className="font-serif text-[1rem] font-semibold underline-offset-4 hover:underline"
                           style={{ color: NAVY }}
-                          href={`mailto:${site.email}`}
+                          to="/chapters/abu-dhabi"
                         >
-                          {site.email}
-                        </a>
-                      </p>
-                    </div>
+                          {t("page.contact.abuDhabi")} Chapter
+                        </Link>
+                        <p className="mt-1.5 flex items-start gap-2">
+                          <Mail aria-hidden="true" className="mt-0.5 size-3.5 shrink-0" style={{ color: GOLD_INK }} />
+                          <a
+                            className="break-all font-medium underline-offset-4 hover:underline"
+                            style={{ color: INK }}
+                            href={`mailto:${site.abuDhabiEmail}`}
+                          >
+                            {site.abuDhabiEmail}
+                          </a>
+                        </p>
+                      </li>
+                      <li className="border-b border-[#D6AD60]/25 py-4 first:pt-0 last:border-b-0 last:pb-0">
+                        <Link
+                          className="font-serif text-[1rem] font-semibold underline-offset-4 hover:underline"
+                          style={{ color: NAVY }}
+                          to="/councils/business"
+                        >
+                          {t("page.contact.business")}
+                        </Link>
+                        <p className="mt-1.5 flex items-start gap-2">
+                          <Mail aria-hidden="true" className="mt-0.5 size-3.5 shrink-0" style={{ color: GOLD_INK }} />
+                          <a
+                            className="break-all font-medium underline-offset-4 hover:underline"
+                            style={{ color: INK }}
+                            href={`mailto:${site.businessEmail}`}
+                          >
+                            {site.businessEmail}
+                          </a>
+                        </p>
+                      </li>
+                      <li className="border-b border-[#D6AD60]/25 py-4 first:pt-0 last:border-b-0 last:pb-0">
+                        <p className="font-serif text-[1rem] font-semibold" style={{ color: NAVY }}>
+                          {t("page.contact.grievances")}
+                        </p>
+                        <p className="mt-1.5 flex items-start gap-2">
+                          <Mail aria-hidden="true" className="mt-0.5 size-3.5 shrink-0" style={{ color: GOLD_INK }} />
+                          <a
+                            className="break-all font-medium underline-offset-4 hover:underline"
+                            style={{ color: INK }}
+                            href={`mailto:${site.grievanceEmail}`}
+                          >
+                            {site.grievanceEmail}
+                          </a>
+                        </p>
+                      </li>
+                    </ul>
                   </div>
-                </div>
-
-                {/* Functional desks panel */}
-                <div className="relative overflow-hidden rounded-[18px] border border-[#D6AD60]/35 bg-[#FFFBF2] p-6 shadow-[0_8px_22px_rgba(11,31,58,0.05)] sm:p-7">
-                  <p
-                    className="text-[0.7rem] font-bold uppercase tracking-[0.24em]"
-                    style={{ color: GOLD_INK }}
-                  >
-                    Functional desks
-                  </p>
-                  <p className="mt-2 text-[0.9rem] leading-relaxed" style={{ color: MUTED }}>
-                    For focused assistance, you can also reach:
-                  </p>
-                  <ul className="mt-5 space-y-0 text-[0.93rem] leading-relaxed">
-                    <li className="border-b border-[#D6AD60]/25 py-4 first:pt-0 last:border-b-0 last:pb-0">
-                      <Link
-                        className="font-serif text-[1rem] font-semibold underline-offset-4 hover:underline"
-                        style={{ color: NAVY }}
-                        to="/chapters/abu-dhabi"
-                      >
-                        {t("page.contact.abuDhabi")} Chapter
-                      </Link>
-                      <p className="mt-1.5 flex items-start gap-2">
-                        <Mail aria-hidden="true" className="mt-0.5 size-3.5 shrink-0" style={{ color: GOLD_INK }} />
-                        <a
-                          className="break-all font-medium underline-offset-4 hover:underline"
-                          style={{ color: INK }}
-                          href={`mailto:${site.abuDhabiEmail}`}
-                        >
-                          {site.abuDhabiEmail}
-                        </a>
-                      </p>
-                    </li>
-                    <li className="border-b border-[#D6AD60]/25 py-4 first:pt-0 last:border-b-0 last:pb-0">
-                      <Link
-                        className="font-serif text-[1rem] font-semibold underline-offset-4 hover:underline"
-                        style={{ color: NAVY }}
-                        to="/councils/business"
-                      >
-                        {t("page.contact.business")}
-                      </Link>
-                      <p className="mt-1.5 flex items-start gap-2">
-                        <Mail aria-hidden="true" className="mt-0.5 size-3.5 shrink-0" style={{ color: GOLD_INK }} />
-                        <a
-                          className="break-all font-medium underline-offset-4 hover:underline"
-                          style={{ color: INK }}
-                          href={`mailto:${site.businessEmail}`}
-                        >
-                          {site.businessEmail}
-                        </a>
-                      </p>
-                    </li>
-                    <li className="border-b border-[#D6AD60]/25 py-4 first:pt-0 last:border-b-0 last:pb-0">
-                      <p className="font-serif text-[1rem] font-semibold" style={{ color: NAVY }}>
-                        {t("page.contact.grievances")}
-                      </p>
-                      <p className="mt-1.5 flex items-start gap-2">
-                        <Mail aria-hidden="true" className="mt-0.5 size-3.5 shrink-0" style={{ color: GOLD_INK }} />
-                        <a
-                          className="break-all font-medium underline-offset-4 hover:underline"
-                          style={{ color: INK }}
-                          href={`mailto:${site.grievanceEmail}`}
-                        >
-                          {site.grievanceEmail}
-                        </a>
-                      </p>
-                    </li>
-                  </ul>
                 </div>
               </aside>
             </div>
-          </div>
-        </Container>
-      </section>
-
-      {/* ──────────────── BOTTOM ASSISTANCE STRIP ──────────────── */}
-      <section className="relative bg-[#FFF8EE] pb-16 sm:pb-20 lg:pb-24">
-        <Container>
-          <div className="mx-auto max-w-[1200px]">
-            <div
-              aria-hidden="true"
-              className="h-px w-full"
-              style={{ backgroundColor: `${GOLD}55` }}
-            />
-            <ul
-              role="list"
-              className="grid gap-8 pt-10 sm:pt-12 lg:grid-cols-3 lg:divide-x lg:divide-[#D6AD60]/40 lg:gap-0"
-            >
-              <li className="min-w-0 lg:px-10 lg:first:pl-0">
-                <div className="flex items-start gap-3">
-                  <span
-                    aria-hidden="true"
-                    className="mt-0.5 inline-flex size-8 shrink-0 items-center justify-center rounded-full border bg-[#FFFBF2]"
-                    style={{ borderColor: `${GOLD}80`, color: GOLD_INK }}
-                  >
-                    <MessageSquare className="size-3.5" />
-                  </span>
-                  <div className="min-w-0">
-                    <p className="font-serif text-[1.05rem] font-bold leading-tight tracking-tight" style={{ color: NAVY }}>
-                      Community support
-                    </p>
-                    <p className="mt-2 text-[0.9rem] leading-relaxed" style={{ color: MUTED }}>
-                      We respond to all genuine queries as soon as possible.
-                    </p>
-                  </div>
-                </div>
-              </li>
-              <li className="min-w-0 lg:px-10">
-                <div className="flex items-start gap-3">
-                  <span
-                    aria-hidden="true"
-                    className="mt-0.5 inline-flex size-8 shrink-0 items-center justify-center rounded-full border bg-[#FFFBF2]"
-                    style={{ borderColor: `${GOLD}80`, color: GOLD_INK }}
-                  >
-                    <Users className="size-3.5" />
-                  </span>
-                  <div className="min-w-0">
-                    <p className="font-serif text-[1.05rem] font-bold leading-tight tracking-tight" style={{ color: NAVY }}>
-                      Volunteer with us
-                    </p>
-                    <p className="mt-2 text-[0.9rem] leading-relaxed" style={{ color: MUTED }}>
-                      Join hands to serve the Indian community in the UAE.
-                    </p>
-                  </div>
-                </div>
-              </li>
-              <li className="min-w-0 lg:px-10 lg:last:pr-0">
-                <div className="flex items-start gap-3">
-                  <span
-                    aria-hidden="true"
-                    className="mt-0.5 inline-flex size-8 shrink-0 items-center justify-center rounded-full border bg-[#FFFBF2]"
-                    style={{ borderColor: `${GOLD}80`, color: GOLD_INK }}
-                  >
-                    <Mail className="size-3.5" />
-                  </span>
-                  <div className="min-w-0">
-                    <p className="font-serif text-[1.05rem] font-bold leading-tight tracking-tight" style={{ color: NAVY }}>
-                      General enquiries
-                    </p>
-                    <p className="mt-2 text-[0.9rem] leading-relaxed" style={{ color: MUTED }}>
-                      For all other enquiries, write to{" "}
-                      <a
-                        className="font-semibold underline-offset-4 hover:underline"
-                        style={{ color: NAVY }}
-                        href={`mailto:${site.email}`}
-                      >
-                        {site.email}
-                      </a>
-                    </p>
-                  </div>
-                </div>
-              </li>
-            </ul>
           </div>
         </Container>
       </section>
