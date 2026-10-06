@@ -189,7 +189,7 @@ export function Header({ logoSrc }: HeaderProps) {
               <img
                 src={logoSrc}
                 alt={`${site.name} emblem`}
-                className="h-14 w-auto max-w-[min(200px,46vw)] bg-white object-contain object-left sm:h-14 sm:max-w-[240px] xl:h-16"
+                className="h-14 w-auto max-w-[min(200px,46vw)] object-contain object-left sm:h-14 sm:max-w-[240px] xl:h-16"
               />
             ) : (
               <span className="font-bold text-[var(--ipf-navy)]">{site.shortName}</span>
