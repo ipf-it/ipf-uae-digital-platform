@@ -329,133 +329,209 @@ export default function LeadershipPage() {
         </section>
       ) : null}
 
-      {/* ──────────────── 02b · PRESIDENT'S MESSAGE (editorial letter) ────────────────
-          Full-width warm-ivory panel, antique-gold border, restrained
-          mandala corner detailing, narrow reading column (~760px). The
-          complete approved message is rendered inline — nothing hidden,
-          no accordion, no scrolling textbox. Letter closes with the
-          founder-approved signature block beneath the final paragraph. */}
+      {/* ──────────────── 02b · PRESIDENT'S MESSAGE (Dandi March letterhead) ────────────────
+          Founder-approved artwork `/images/leadership/president-message-letterhead.{webp,png}`
+          (1122×1402, Parchment Dandi March Letterhead). The composition
+          splits naturally into:
+            TOP     — gold border + corners + saffron + Ashoka Chakra +
+                      architectural detailing (top ~21% of the image)
+            MIDDLE  — clean parchment safe zone (text area)
+            BOTTOM  — Gandhi + the Dandi March procession + Red Fort +
+                      tricolour watercolour + bottom border (bottom ~37%)
+          We render the artwork as two <picture> elements (top band and
+          bottom band) with `object-fit:cover; object-position:top|bottom`
+          so no pixel is modified — the same source file is clipped twice
+          to show its top band at the top of the letter and its bottom
+          band at the bottom of the letter. Text sits BETWEEN them in a
+          structural sibling container, so it is physically impossible
+          for the body to overlap the Dandi March — the text zone can
+          only grow upward. Parchment-coloured container background and
+          CSS gold hairline side borders maintain the ornamental frame
+          continuity through the text zone. */}
       {president ? (
         <section
           aria-labelledby="ldr-president-letter-heading"
           className="relative isolate overflow-hidden bg-[#FFF8EE] py-16 sm:py-20 lg:py-24"
         >
           <Container>
-            <article className="relative mx-auto max-w-[1100px] overflow-hidden rounded-[22px] border border-[#D6AD60]/40 bg-[linear-gradient(180deg,#FFFBF2_0%,#FFFDF8_55%,#FFFBF2_100%)] px-5 py-14 shadow-[0_14px_38px_rgba(11,31,58,0.08)] sm:px-10 sm:py-16 lg:px-16 lg:py-20">
-              {/* Mandala corner ornaments — top-left + bottom-right.
-                  Pure SVG, very low opacity, decorative only. */}
-              <svg aria-hidden="true" viewBox="0 0 180 180" className="pointer-events-none absolute -left-6 -top-6 h-36 w-36 opacity-[0.09] sm:-left-8 sm:-top-8 sm:h-44 sm:w-44 lg:h-56 lg:w-56">
-                <g fill="none" stroke="#D6AD60" strokeWidth="1">
-                  <circle cx="90" cy="90" r="78" />
-                  <circle cx="90" cy="90" r="60" />
-                  <circle cx="90" cy="90" r="42" />
-                  <circle cx="90" cy="90" r="24" />
-                  {Array.from({ length: 24 }).map((_, i) => {
-                    const a = (i * Math.PI) / 12;
-                    return (
-                      <line
-                        key={i}
-                        x1={90 + Math.cos(a) * 24}
-                        y1={90 + Math.sin(a) * 24}
-                        x2={90 + Math.cos(a) * 78}
-                        y2={90 + Math.sin(a) * 78}
-                      />
-                    );
-                  })}
-                </g>
-              </svg>
-              <svg aria-hidden="true" viewBox="0 0 180 180" className="pointer-events-none absolute -bottom-6 -right-6 h-36 w-36 rotate-180 opacity-[0.09] sm:-bottom-8 sm:-right-8 sm:h-44 sm:w-44 lg:h-56 lg:w-56">
-                <g fill="none" stroke="#D6AD60" strokeWidth="1">
-                  <circle cx="90" cy="90" r="78" />
-                  <circle cx="90" cy="90" r="60" />
-                  <circle cx="90" cy="90" r="42" />
-                  <circle cx="90" cy="90" r="24" />
-                  {Array.from({ length: 24 }).map((_, i) => {
-                    const a = (i * Math.PI) / 12;
-                    return (
-                      <line
-                        key={i}
-                        x1={90 + Math.cos(a) * 24}
-                        y1={90 + Math.sin(a) * 24}
-                        x2={90 + Math.cos(a) * 78}
-                        y2={90 + Math.sin(a) * 78}
-                      />
-                    );
-                  })}
-                </g>
-              </svg>
-
-              {/* Hair-thin tricolour accent, extremely restrained */}
-              <div aria-hidden="true" className="absolute left-1/2 top-0 flex -translate-x-1/2 overflow-hidden rounded-b-[2px]">
-                <span className="block h-[3px] w-10 bg-[#FF9933]/70" />
-                <span className="block h-[3px] w-10 bg-white/80" />
-                <span className="block h-[3px] w-10 bg-[#138808]/70" />
+            <article
+              className="relative mx-auto max-w-[1100px] overflow-hidden rounded-[6px] shadow-[0_18px_44px_rgba(11,31,58,0.14)]"
+              style={{ backgroundColor: "#F2DFB4" }}
+            >
+              {/* Top ornament band — gold border, corners, saffron, Ashoka */}
+              <div
+                aria-hidden="true"
+                className="relative overflow-hidden"
+                style={{ aspectRatio: "1122 / 300" }}
+              >
+                <picture>
+                  <source
+                    srcSet="/images/leadership/president-message-letterhead.webp"
+                    type="image/webp"
+                  />
+                  <img
+                    src="/images/leadership/president-message-letterhead.png"
+                    alt=""
+                    loading="lazy"
+                    decoding="async"
+                    className="block h-full w-full"
+                    style={{ objectFit: "cover", objectPosition: "top center" }}
+                  />
+                </picture>
               </div>
 
-              <div className="relative mx-auto max-w-[760px]">
-                <div className="text-center">
-                  <p className="text-[0.68rem] font-bold uppercase tracking-[0.3em]" style={{ color: GOLD_INK }}>
-                    President's Message
-                  </p>
-                  <h2
-                    id="ldr-president-letter-heading"
-                    className="mt-4 font-serif text-[1.75rem] font-bold leading-tight tracking-tight sm:text-[2rem] lg:text-[2.2rem]"
+              {/* Middle text zone — pure parchment, side gold hairline
+                  borders maintain frame continuity between top + bottom
+                  image bands. Narrow 760px reading column centred. */}
+              <div
+                className="relative"
+                style={{
+                  backgroundColor: "#F5E4BA",
+                  borderLeft: "4px solid rgba(190,150,80,0.55)",
+                  borderRight: "4px solid rgba(190,150,80,0.55)",
+                  marginTop: "-1px",
+                  marginBottom: "-1px",
+                }}
+              >
+                <div className="mx-auto max-w-[760px] px-5 py-12 sm:px-8 sm:py-14 lg:px-12 lg:py-16">
+                  <div className="text-center">
+                    <p
+                      className="text-[0.68rem] font-bold uppercase tracking-[0.3em]"
+                      style={{ color: GOLD_INK }}
+                    >
+                      President's Message
+                    </p>
+                    <h2
+                      id="ldr-president-letter-heading"
+                      className="mt-4 font-serif text-[1.7rem] font-bold leading-tight tracking-tight sm:text-[1.95rem] lg:text-[2.15rem]"
+                      style={{ color: NAVY }}
+                    >
+                      A letter to the Indian community in the UAE
+                    </h2>
+                    <div
+                      aria-hidden="true"
+                      className="mx-auto mt-5 h-px w-20"
+                      style={{ backgroundColor: `${GOLD}99` }}
+                    />
+                  </div>
+
+                  {/* Full approved message. The salutation renders as a
+                      serif italic greeting; the first substantive
+                      paragraph receives a restrained gold drop-cap. The
+                      final paragraph "...of the UAE. Jai Hind." is split
+                      so "Jai Hind." becomes its own serif italic close
+                      above the signature. */}
+                  <div
+                    className="mt-10 space-y-6 text-[1.02rem] leading-[1.85] sm:text-[1.05rem] sm:leading-[1.9]"
+                    style={{ color: INK }}
+                  >
+                    {presidentMessageBody.map((paragraph, i) => {
+                      const isGreeting = paragraph === "Dear Friends,";
+                      const isFirstBody = i === 2;
+                      const isFinal = i === presidentMessageBody.length - 1;
+                      if (isGreeting) {
+                        return (
+                          <p
+                            key={paragraph}
+                            className="font-serif text-[1.2rem] italic sm:text-[1.3rem]"
+                            style={{ color: NAVY }}
+                          >
+                            {paragraph}
+                          </p>
+                        );
+                      }
+                      if (isFirstBody) {
+                        return (
+                          <p key={paragraph.slice(0, 60)}>
+                            <span
+                              className="float-left mr-3 mt-1 font-serif text-[3.2rem] font-bold leading-[0.85] sm:text-[3.8rem]"
+                              style={{ color: GOLD_INK }}
+                              aria-hidden="true"
+                            >
+                              {paragraph.charAt(0)}
+                            </span>
+                            {paragraph.slice(1)}
+                          </p>
+                        );
+                      }
+                      if (isFinal) {
+                        /* Last data paragraph ends with " Jai Hind." —
+                           split so the invitation line sits as its own
+                           closing paragraph and "Jai Hind." becomes a
+                           dedicated serif italic close above the sign-off. */
+                        const marker = " Jai Hind.";
+                        const trimmed = paragraph.endsWith(marker)
+                          ? paragraph.slice(0, -marker.length)
+                          : paragraph;
+                        return (
+                          <p key={paragraph.slice(0, 60)}>{trimmed}</p>
+                        );
+                      }
+                      return <p key={paragraph.slice(0, 60)}>{paragraph}</p>;
+                    })}
+                  </div>
+
+                  <p
+                    className="mt-10 font-serif text-[1.35rem] italic sm:text-[1.5rem]"
                     style={{ color: NAVY }}
                   >
-                    A letter to the Indian community in the UAE
-                  </h2>
-                  <div aria-hidden="true" className="mx-auto mt-5 h-px w-20" style={{ backgroundColor: `${GOLD}99` }} />
-                </div>
+                    Jai Hind.
+                  </p>
 
-                {/* Full approved message. Paragraphs 0-1 are the salutation
-                    (also shown in the upper feature); paragraph 2 is the
-                    first substantive paragraph and receives the drop-cap. */}
-                <div className="mt-10 space-y-6 text-[1.02rem] leading-[1.85] sm:text-[1.05rem] sm:leading-[1.9]" style={{ color: INK }}>
-                  {presidentMessageBody.map((paragraph, i) => {
-                    const isGreeting = paragraph === "Dear Friends,";
-                    const isFirstBody = i === 2;
-                    if (isGreeting) {
-                      return (
-                        <p
-                          key={paragraph}
-                          className="font-serif text-[1.2rem] italic sm:text-[1.3rem]"
-                          style={{ color: NAVY }}
-                        >
-                          {paragraph}
-                        </p>
-                      );
-                    }
-                    if (isFirstBody) {
-                      return (
-                        <p key={paragraph.slice(0, 60)}>
-                          <span
-                            className="float-left mr-3 mt-1 font-serif text-[3.2rem] font-bold leading-[0.85] sm:text-[3.8rem]"
-                            style={{ color: GOLD_INK }}
-                            aria-hidden="true"
-                          >
-                            {paragraph.charAt(0)}
-                          </span>
-                          {paragraph.slice(1)}
-                        </p>
-                      );
-                    }
-                    return <p key={paragraph.slice(0, 60)}>{paragraph}</p>;
-                  })}
+                  <div
+                    aria-hidden="true"
+                    className="mt-10 h-px w-24"
+                    style={{ backgroundColor: `${GOLD}99` }}
+                  />
+                  <div className="mt-6 pb-2">
+                    <p
+                      className="font-serif text-[1.4rem] font-bold leading-tight tracking-tight sm:text-[1.55rem]"
+                      style={{ color: NAVY }}
+                    >
+                      {president.personName}
+                    </p>
+                    <p
+                      className="mt-2 text-[0.78rem] font-semibold uppercase tracking-[0.22em]"
+                      style={{ color: GOLD_INK }}
+                    >
+                      President
+                    </p>
+                    <p
+                      className="mt-1 text-[0.78rem] font-semibold uppercase tracking-[0.22em]"
+                      style={{ color: GOLD_INK }}
+                    >
+                      Indian People's Forum UAE
+                    </p>
+                  </div>
                 </div>
+              </div>
 
-                {/* Letter closing signature block */}
-                <div aria-hidden="true" className="mt-12 h-px w-24" style={{ backgroundColor: `${GOLD}99` }} />
-                <div className="mt-6">
-                  <p className="font-serif text-[1.35rem] font-bold leading-tight tracking-tight sm:text-[1.5rem]" style={{ color: NAVY }}>
-                    {president.personName}
-                  </p>
-                  <p className="mt-2 text-[0.78rem] font-semibold uppercase tracking-[0.22em]" style={{ color: GOLD_INK }}>
-                    President
-                  </p>
-                  <p className="mt-1 text-[0.78rem] font-semibold uppercase tracking-[0.22em]" style={{ color: GOLD_INK }}>
-                    Indian People's Forum UAE
-                  </p>
-                </div>
+              {/* Bottom Dandi March band — Gandhi + procession + bottom
+                  border. Text zone above ends in a sibling container, so
+                  the body copy can never overlap this illustration no
+                  matter how long the letter grows. */}
+              <div
+                aria-hidden="true"
+                className="relative overflow-hidden"
+                style={{ aspectRatio: "1122 / 500" }}
+              >
+                <picture>
+                  <source
+                    srcSet="/images/leadership/president-message-letterhead.webp"
+                    type="image/webp"
+                  />
+                  <img
+                    src="/images/leadership/president-message-letterhead.png"
+                    alt=""
+                    loading="lazy"
+                    decoding="async"
+                    className="block h-full w-full"
+                    style={{
+                      objectFit: "cover",
+                      objectPosition: "bottom center",
+                    }}
+                  />
+                </picture>
               </div>
             </article>
           </Container>
