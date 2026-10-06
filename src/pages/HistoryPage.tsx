@@ -4,6 +4,12 @@ import { DocumentTitle } from "../components/layout/DocumentTitle";
 import { IllustratedHero } from "../components/layout/IllustratedHero";
 import { Container } from "../components/ui/Container";
 import { useLocale } from "../i18n/LocaleProvider";
+import {
+  CHAPTER_COUNT,
+  STATE_COUNCIL_COUNT,
+  SPECIAL_COUNCIL_COUNT,
+  TOTAL_COUNCIL_COUNT,
+} from "../data/orgCounts";
 
 /* ───────────────────────────────────────────────────────────────────────
  * HistoryPage — History & Governance (Phase 2 implementation, 5 Oct 2026).
@@ -66,19 +72,13 @@ const BEGINNING_IMG = "/legacy-assets/images/Ahlan_Modi.jpeg";
 const MILESTONES_BG_WEBP = "/images/history/history-milestones-bg.webp";
 const MILESTONES_BG_PNG = "/images/history/history-milestones-bg.png";
 
-/* Eight UAE chapters — authoritative list from /api/org/chapters.
-   Note: UAE has seven Emirates; "Al Ain" is a city in Abu Dhabi
-   Emirate, counted here as its own chapter per project data. */
-const UAE_CHAPTERS = [
-  "Abu Dhabi",
-  "Ajman",
-  "Al Ain",
-  "Dubai",
-  "Fujairah",
-  "Ras Al Khaimah",
-  "Sharjah",
-  "Umm Al Quwain",
-] as const;
+/* UAE chapter COUNT — authoritative 2026 total is seven (see
+   src/data/orgCounts.ts). The exact names of the seven chapters are
+   being reconciled against the IPF 2026 source spreadsheet in Phase 2;
+   the list previously held here (which contained eight Emirate-based
+   names) has been removed to avoid displaying stale data.
+   The UI below renders a count-only placeholder until Phase 2 lands
+   the authoritative chapter list. */
 
 const GOLD = "#D6AD60";
 const GOLD_INK = "#8B6A1F";
@@ -498,7 +498,8 @@ export default function HistoryPage() {
           </div>
 
           {/* ── Governance hierarchy visual — enlarged centrepiece ──
-             IPF UAE → Managing Committee → 8 Chapters + 31 Councils.
+             IPF UAE → Managing Committee → 7 Chapters + 19 Councils
+             (2026 authoritative counts from src/data/orgCounts.ts).
              Clean editorial nodes, thin gold connectors, no flowchart
              boxes. Target width ~900px on desktop. */}
           <div
@@ -575,19 +576,19 @@ export default function HistoryPage() {
                   className="font-serif text-[2.2rem] font-light leading-none sm:text-[2.5rem]"
                   style={{ color: NAVY }}
                 >
-                  8
+                  {CHAPTER_COUNT}
                 </p>
                 <p
                   className="mt-3 text-[0.62rem] font-bold uppercase tracking-[0.28em]"
                   style={{ color: GOLD_INK }}
                 >
-                  UAE Chapters
+                  Chapters
                 </p>
                 <p
                   className="mt-2 text-[0.88rem] leading-relaxed"
                   style={{ color: MUTED }}
                 >
-                  Local community activity across the Emirates
+                  Local community activity across the UAE
                 </p>
               </div>
               <div className="flex flex-col items-center rounded-xl border border-[#D6AD60]/35 bg-white px-6 py-6 shadow-[0_6px_18px_rgba(11,31,58,0.05)]">
@@ -595,7 +596,7 @@ export default function HistoryPage() {
                   className="font-serif text-[2.2rem] font-light leading-none sm:text-[2.5rem]"
                   style={{ color: NAVY }}
                 >
-                  31
+                  {TOTAL_COUNCIL_COUNT}
                 </p>
                 <p
                   className="mt-3 text-[0.62rem] font-bold uppercase tracking-[0.28em]"
@@ -607,7 +608,7 @@ export default function HistoryPage() {
                   className="mt-2 text-[0.88rem] leading-relaxed"
                   style={{ color: MUTED }}
                 >
-                  State and Special community councils
+                  State and Special community councils (incl. IPF Yuva)
                 </p>
               </div>
             </div>
@@ -643,7 +644,11 @@ export default function HistoryPage() {
             </h2>
           </div>
 
-          {/* ─── A · CHAPTER NETWORK — eight chapters, 4×2 on desktop ─── */}
+          {/* ─── A · CHAPTER NETWORK — seven chapters (2026 count) ───
+             The authoritative seven-chapter name list is being reconciled
+             against the IPF 2026 source spreadsheet in Phase 2. Until
+             then this block shows the count + a single "Explore all
+             chapters" CTA instead of a mock list of names. */}
           <div className="mt-14 sm:mt-16">
             <div className="flex items-baseline gap-4">
               <p
@@ -662,42 +667,38 @@ export default function HistoryPage() {
               className="mt-3 font-serif text-[1.3rem] font-bold leading-tight tracking-tight sm:text-[1.45rem]"
               style={{ color: NAVY }}
             >
-              Eight chapters across the UAE
+              {t("page.historyGov.chaptersHeading")}
             </h3>
             <p
               className="mt-3 max-w-3xl text-[0.95rem] leading-relaxed"
               style={{ color: INK }}
             >
-              IPF UAE operates through eight chapters across the UAE. Each chapter sustains social, cultural and welfare activity in its region through local volunteers and professional members.
+              {t("page.historyGov.chaptersBody")}
             </p>
-            <ul
-              role="list"
-              className="mt-7 grid grid-cols-2 gap-x-4 gap-y-3 sm:grid-cols-4"
-            >
-              {UAE_CHAPTERS.map((name, i) => (
-                <li key={name}>
-                  <Link
-                    to={`/chapters/${name.toLowerCase().replace(/ /g, "-")}`}
-                    className="group flex h-full items-center gap-3 rounded-xl border border-[#D6AD60]/30 bg-white px-4 py-3 transition hover:border-[#D6AD60] hover:shadow-[0_6px_18px_rgba(11,31,58,0.06)]"
-                    style={{ color: NAVY }}
-                  >
-                    <span
-                      className="font-serif text-[0.78rem] font-semibold tabular-nums"
-                      style={{ color: GOLD_INK }}
-                    >
-                      0{i + 1}
-                    </span>
-                    <span className="min-w-0 flex-1 truncate text-[0.95rem] font-semibold">
-                      {name}
-                    </span>
-                    <ArrowRight
-                      aria-hidden="true"
-                      className="size-3 shrink-0 opacity-40 transition group-hover:opacity-80 group-hover:translate-x-0.5"
-                    />
-                  </Link>
-                </li>
-              ))}
-            </ul>
+            <div className="mt-7 flex flex-col items-start gap-5 rounded-xl border border-[#D6AD60]/30 bg-white px-6 py-6 shadow-[0_6px_18px_rgba(11,31,58,0.05)] sm:flex-row sm:items-center sm:justify-between">
+              <div className="flex items-baseline gap-4">
+                <p
+                  className="font-serif text-[2rem] font-light leading-none sm:text-[2.3rem]"
+                  style={{ color: NAVY }}
+                >
+                  {CHAPTER_COUNT}
+                </p>
+                <p
+                  className="text-[0.62rem] font-bold uppercase tracking-[0.28em]"
+                  style={{ color: GOLD_INK }}
+                >
+                  UAE Chapters
+                </p>
+              </div>
+              <Link
+                to="/chapters"
+                className="group inline-flex items-center gap-1.5 text-[0.78rem] font-bold uppercase tracking-[0.18em]"
+                style={{ color: BURGUNDY }}
+              >
+                Explore all chapters
+                <ArrowRight className="size-3.5 transition-transform group-hover:translate-x-0.5" />
+              </Link>
+            </div>
           </div>
 
           {/* ─── B · COUNCIL NETWORK — same visual language as chapters ─── */}
@@ -719,7 +720,7 @@ export default function HistoryPage() {
               className="mt-3 font-serif text-[1.3rem] font-bold leading-tight tracking-tight sm:text-[1.45rem]"
               style={{ color: NAVY }}
             >
-              Thirty-one councils — state and special
+              {t("page.historyGov.councilsHeading")}
             </h3>
             <p
               className="mt-3 max-w-3xl text-[0.95rem] leading-relaxed"
@@ -730,15 +731,15 @@ export default function HistoryPage() {
             <div className="mt-7 grid gap-4 sm:grid-cols-2">
               {[
                 {
-                  count: "24",
+                  count: `${STATE_COUNCIL_COUNT}`,
                   label: "State councils",
-                  body: "Community members by their Indian state of origin — from Andhra Pradesh and Kerala to Assam, Punjab and the North-East.",
+                  body: "Community members by their Indian state of origin.",
                   cta: "View all councils",
                 },
                 {
-                  count: "7",
+                  count: `${SPECIAL_COUNCIL_COUNT}`,
                   label: "Special councils",
-                  body: "Members organised by shared interest — Business, Cultural, Media and other thematic groups that shape IPF's community initiatives.",
+                  body: "Members organised by shared interest — including IPF Yuva and other thematic groups that shape IPF's community initiatives.",
                   cta: "Explore special councils",
                 },
               ].map((c) => (

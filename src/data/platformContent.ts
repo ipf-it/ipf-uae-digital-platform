@@ -25,7 +25,7 @@ export const homeEventsCarousel = [
     category: "Community",
     image: "/legacy-assets/images/slider1.jpg",
     alt: "IPF office inauguration in Ajman on 21 January 2021",
-    body: "Indian People's Forum inaugurated its registered office at Horizon Towers, Al Rashidiya, Ajman — the transition from an informal volunteer effort to a licensed socio-cultural organisation with a committee structure and an eight-chapter UAE presence.",
+    body: "Indian People's Forum inaugurated its registered office at Horizon Towers, Al Rashidiya, Ajman — the transition from an informal volunteer effort to a licensed socio-cultural organisation with a committee structure and an seven-chapter UAE presence.",
   },
   {
     // Source: newsItems.meeting-external-affairs-abu-dhabi (V. Muraleedharan,
@@ -226,7 +226,7 @@ export const presidentMessageBody = [
   "Dear Friends,",
   "Namaskar and greetings to my entire fellow Indians in the UAE.",
   "Indian People's Forum has grown from strength to strength since inception, and we are proud to serve the Indian community in the UAE. Dedicated efforts from the team and years of service were recognised, and IPF today holds the licence for socio-cultural activities in the UAE, with our registered office in the Emirate of Ajman.",
-  "IPF is a non-profit organisation working solely with the motto of serving the Indian community. We have eight chapters across the Emirates. Through honest and selfless volunteerism we help build cultural ties between India and the UAE, and extend a helping hand for the welfare of every Non-Resident Indian living here.",
+  "IPF is a non-profit organisation working solely with the motto of serving the Indian community. We have seven chapters across the UAE. Through honest and selfless volunteerism we help build cultural ties between India and the UAE, and extend a helping hand for the welfare of every Non-Resident Indian living here.",
   "Our volunteers comprise senior professionals with diverse linguistic and regional representation in each chapter. In IPF we have representation from all the states of India, and we believe in \"अनेकता में एकता भारत की विशेषता\". IPF is a true follower of the principle \"सबका साथ, सबका विकास और सबका विश्वास\".",
   "Our logo embodies oneness and the principle of Vasudhaiva Kutumbakam — One Family, One Team, One Dream, One Journey, One Aspiration and One Belief of unity and achievement.",
   "During COVID lockdown and distress, IPF arranged independent chartered flights to help relocate people, and arranged food, shelter, clothing, bedding, masks, sanitizers and financial support. A long list of national and cultural festivals is celebrated to keep the community engaged, thousands of miles away from home.",
@@ -297,7 +297,7 @@ export const newsItems = [
     image: "/legacy-assets/images/news1.jpg",
     excerpt:
       "Indian People's Forum inaugurated its registered office in Ajman, marking a major institutional step in organised community service.",
-    body: "Indian People's Forum began with the singular aim of supporting distressed Indians and undertook small activities to support those in need. The inauguration of the registered office at Horizon Towers, Al Rashidiya, Ajman, marked a turning point: from informal volunteer effort to a licensed socio-cultural organisation with a public address, committee structure and eight-chapter UAE presence.",
+    body: "Indian People's Forum began with the singular aim of supporting distressed Indians and undertook small activities to support those in need. The inauguration of the registered office at Horizon Towers, Al Rashidiya, Ajman, marked a turning point: from informal volunteer effort to a licensed socio-cultural organisation with a public address, committee structure and seven-chapter UAE presence.",
   },
   {
     slug: "meeting-external-affairs-abu-dhabi",

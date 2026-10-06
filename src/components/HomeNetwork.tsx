@@ -49,7 +49,11 @@ const BURGUNDY = "#5A0F1E";
 const INK = "#1c2430";
 const MUTED = "#55606d";
 
-/* Chapter id → medallion. All eight live chapters have an approved asset. */
+/* Chapter id → medallion. Each live chapter has an approved asset here.
+   The authoritative 2026 count is seven (see src/data/orgCounts.ts);
+   any slug returned by /api/org/chapters without a matching medallion
+   simply won't render. The map intentionally retains the full historic
+   set so changes to the chapter directory don't require code edits. */
 const CHAPTER_ICON: Record<string, string> = {
   dubai: "/images/home/network/chapter-dubai.png",
   "abu-dhabi": "/images/home/network/chapter-abu-dhabi.png",

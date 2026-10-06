@@ -78,7 +78,7 @@ export default function HomePage() {
          top centre, then a 2-column grid where each column has the
          approved photograph bleeding to the outer edge with an organic
          S-curve clip and the editorial content card inset toward centre.
-         Eight chapter medallions + three Special Council medallions,
+         Chapter medallions + Special Council medallions,
          every one an independent <Link> to its real page. Wrapped in a
          div to kill the global home-theme-page saffron/green mandala
          pseudo-element (same pattern as HomeEvents / HomeGetInvolved). */}
