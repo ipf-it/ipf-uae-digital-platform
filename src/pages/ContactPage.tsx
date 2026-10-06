@@ -183,8 +183,13 @@ export default function ContactPage() {
                 </header>
 
                 <div className="mt-6 flex flex-1 flex-col gap-5">
-                  {/* Registered office panel */}
-                  <div className="relative overflow-hidden rounded-[18px] border border-[#D6AD60]/35 bg-[#FFFBF2] p-6 shadow-[0_8px_22px_rgba(11,31,58,0.05)] sm:p-7">
+                  {/* Registered office panel — also serves as the primary
+                      IPF Cares contact destination. SupportPage links to
+                      /contact#ipf-cares which lands here via scroll-mt-28. */}
+                  <div
+                    id="ipf-cares"
+                    className="relative scroll-mt-28 overflow-hidden rounded-[18px] border border-[#D6AD60]/35 bg-[#FFFBF2] p-6 shadow-[0_8px_22px_rgba(11,31,58,0.05)] sm:p-7"
+                  >
                     <div className="flex items-start gap-4">
                       <span
                         aria-hidden="true"
