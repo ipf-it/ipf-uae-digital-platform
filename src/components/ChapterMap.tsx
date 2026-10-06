@@ -101,7 +101,7 @@ export function ChapterMap() {
   }
 
   return (
-    <div className="chapter-directory-map overflow-hidden rounded-[20px] border border-[#D6AD60]/35 bg-[#FFFBF2] shadow-[0_10px_28px_rgba(11,31,58,0.08)]">
+    <div className="overflow-hidden rounded-[20px] border border-[#D6AD60]/35 bg-[#FFFBF2] shadow-[0_10px_28px_rgba(11,31,58,0.08)]">
       <div className="grid lg:grid-cols-[minmax(0,1.25fr)_minmax(260px,0.75fr)] lg:items-stretch">
         {/* ─── MAP ─── */}
         <div className="relative flex min-h-[320px] items-center justify-center p-5 sm:min-h-[420px] sm:p-6 lg:min-h-[460px] lg:p-8">

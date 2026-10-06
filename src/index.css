@@ -505,10 +505,10 @@ html:not([lang="en"]) thead th {
 .chapter-map-svg path.is-selected { fill:var(--org-secondary); stroke:#fff; stroke-width:2.6; filter:drop-shadow(0 0 10px color-mix(in srgb,var(--org-secondary) 70%,transparent)); }
 .chapter-sand-flow { position:absolute; inset:auto -10% -8rem; height:20rem; z-index:-1; border-radius:50%; opacity:.28; background:linear-gradient(180deg,color-mix(in srgb,var(--org-secondary) 4%,transparent),color-mix(in srgb,var(--org-secondary) 10%,transparent)); rotate:-3deg; animation:org-wave 24s ease-in-out infinite; }
 .chapter-sky-orbit { display:none; }
-.chapter-directory-map { position:relative; background:radial-gradient(circle at 24% 35%,rgba(255,153,51,.14),transparent 24%),linear-gradient(135deg,#3a0913,#7a1f30); box-shadow:0 30px 70px rgba(0,0,0,.22); }
-.chapter-directory-orbit { position:absolute; width:24rem; aspect-ratio:1; left:-9rem; bottom:-12rem; border:1px solid rgba(255,255,255,.14); border-radius:50%; box-shadow:0 0 0 4rem rgba(255,255,255,.025),0 0 0 8rem rgba(255,153,51,.025); animation:org-float 11s ease-in-out infinite; }
-.chapter-directory-map svg path { transition:fill .25s ease,filter .25s ease; }
-.chapter-directory-map svg text { fill:#fff; paint-order:stroke; stroke:#0b1f3a; stroke-width:3px; }
+/* Previous .chapter-directory-map (dark burgundy backdrop + orbit) was
+   bound to the ChapterMap component. ChapterMap is now styled inline
+   with the premium ivory system — the global rules were overriding
+   the new design and are intentionally removed. */
 .state-landmark-bg { position:absolute; z-index:-1; right:-4vw; bottom:-5rem; width:min(48vw,42rem); color:var(--org-secondary); filter:drop-shadow(0 0 45px color-mix(in srgb,var(--org-secondary) 20%,transparent)); }
 .state-landmark-bg svg { width:100%; height:auto; }
 .place-theme-art { position:absolute; inset:0; z-index:-1; overflow:hidden; pointer-events:none; color:var(--org-secondary); }
