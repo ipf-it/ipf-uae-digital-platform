@@ -62,6 +62,16 @@ export function Header({ logoSrc }: HeaderProps) {
   const navLabel = (label: string) => t(navKeys[label] ?? label);
   const [open, setOpen] = useState(false);
   const [mega, setMega] = useState<null | "chapters" | "councils">(null);
+  /* Non-mega desktop dropdowns (About, etc.) were previously controlled
+     purely by CSS `group-hover` + `group-focus-within`. After clicking a
+     child <Link>, React Router navigated BUT the dropdown stayed visible
+     because the parent `.group` was still hovered and/or the clicked
+     Link retained focus — neither CSS state resets on navigation.
+     Switching to React state ties the dropdown lifecycle to actual
+     interactions (mouse enter/leave, child click, route change) so the
+     menu closes immediately on selection without needing an extra
+     outside click. */
+  const [openDropdown, setOpenDropdown] = useState<string | null>(null);
   // Donate is intentionally retired from the top announcement bar. The CMS
   // nav payload (/api/nav) may still include it for other consumers, so we
   // filter it out here as the single UI opt-out — the database, admin editor
@@ -91,7 +101,22 @@ export function Header({ logoSrc }: HeaderProps) {
   useEffect(() => {
     setOpen(false);
     setMega(null);
+    setOpenDropdown(null);
   }, [pathname]);
+
+  /* Close the current desktop dropdown when the user presses Escape.
+     Preserves accessibility for keyboard-only users and stops stale
+     open menus if focus is on a nested element. */
+  useEffect(() => {
+    function onKey(e: KeyboardEvent) {
+      if (e.key === "Escape") {
+        setMega(null);
+        setOpenDropdown(null);
+      }
+    }
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, []);
 
   return (
     <header ref={headerRef} className="sticky top-0 z-40">
@@ -153,7 +178,10 @@ export function Header({ logoSrc }: HeaderProps) {
       </div>
       <div
         className="relative border-b border-[var(--ipf-line)] bg-[var(--ipf-paper)]/95 backdrop-blur-md"
-        onMouseLeave={() => setMega(null)}
+        onMouseLeave={() => {
+          setMega(null);
+          setOpenDropdown(null);
+        }}
       >
         <Container className="flex items-center justify-between gap-3 py-2.5 sm:py-3">
           <Link to="/" className="flex min-w-0 shrink-0 items-center gap-3" onClick={() => setOpen(false)}>
@@ -195,7 +223,7 @@ export function Header({ logoSrc }: HeaderProps) {
               if (group.mega === "chapters" || group.mega === "councils") {
                 const megaActive = pathname === group.to || pathname.startsWith(`${group.to}/`);
                 return (
-                  <div key={group.label} onMouseEnter={() => setMega(group.mega ?? null)}>
+                  <div key={group.label} onMouseEnter={() => { setMega(group.mega ?? null); setOpenDropdown(null); }}>
                     <Link
                       to={group.to}
                       className={cn("inline-flex items-center gap-1", linkClass(megaActive))}
@@ -214,19 +242,39 @@ export function Header({ logoSrc }: HeaderProps) {
                     key={group.label}
                     to={group.to}
                     className={() => linkClass(active)}
-                    onMouseEnter={() => setMega(null)}
+                    onMouseEnter={() => { setMega(null); setOpenDropdown(null); }}
                   >
                     {navLabel(group.label)}
                   </NavLink>
                 );
               }
+              /* React-state-controlled dropdown. Opens on hover, closes
+                 explicitly on child selection (via onNavigate), on mouse
+                 leave, on Escape, and on route change. */
+              const isOpen = openDropdown === group.label;
               return (
-                <div key={group.label} className="group relative" onMouseEnter={() => setMega(null)}>
-                  <Link to={group.to} className={cn("inline-flex items-center gap-1", linkClass(active))}>
+                <div
+                  key={group.label}
+                  className="relative"
+                  onMouseEnter={() => { setMega(null); setOpenDropdown(group.label); }}
+                  onMouseLeave={() => setOpenDropdown((prev) => (prev === group.label ? null : prev))}
+                >
+                  <Link
+                    to={group.to}
+                    className={cn("inline-flex items-center gap-1", linkClass(active))}
+                    aria-expanded={isOpen}
+                    aria-haspopup="true"
+                    onClick={() => setOpenDropdown(null)}
+                  >
                     {navLabel(group.label)}
                     <ChevronDown className="size-3.5 opacity-60" />
                   </Link>
-                  <div className="invisible absolute left-0 top-full z-50 min-w-56 pt-1.5 opacity-0 transition group-hover:visible group-hover:opacity-100 group-focus-within:visible group-focus-within:opacity-100">
+                  <div
+                    className={cn(
+                      "absolute left-0 top-full z-50 min-w-56 pt-1.5 transition",
+                      isOpen ? "visible opacity-100" : "invisible opacity-0",
+                    )}
+                  >
                     <div className="overflow-hidden rounded-xl border border-[var(--ipf-line)] bg-[var(--ipf-paper)] shadow-[0_16px_40px_rgba(11,31,58,0.12)]">
                       <MegaColumn
                         title={navLabel(group.label)}
@@ -239,6 +287,7 @@ export function Header({ logoSrc }: HeaderProps) {
                             to={child.to}
                             label={navLabel(child.label)}
                             bullet="navy"
+                            onNavigate={() => setOpenDropdown(null)}
                           />
                         ))}
                       </MegaColumn>
