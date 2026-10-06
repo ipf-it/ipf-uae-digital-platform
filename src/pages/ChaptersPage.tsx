@@ -146,7 +146,15 @@ export default function ChaptersPage() {
         aria-labelledby="chapters-page-heading"
         className="relative isolate overflow-hidden bg-[#FFF8EE]"
       >
-        <div className="relative w-full" style={{ height: "clamp(300px, 32vw, 380px)" }}>
+        {/* Height bumped from clamp(300,32vw,380) to clamp(320,32vw,440)
+            so wider desktops have more vertical room; combined with
+            object-position:center top below, the full architectural
+            horizon (Burj Khalifa spire with sky above, UAE flag,
+            mosque, India Gate archway) stays visible at every width.
+            All overflow crops at the bottom (water + palm bases +
+            foreground), which the ivory negative space immediately
+            above restores visually. */}
+        <div className="relative w-full" style={{ height: "clamp(320px, 32vw, 440px)" }}>
           <picture>
             <source srcSet="/images/contact/contact-hero.webp" type="image/webp" />
             <img
@@ -158,7 +166,7 @@ export default function ChaptersPage() {
               width={1774}
               height={887}
               className="absolute inset-0 block h-full w-full object-cover"
-              style={{ objectPosition: "right center" }}
+              style={{ objectPosition: "center top" }}
             />
           </picture>
 
