@@ -329,55 +329,56 @@ export default function LeadershipPage() {
         </section>
       ) : null}
 
-      {/* ──────────────── 02b · PRESIDENT'S MESSAGE (Dandi March letterhead) ────────────────
-          Single continuous letterhead. The approved artwork at
-          /images/leadership/president-message-letterhead.{webp,png}
-          (1122×1402) is split along two seam-matched source rows
-          (y=850 and y=890) into three assets:
+      {/* ──────────────── 02b · PRESIDENT'S MESSAGE (continuous letterhead) ────────────────
+          Final seam-free architecture (5 ordered z-index layers):
 
-            letterhead-top.{webp,png}     rows 0..850    (gold border,
-                                                          saffron, mandala,
-                                                          Ashoka Chakra,
-                                                          architecture,
-                                                          upper parchment)
-            letterhead-tile.{webp,png}    1122×60 pure parchment chunk
-                                           sampled from a verified-clean
-                                           region (y=720 x=450..650) and
-                                           horizontally tiled to full
-                                           width — tileable in BOTH axes
-            letterhead-bottom.{webp,png}  rows 890..1402  (Gandhi + the
-                                                           Dandi March +
-                                                           Red Fort +
-                                                           tricolour
-                                                           watercolour +
-                                                           bottom border)
+            z-0  Continuous parchment foundation
+                 Tiled `letterhead-tile.webp` repeat-y across the whole
+                 <article> — the SAME chunk used for the extended middle
+                 and sampled from the master at y=720 x=450..650 (clean
+                 parchment). This single tile sits behind EVERYTHING so
+                 the entire sheet is one parchment surface.
 
-          Composition technique — ONE <article> container with FOUR
-          multi-background layers:
-            1. top image, anchored top, 100% auto, no-repeat
-            2. bottom image, anchored bottom, 100% auto, no-repeat
-            3. CSS linear-gradient supplying the gold vertical side
-               borders through the extended middle (transparent in the
-               middle so the tile texture shows through)
-            4. parchment tile, 100% auto, repeat-y — fills EVERYTHING
-               behind the three layers above with real parchment TEXTURE
-               (not a flat CSS colour)
-          The seam between the top image (ends at y=850 in source) and
-          the extended tile (sampled around the same y) is pixel-matched
-          so the parchment tone and texture are continuous. Same at the
-          bottom (image starts y=890, tile continues from matched tone).
-          The viewer cannot see where the centre was extended.
+            z-10 Decorative artwork layers with alpha-mask fades
+                 TOP image at absolute top:0 — mask-image linear-gradient
+                 fades the bottom 45% to transparent so the Ashoka
+                 Chakra and architectural line art dissolve naturally
+                 into the parchment with no rectangular edge.
+                 BOTTOM image at absolute bottom:0 — mask-image fades
+                 the top 15% from transparent to opaque so the pale sky
+                 above Gandhi dissolves into the parchment and the
+                 procession emerges without a visible top edge.
 
-          Padding on the <article> reserves space for the fixed image
-          bands:
-            padding-top    = 73% container-width  (full top image area)
-            padding-bottom = 46% container-width  (full bottom image area)
-          Because padding-% is relative to container width in CSS, both
-          values scale correctly at every breakpoint. The inner text zone
-          sits inside these paddings — body copy can only grow upward
-          within the extended parchment, never into the Dandi March.
-          ZERO text overlap with the bottom artwork is guaranteed by
-          layout structure, not positioning math. */}
+            z-20 Semantic HTML letter content
+                 padding-top: 15% container-width (text starts just
+                 below the top ornament corners while still inside the
+                 top image's opaque zone — faint Ashoka/architecture
+                 sit as decorative background behind navy text).
+                 padding-bottom: 50% container-width (bottom image band
+                 is ~46% container-width tall; signature finishes ~8%
+                 ≈ 90–120px above the point where Gandhi becomes fully
+                 opaque at desktop widths).
+
+            z-30 Independent CONTINUOUS gold side frames
+                 Two absolute-positioned divs at inset-y-0 left-0 and
+                 right-0, 10px wide, with warm-gold linear-gradient
+                 colour sampled from the artwork edge. Run FULL height
+                 of the article — through the top ornament zone, the
+                 extended middle, and the bottom Dandi March zone —
+                 so the gold side-rule is never visibly broken. Sits
+                 ABOVE the artwork so it occludes any discontinuity in
+                 the image bands' own borders.
+
+          Guarantees enforced by this layering:
+            • Top image fade dissolves into the parchment foundation —
+              zero rectangular image edge visible.
+            • Bottom image fade same at the top — Gandhi emerges from
+              the parchment, not sits on top of it.
+            • Continuous side frame — unbroken from top ornament to
+              bottom ornament at every breakpoint.
+            • Zero text overlap with Gandhi — content ends inside the
+              extended parchment, with 8–11% container-width breathing
+              room before Gandhi becomes fully opaque. */}
       {president ? (
         <section
           aria-labelledby="ldr-president-letter-heading"
@@ -387,156 +388,197 @@ export default function LeadershipPage() {
             <article
               className="relative mx-auto max-w-[1100px] overflow-hidden rounded-[6px] shadow-[0_18px_44px_rgba(11,31,58,0.14)]"
               style={{
-                /* Four stacked background layers. First listed = on top. */
-                backgroundImage: [
-                  "url('/images/leadership/letterhead-top.webp')",
-                  "url('/images/leadership/letterhead-bottom.webp')",
-                  /* Vertical gold edge wash — colour sampled directly
-                     from the artwork at y=820..870 x=0..50 so the border
-                     extension matches the top and bottom image bands
-                     tone-for-tone. Transparent through the middle so the
-                     parchment tile texture shows through. */
-                  "linear-gradient(to right, rgba(246,218,175,1) 0%, rgba(248,228,195,0.45) 1.6%, rgba(247,237,219,0) 3.4%, rgba(247,237,219,0) 96.6%, rgba(248,228,195,0.45) 98.4%, rgba(246,218,175,1) 100%)",
+                /* z-0 — single parchment foundation behind every layer */
+                backgroundImage:
                   "url('/images/leadership/letterhead-tile.webp')",
-                ].join(", "),
-                backgroundPosition:
-                  "top center, bottom center, top center, top center",
-                backgroundSize:
-                  "100% auto, 100% auto, 100% 100%, 100% auto",
-                backgroundRepeat:
-                  "no-repeat, no-repeat, no-repeat, repeat-y",
-                /* Parchment colour fallback matches the sampled tone of
-                   the artwork — only visible if the images fail to load. */
+                backgroundSize: "100% auto",
+                backgroundRepeat: "repeat-y",
+                backgroundPosition: "top center",
                 backgroundColor: "#F7EDD3",
-                /* Reserve space for the top and bottom image bands.
-                   Percentage padding is relative to container WIDTH so
-                   it scales proportionally at every breakpoint. */
-                paddingTop: "6%",
-                paddingBottom: "6%",
               }}
             >
-              {/* Spacer that pushes the text column below the top ornament
-                  zone. padding-top above only clears a small breathing
-                  gap from the container edge; this spacer reserves the
-                  rest of the top image band so the text starts inside
-                  the clean upper parchment safe area.
-                  6% + 14% = 20% container-width — maps to source y≈225
-                  in the fading saffron / upper parchment zone where the
-                  only decorative content is extremely faint. */}
-              <div aria-hidden="true" style={{ paddingTop: "14%" }} />
+              {/* z-10 — TOP decoration layer, mask-faded bottom */}
+              <div
+                aria-hidden="true"
+                className="pointer-events-none absolute inset-x-0 top-0 z-10"
+              >
+                <picture>
+                  <source
+                    srcSet="/images/leadership/letterhead-top.webp"
+                    type="image/webp"
+                  />
+                  <img
+                    src="/images/leadership/letterhead-top.png"
+                    alt=""
+                    loading="eager"
+                    decoding="async"
+                    className="block h-auto w-full"
+                    style={{
+                      maskImage:
+                        "linear-gradient(to bottom, #000 0%, #000 55%, transparent 100%)",
+                      WebkitMaskImage:
+                        "linear-gradient(to bottom, #000 0%, #000 55%, transparent 100%)",
+                    }}
+                  />
+                </picture>
+              </div>
 
-              <div className="relative mx-auto max-w-[760px] px-6 sm:px-10 lg:px-14">
-                <div className="text-center">
-                  <p
-                    className="text-[0.68rem] font-bold uppercase tracking-[0.3em]"
-                    style={{ color: GOLD_INK }}
+              {/* z-10 — BOTTOM decoration layer, mask-faded top */}
+              <div
+                aria-hidden="true"
+                className="pointer-events-none absolute inset-x-0 bottom-0 z-10"
+              >
+                <picture>
+                  <source
+                    srcSet="/images/leadership/letterhead-bottom.webp"
+                    type="image/webp"
+                  />
+                  <img
+                    src="/images/leadership/letterhead-bottom.png"
+                    alt=""
+                    loading="lazy"
+                    decoding="async"
+                    className="block h-auto w-full"
+                    style={{
+                      maskImage:
+                        "linear-gradient(to bottom, transparent 0%, #000 18%, #000 100%)",
+                      WebkitMaskImage:
+                        "linear-gradient(to bottom, transparent 0%, #000 18%, #000 100%)",
+                    }}
+                  />
+                </picture>
+              </div>
+
+              {/* z-20 — semantic letter content */}
+              <div
+                className="relative z-20"
+                style={{ paddingTop: "15%", paddingBottom: "50%" }}
+              >
+                <div className="mx-auto max-w-[760px] px-6 sm:px-10 lg:px-14">
+                  <div className="text-center">
+                    <p
+                      className="text-[0.68rem] font-bold uppercase tracking-[0.3em]"
+                      style={{ color: GOLD_INK }}
+                    >
+                      President's Message
+                    </p>
+                    <h2
+                      id="ldr-president-letter-heading"
+                      className="mt-3 font-serif text-[1.7rem] font-bold leading-tight tracking-tight sm:text-[1.95rem] lg:text-[2.15rem]"
+                      style={{ color: NAVY }}
+                    >
+                      A letter to the Indian community in the UAE
+                    </h2>
+                    <div
+                      aria-hidden="true"
+                      className="mx-auto mt-5 h-px w-20"
+                      style={{ backgroundColor: `${GOLD}99` }}
+                    />
+                  </div>
+
+                  <div
+                    className="mt-9 space-y-6 text-[1.03rem] leading-[1.85] sm:text-[1.05rem] sm:leading-[1.9]"
+                    style={{ color: INK }}
                   >
-                    President's Message
-                  </p>
-                  <h2
-                    id="ldr-president-letter-heading"
-                    className="mt-3 font-serif text-[1.7rem] font-bold leading-tight tracking-tight sm:text-[1.95rem] lg:text-[2.15rem]"
+                    {presidentMessageBody.map((paragraph, i) => {
+                      const isGreeting = paragraph === "Dear Friends,";
+                      const isFirstBody = i === 2;
+                      const isFinal = i === presidentMessageBody.length - 1;
+                      if (isGreeting) {
+                        return (
+                          <p
+                            key={paragraph}
+                            className="font-serif text-[1.2rem] italic sm:text-[1.3rem]"
+                            style={{ color: NAVY }}
+                          >
+                            {paragraph}
+                          </p>
+                        );
+                      }
+                      if (isFirstBody) {
+                        return (
+                          <p key={paragraph.slice(0, 60)}>
+                            <span
+                              className="float-left mr-3 mt-1 font-serif text-[3.2rem] font-bold leading-[0.85] sm:text-[3.8rem]"
+                              style={{ color: GOLD_INK }}
+                              aria-hidden="true"
+                            >
+                              {paragraph.charAt(0)}
+                            </span>
+                            {paragraph.slice(1)}
+                          </p>
+                        );
+                      }
+                      if (isFinal) {
+                        const marker = " Jai Hind.";
+                        const trimmed = paragraph.endsWith(marker)
+                          ? paragraph.slice(0, -marker.length)
+                          : paragraph;
+                        return <p key={paragraph.slice(0, 60)}>{trimmed}</p>;
+                      }
+                      return <p key={paragraph.slice(0, 60)}>{paragraph}</p>;
+                    })}
+                  </div>
+
+                  <p
+                    className="mt-10 font-serif text-[1.35rem] italic sm:text-[1.5rem]"
                     style={{ color: NAVY }}
                   >
-                    A letter to the Indian community in the UAE
-                  </h2>
+                    Jai Hind.
+                  </p>
+
                   <div
                     aria-hidden="true"
-                    className="mx-auto mt-5 h-px w-20"
+                    className="mt-10 h-px w-24"
                     style={{ backgroundColor: `${GOLD}99` }}
                   />
-                </div>
-
-                <div
-                  className="mt-9 space-y-6 text-[1.03rem] leading-[1.85] sm:text-[1.05rem] sm:leading-[1.9]"
-                  style={{ color: INK }}
-                >
-                  {presidentMessageBody.map((paragraph, i) => {
-                    const isGreeting = paragraph === "Dear Friends,";
-                    const isFirstBody = i === 2;
-                    const isFinal = i === presidentMessageBody.length - 1;
-                    if (isGreeting) {
-                      return (
-                        <p
-                          key={paragraph}
-                          className="font-serif text-[1.2rem] italic sm:text-[1.3rem]"
-                          style={{ color: NAVY }}
-                        >
-                          {paragraph}
-                        </p>
-                      );
-                    }
-                    if (isFirstBody) {
-                      return (
-                        <p key={paragraph.slice(0, 60)}>
-                          <span
-                            className="float-left mr-3 mt-1 font-serif text-[3.2rem] font-bold leading-[0.85] sm:text-[3.8rem]"
-                            style={{ color: GOLD_INK }}
-                            aria-hidden="true"
-                          >
-                            {paragraph.charAt(0)}
-                          </span>
-                          {paragraph.slice(1)}
-                        </p>
-                      );
-                    }
-                    if (isFinal) {
-                      /* Final paragraph in the data ends " Jai Hind." —
-                         split so "Jai Hind." stands alone as a serif
-                         italic close above the signature. */
-                      const marker = " Jai Hind.";
-                      const trimmed = paragraph.endsWith(marker)
-                        ? paragraph.slice(0, -marker.length)
-                        : paragraph;
-                      return <p key={paragraph.slice(0, 60)}>{trimmed}</p>;
-                    }
-                    return <p key={paragraph.slice(0, 60)}>{paragraph}</p>;
-                  })}
-                </div>
-
-                <p
-                  className="mt-10 font-serif text-[1.35rem] italic sm:text-[1.5rem]"
-                  style={{ color: NAVY }}
-                >
-                  Jai Hind.
-                </p>
-
-                <div
-                  aria-hidden="true"
-                  className="mt-10 h-px w-24"
-                  style={{ backgroundColor: `${GOLD}99` }}
-                />
-                <div className="mt-5">
-                  <p
-                    className="font-serif text-[1.4rem] font-bold leading-tight tracking-tight sm:text-[1.55rem]"
-                    style={{ color: NAVY }}
-                  >
-                    {president.personName}
-                  </p>
-                  <p
-                    className="mt-2 text-[0.78rem] font-semibold uppercase tracking-[0.22em]"
-                    style={{ color: GOLD_INK }}
-                  >
-                    President
-                  </p>
-                  <p
-                    className="mt-1 text-[0.78rem] font-semibold uppercase tracking-[0.22em]"
-                    style={{ color: GOLD_INK }}
-                  >
-                    Indian People's Forum UAE
-                  </p>
+                  <div className="mt-5">
+                    <p
+                      className="font-serif text-[1.4rem] font-bold leading-tight tracking-tight sm:text-[1.55rem]"
+                      style={{ color: NAVY }}
+                    >
+                      {president.personName}
+                    </p>
+                    <p
+                      className="mt-2 text-[0.78rem] font-semibold uppercase tracking-[0.22em]"
+                      style={{ color: GOLD_INK }}
+                    >
+                      President
+                    </p>
+                    <p
+                      className="mt-1 text-[0.78rem] font-semibold uppercase tracking-[0.22em]"
+                      style={{ color: GOLD_INK }}
+                    >
+                      Indian People's Forum UAE
+                    </p>
+                  </div>
                 </div>
               </div>
 
-              {/* Bottom spacer reserves the Dandi March band height.
-                  padding-bottom on the <article> only clears a small
-                  gap at the container edge; this inner spacer accounts
-                  for the fixed-proportion bottom image area so the
-                  final signature finishes ABOVE Gandhi at every width.
-                  6% + 50% = 56% container-width. Bottom image band is
-                  ~46% of container-width tall — leaves ~10% breathing
-                  room between the signature and Gandhi's leading step. */}
-              <div aria-hidden="true" style={{ paddingBottom: "50%" }} />
+              {/* z-30 — CONTINUOUS gold side frames (occlude any seam
+                  in the image bands' own borders by running the FULL
+                  height of the article from top ornament to bottom
+                  ornament). 10px wide gradient from solid warm gold at
+                  the edge fading inward — matches the artwork's edge
+                  wash tone. */}
+              <div
+                aria-hidden="true"
+                className="pointer-events-none absolute inset-y-0 left-0 z-30"
+                style={{
+                  width: "10px",
+                  background:
+                    "linear-gradient(to right, rgba(224,178,106,0.95) 0%, rgba(236,206,158,0.6) 55%, rgba(247,237,219,0) 100%)",
+                }}
+              />
+              <div
+                aria-hidden="true"
+                className="pointer-events-none absolute inset-y-0 right-0 z-30"
+                style={{
+                  width: "10px",
+                  background:
+                    "linear-gradient(to left, rgba(224,178,106,0.95) 0%, rgba(236,206,158,0.6) 55%, rgba(247,237,219,0) 100%)",
+                }}
+              />
             </article>
           </Container>
         </section>
