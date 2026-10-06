@@ -244,38 +244,14 @@ export default function HistoryPage() {
       </Section>
 
       {/* ──────────────────────────────────────────────────────────────
-       * 02 OUR JOURNEY — Milestones. Clean institutional timeline sitting
-       * on the founder-supplied "Watercolour Indian Heritage Milestones
-       * Panorama" background. Indian architecture frames the left + right
-       * edges; the timeline occupies the ivory central negative space.
-       * A very subtle ivory veil (opacity 0.25-0.4) separates text from
-       * the artwork — no dark overlay, no colour wash, no desaturation.
+       * 02 OUR JOURNEY — Milestones. Clean institutional timeline.
+       * (The Watercolour Milestones Panorama background was moved to
+       * the PART II Governance marker below so the heritage artwork
+       * sits where the chapter break occurs; this section returns to
+       * its earlier white-background editorial layout.)
        * Desktop: 4 equal columns, dots on one horizontal axis.
        * ────────────────────────────────────────────────────────────── */}
-      <section
-        aria-labelledby="hg-s3-heading"
-        className="relative isolate overflow-hidden py-12 sm:py-16 lg:py-20"
-      >
-        {/* Background artwork — spread across the full section */}
-        <picture aria-hidden="true" className="pointer-events-none absolute inset-0">
-          <source srcSet={MILESTONES_BG_WEBP} type="image/webp" />
-          <img
-            src={MILESTONES_BG_PNG}
-            alt=""
-            loading="lazy"
-            decoding="async"
-            className="block h-full w-full object-cover object-center"
-          />
-        </picture>
-        {/* VERY subtle warm-ivory veil for readability — never dark, never
-            tinted. On mobile a touch stronger (centre-weighted radial)
-            because the panorama compresses more. Both veils stay below
-            opacity 0.4 so the artwork remains clearly visible. */}
-        <div
-          aria-hidden="true"
-          className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(255,248,238,0.42)_0%,rgba(255,248,238,0.22)_60%,rgba(255,248,238,0.10)_100%)] md:bg-[radial-gradient(ellipse_at_center,rgba(255,248,238,0.32)_0%,rgba(255,248,238,0.18)_60%,rgba(255,248,238,0.08)_100%)]"
-        />
-        <Container className="relative">
+      <Section tone="white" ariaLabelledBy="hg-s3-heading">
         <div className="mx-auto max-w-3xl text-center">
           <div className="flex items-center justify-center gap-3">
             <GoldRule />
@@ -410,22 +386,47 @@ export default function HistoryPage() {
             ))}
           </ol>
         </div>
-        </Container>
-      </section>
+      </Section>
 
       {/* ──────────────────────────────────────────────────────────────
-       * PART II — GOVERNANCE chapter marker. ONE unified transition —
-       * the previous "From journey to structure" band is folded in here
-       * so Governance is introduced exactly once. Warm cream background
-       * change signals the chapter break; fine gold rules bracket the
-       * marker; sub-heading + concise lede set up the next sections
-       * without duplication.
+       * PART II — GOVERNANCE chapter marker. The founder-supplied
+       * "Watercolour Indian Heritage Milestones Panorama" sits as the
+       * background of this chapter break. Indian temple architecture on
+       * the left, India Gate + Qutub Minar + Ashoka Chakra on the right,
+       * ivory negative space + tricolour ribbon through the centre. The
+       * PART II text (eyebrow, title, "How IPF UAE is organised today",
+       * description) occupies the ivory central zone where the artwork
+       * is deliberately quiet.
+       *
+       * A controlled warm-ivory veil (centre-weighted radial, max 0.55
+       * centre on mobile / 0.40 on desktop) sits above the artwork and
+       * below the content to guarantee text contrast on every device.
+       * No dark overlay, no colour wash, no filter on the image.
        * ────────────────────────────────────────────────────────────── */}
       <section
         aria-labelledby="hg-part-ii-heading"
-        className="relative isolate overflow-hidden bg-[#FBF2DF] py-16 sm:py-20 lg:py-24"
+        className="relative isolate overflow-hidden bg-[#FBF2DF] py-20 sm:py-24 lg:py-28"
       >
-        <Container>
+        {/* Background artwork */}
+        <picture aria-hidden="true" className="pointer-events-none absolute inset-0">
+          <source srcSet={MILESTONES_BG_WEBP} type="image/webp" />
+          <img
+            src={MILESTONES_BG_PNG}
+            alt=""
+            loading="lazy"
+            decoding="async"
+            className="block h-full w-full object-cover object-center"
+          />
+        </picture>
+        {/* Centre-weighted ivory veil. Mobile is slightly stronger so
+            the shorter viewport doesn't push text onto architecture;
+            md+ falls back to a softer wash so the panorama reads more
+            clearly beside the editorial content. */}
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(255,248,238,0.78)_0%,rgba(255,248,238,0.55)_55%,rgba(255,248,238,0.25)_100%)] md:bg-[radial-gradient(ellipse_at_center,rgba(255,248,238,0.55)_0%,rgba(255,248,238,0.35)_55%,rgba(255,248,238,0.15)_100%)]"
+        />
+        <Container className="relative">
           <div className="mx-auto flex max-w-2xl flex-col items-center text-center">
             <div
               aria-hidden="true"
@@ -452,7 +453,7 @@ export default function HistoryPage() {
               {t("page.historyGov.transHeading")}
             </p>
             <p
-              className="mt-4 max-w-xl text-[0.95rem] leading-relaxed"
+              className="mt-4 max-w-xl text-[0.95rem] font-medium leading-relaxed"
               style={{ color: INK }}
             >
               {t("page.historyGov.partIILede")}
