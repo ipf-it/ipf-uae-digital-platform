@@ -62,6 +62,13 @@ type IllustratedHeroProps = {
    *  (e.g. History) when its artwork's focal subjects would otherwise
    *  overlap the H1/description. */
   textMaxWidth?: string;
+  /** Optional override for the hero content block's min-height classes.
+   *  Default is the standard family height. /history passes a taller
+   *  value so the panoramic Watercolour Heritage image is upscaled by
+   *  `object-cover`, which gives `object-position` meaningful horizontal
+   *  room to crop the dense monument cluster away from the text column
+   *  at every desktop width. */
+  heightClass?: string;
 };
 
 const GOLD = "#D6AD60";
@@ -90,6 +97,7 @@ export function IllustratedHero({
   artworkAlt,
   artworkPosition = "object-[72%_center]",
   textMaxWidth = "max-w-[600px]",
+  heightClass = "min-h-[380px] py-10 md:min-h-[460px] md:py-14 lg:min-h-[500px] lg:py-16",
 }: IllustratedHeroProps) {
   const { t } = useLocale();
 
@@ -113,7 +121,7 @@ export function IllustratedHero({
       </picture>
 
       <Container className="relative">
-        <div className="flex min-h-[380px] flex-col justify-center py-10 md:min-h-[460px] md:py-14 lg:min-h-[500px] lg:py-16">
+        <div className={`flex flex-col justify-center ${heightClass}`}>
           <div className={textMaxWidth}>
             {crumbs.length > 0 ? (
               <nav
