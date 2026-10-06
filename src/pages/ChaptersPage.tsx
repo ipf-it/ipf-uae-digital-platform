@@ -115,25 +115,32 @@ export default function ChaptersPage() {
         aria-labelledby="chapters-page-heading"
         className="relative isolate overflow-hidden bg-[#FFF8EE]"
       >
-        {/* FULL-WIDTH panoramic banner — image fills the entire hero via
-            object-cover + object-position:center top (keeps the Burj
-            Khalifa spire and architectural horizon visible; only the
-            water/foreground gets cropped at wide aspects). HTML text
-            sits INSIDE the image's natural left-side light area, with
-            a soft ivory→transparent gradient wash restoring text
-            contrast over the watercolour. One integrated hero — no
-            separate text column, no blank panel on the left. */}
-        <div className="relative w-full" style={{ height: "clamp(320px, 32vw, 440px)" }}>
+        {/* FULL-WIDTH panoramic banner using the dedicated Chapters
+            artwork at /images/chapters/chapters-hero.{webp,png} —
+            Watercolour Heritage Skyline Panorama (2048×768, ratio
+            ~2.67:1). Previous implementation reused the Contact
+            page's narrower 2:1 artwork; swapped to this dedicated
+            Chapters artwork so landmark tops (Burj Khalifa, UAE flag,
+            India Gate, mosque minarets) stay better framed at wide
+            viewports.
+            object-fit:cover + object-position:center top preserves
+            monument tops; only the bottom tricolour watercolour wave
+            crops at wider containers. Hero height clamp bumped from
+            (320,32vw,440) to (340,34vw,520) to better track the new
+            2.67:1 aspect so cropping stays minimal. Ivory→transparent
+            gradient wash on the left (0.92→0 across 0..70%) restores
+            text contrast WITHOUT applying any tint to the artwork. */}
+        <div className="relative w-full" style={{ height: "clamp(340px, 34vw, 520px)" }}>
           <picture>
-            <source srcSet="/images/contact/contact-hero.webp" type="image/webp" />
+            <source srcSet="/images/chapters/chapters-hero.webp" type="image/webp" />
             <img
-              src="/images/contact/contact-hero.png"
+              src="/images/chapters/chapters-hero.png"
               alt=""
               aria-hidden="true"
               loading="eager"
               fetchPriority="high"
-              width={1774}
-              height={887}
+              width={2048}
+              height={768}
               className="absolute inset-0 block h-full w-full object-cover"
               style={{ objectPosition: "center top", filter: "none", opacity: 1 }}
             />
