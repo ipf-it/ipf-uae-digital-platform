@@ -214,13 +214,6 @@ export default function LeadershipPage() {
 
   const chapterNameById = new Map(chapters.map((c) => [c.id, c.name]));
 
-  const principles = [
-    { label: "Integrity", body: "Honest conduct in every community engagement." },
-    { label: "Transparency", body: "Open communication within organisational practice." },
-    { label: "Professionalism", body: "Measured, dignified service across the Emirates." },
-    { label: "Accountability", body: "Shared responsibility to the Indian community in the UAE." },
-  ];
-
   return (
     <>
       <DocumentTitle title={t("page.leadership.title")} />
@@ -803,40 +796,6 @@ export default function LeadershipPage() {
               })}
             </ul>
           ) : null}
-        </Container>
-      </Section>
-
-      {/* ──────────────── 05 · LEADERSHIP PRINCIPLES ──────────────── */}
-      <Section tone="white" className="py-14 sm:py-16 lg:py-18">
-        <Container>
-          <div className="mx-auto max-w-3xl text-center">
-            <div className="inline-flex items-center gap-3">
-              <span aria-hidden="true" className="inline-block h-px w-10" style={{ backgroundColor: `${GOLD}99` }} />
-              <p className="text-[0.7rem] font-bold uppercase tracking-[0.3em]" style={{ color: GOLD_INK }}>
-                Leadership Principles
-              </p>
-              <span aria-hidden="true" className="inline-block h-px w-10" style={{ backgroundColor: `${GOLD}99` }} />
-            </div>
-            <h2 className="mt-5 font-serif text-[1.55rem] font-bold leading-tight tracking-tight sm:text-[1.85rem] lg:text-[2.05rem]" style={{ color: NAVY }}>
-              Four values that guide every engagement
-            </h2>
-          </div>
-
-          <ul role="list" className="mx-auto mt-10 grid max-w-[1180px] grid-cols-2 gap-5 sm:mt-12 lg:grid-cols-4">
-            {principles.map((p, i) => (
-              <li key={p.label} className="border-t pt-5" style={{ borderColor: `${GOLD}99` }}>
-                <p className="font-serif text-[0.72rem] font-bold tabular-nums" style={{ color: GOLD_INK }}>
-                  0{i + 1}
-                </p>
-                <p className="mt-3 font-serif text-[1.1rem] font-bold leading-tight tracking-tight sm:text-[1.2rem]" style={{ color: NAVY }}>
-                  {p.label}
-                </p>
-                <p className="mt-2 text-[0.88rem] leading-relaxed" style={{ color: MUTED }}>
-                  {p.body}
-                </p>
-              </li>
-            ))}
-          </ul>
         </Container>
       </Section>
 

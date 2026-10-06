@@ -115,13 +115,14 @@ export default function ChaptersPage() {
         aria-labelledby="chapters-page-heading"
         className="relative isolate overflow-hidden bg-[#FFF8EE]"
       >
-        {/* Image uses object-contain + bottom-right anchor so the entire
-            landmark composition stays intact (nothing truncated at the
-            bottom edge). The surrounding bg is the same ivory as the
-            section, so the empty area left of the image at desktop /
-            above the image at mobile blends seamlessly and provides the
-            text-safe area for the HTML overlay. Height remains
-            clamp(320, 32vw, 440) so the hero is a disciplined banner. */}
+        {/* FULL-WIDTH panoramic banner — image fills the entire hero via
+            object-cover + object-position:center top (keeps the Burj
+            Khalifa spire and architectural horizon visible; only the
+            water/foreground gets cropped at wide aspects). HTML text
+            sits INSIDE the image's natural left-side light area, with
+            a soft ivory→transparent gradient wash restoring text
+            contrast over the watercolour. One integrated hero — no
+            separate text column, no blank panel on the left. */}
         <div className="relative w-full" style={{ height: "clamp(320px, 32vw, 440px)" }}>
           <picture>
             <source srcSet="/images/contact/contact-hero.webp" type="image/webp" />
@@ -133,10 +134,19 @@ export default function ChaptersPage() {
               fetchPriority="high"
               width={1774}
               height={887}
-              className="absolute inset-0 block h-full w-full object-contain"
-              style={{ objectPosition: "bottom right" }}
+              className="absolute inset-0 block h-full w-full object-cover"
+              style={{ objectPosition: "center top", filter: "none", opacity: 1 }}
             />
           </picture>
+
+          <div
+            aria-hidden="true"
+            className="pointer-events-none absolute inset-0"
+            style={{
+              background:
+                "linear-gradient(90deg, rgba(255,248,238,0.92) 0%, rgba(255,248,238,0.78) 30%, rgba(255,248,238,0.35) 52%, rgba(255,248,238,0) 70%)",
+            }}
+          />
 
           <div className="absolute inset-0 flex items-center">
             <Container>
