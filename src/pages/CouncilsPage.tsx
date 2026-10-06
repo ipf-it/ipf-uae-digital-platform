@@ -33,7 +33,7 @@ export default function CouncilsPage() {
         description={t("page.councils.desc")}
         crumbs={[{ label: t("nav.councils") }]}
       />
-      <Section tone="white">
+      <Section tone="white" id="state-councils" className="scroll-mt-28">
         <Container className="space-y-4">
           <h2 className="text-2xl font-bold text-[var(--ipf-navy)]">{t("nav.stateCouncils")}</h2>
           <p className="max-w-3xl text-sm leading-7 text-[var(--ipf-muted)]">{t("page.councils.stateBody")}</p>
@@ -52,7 +52,7 @@ export default function CouncilsPage() {
           </CardGrid>
         </Container>
       </Section>
-      <Section>
+      <Section id="special-councils" className="scroll-mt-28">
         <Container className="space-y-4">
           <h2 className="text-2xl font-bold text-[var(--ipf-navy)]">{t("nav.specialCouncils")}</h2>
           <p className="max-w-3xl text-sm leading-7 text-[var(--ipf-muted)]">{t("page.councils.specialBody")}</p>
