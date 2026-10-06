@@ -287,7 +287,20 @@ export function Header({ logoSrc }: HeaderProps) {
                             to={child.to}
                             label={navLabel(child.label)}
                             bullet="navy"
-                            onNavigate={() => setOpenDropdown(null)}
+                            onNavigate={() => {
+                              setOpenDropdown(null);
+                              /* Belt-and-braces: explicitly blur the
+                                 clicked element so no stale :focus /
+                                 :focus-within CSS state anywhere in
+                                 the tree can re-materialise the panel
+                                 after navigation. React state already
+                                 closes the panel; this makes it
+                                 impossible to re-open through browser
+                                 pseudo-class leftovers. */
+                              if (typeof document !== "undefined" && document.activeElement instanceof HTMLElement) {
+                                document.activeElement.blur();
+                              }
+                            }}
                           />
                         ))}
                       </MegaColumn>

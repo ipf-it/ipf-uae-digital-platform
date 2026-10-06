@@ -1,10 +1,11 @@
 /* IPF UAE service worker.
- * Version bumped 2026-10-05 after the Vande Mataram autoplay fix.
- * On activation we PURGE every cache this origin owns so clients that
- * were serving a stale bundle (which still contained the autoplay
- * useEffect) are forced to re-fetch the current version from the
- * network. */
-const SW_VERSION = "ipf-sw-2026-10-05";
+ * Version bumped 2026-10-07 after the navigation-dropdown auto-close
+ * fix. On activation we PURGE every cache this origin owns so clients
+ * that were serving a stale bundle (which still had the CSS-hover
+ * dropdown that stayed open after child navigation) are forced to
+ * re-fetch the current version from the network. Previous bump
+ * (2026-10-05) was for the Vande Mataram autoplay fix. */
+const SW_VERSION = "ipf-sw-2026-10-07-nav";
 
 self.addEventListener("install", (event) => {
   event.waitUntil(self.skipWaiting());
