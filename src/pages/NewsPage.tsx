@@ -10,12 +10,13 @@ import { useLocale } from "../i18n/LocaleProvider";
 /* ───────────────────────────────────────────────────────────────────────
  * NewsPage — IPF UAE News & Information Hub.
  *
- * Hero: founder-approved "Dubai Newsroom — Updates. Initiatives. Impact."
- * artwork displayed as the complete hero. The artwork ALREADY contains
- * the full editorial text (title, lede, section chips) so this page
- * deliberately does NOT render a second text overlay — doing so would
- * duplicate what is baked into the image. The <img> alt provides the
- * semantic equivalent for screen readers and search engines.
+ * Hero: founder-approved "Watercolour Press Scene — India–UAE Partnership"
+ * artwork (1774×887) rendered as a controlled editorial banner. The
+ * artwork is text-free, so the real HTML eyebrow + <h1> + supporting
+ * copy are overlaid on the LEFT ivory negative space while the India/
+ * UAE flags, Dubai skyline, press gathering, camera and microphone
+ * composition stays visible on the right. Height is clamp(280px, 30vw,
+ * 480px) so the hero never becomes an oversized poster.
  *
  * Below the hero:
  *   • Featured story (first/latest published news item, lead-story
@@ -24,11 +25,9 @@ import { useLocale } from "../i18n/LocaleProvider";
  *
  * Data source
  *   content.news from the CMS content provider, which currently falls
- *   back to src/data/platformContent.ts → newsItems (five seeded 2021
- *   articles). Announcements and Community Stories are referenced on
- *   the hero image but no dedicated content types exist yet in the DB
- *   or CMS — flagged for the Rockstar architecture phase so this page
- *   can host them without a redesign when they're added.
+ *   back to src/data/platformContent.ts → newsItems. Preserved as-is;
+ *   News database/CMS migration is deferred to the Rockstar architecture
+ *   phase.
  * ─────────────────────────────────────────────────────────────────── */
 
 const GOLD = "#D6AD60";
@@ -48,27 +47,83 @@ export default function NewsPage() {
       <DocumentTitle title={t("nav.news")} />
 
       {/* ──────────────── 1 · HERO ────────────────
-         Full-width approved artwork. No overlay text (image already
-         contains the hero copy). filter: none, opacity: 1. */}
+         Approved Watercolour Press Scene — India–UAE Partnership
+         (/images/news/news-hero.{webp,png}, 1774×887). Image anchored
+         `object-position: right center` on desktop so the India + UAE
+         flags, Dubai skyline, press gathering, camera and microphone
+         stay visible on the right. HTML text overlay sits on the LEFT
+         ivory negative space inside a soft ivory wash so the watercolour
+         is never covered by an opaque card. */}
       <section
-        aria-labelledby="news-hero-img"
+        aria-labelledby="news-page-heading"
         className="relative isolate overflow-hidden bg-[#FFF8EE]"
       >
-        <picture className="block">
-          <source srcSet="/images/news/news-hero.webp" type="image/webp" />
-          <img
-            id="news-hero-img"
-            src="/images/news/news-hero.png"
-            alt="Indian People's Forum UAE — News. Updates, Initiatives, Impact. Stay informed with the latest news, announcements and initiatives from the Indian People's Forum UAE — sharing stories of our community, our people and our progress."
-            loading="eager"
-            fetchPriority="high"
-            width={2048}
-            height={768}
-            className="block w-full"
+        <div className="relative w-full" style={{ height: "clamp(300px, 32vw, 480px)" }}>
+          <picture>
+            <source srcSet="/images/news/news-hero.webp" type="image/webp" />
+            <img
+              src="/images/news/news-hero.png"
+              alt=""
+              aria-hidden="true"
+              loading="eager"
+              fetchPriority="high"
+              width={1774}
+              height={887}
+              className="absolute inset-0 block h-full w-full object-cover"
+              style={{ objectPosition: "right center" }}
+            />
+          </picture>
+
+          {/* Soft ivory wash fading left → transparent so the HTML text
+             reads cleanly over the natural left negative space while
+             preserving the watercolour on the right. */}
+          <div
+            aria-hidden="true"
+            className="pointer-events-none absolute inset-0"
+            style={{
+              background:
+                "linear-gradient(90deg, rgba(255,248,238,0.92) 0%, rgba(255,248,238,0.78) 32%, rgba(255,248,238,0.35) 55%, rgba(255,248,238,0) 72%)",
+            }}
           />
-        </picture>
-        {/* Breadcrumb strip immediately under the artwork, so the baked-in
-           hero typography stays uncluttered. */}
+
+          {/* Text overlay — left-anchored on tablet/desktop, centred on
+             mobile where the wash spans most of the compressed width. */}
+          <div className="absolute inset-0 flex items-center">
+            <Container>
+              <div className="max-w-[480px] text-left md:max-w-[520px] lg:max-w-[560px]">
+                <div className="flex items-center gap-3">
+                  <span aria-hidden="true" className="inline-block h-px w-8" style={{ backgroundColor: `${GOLD}aa` }} />
+                  <p
+                    className="text-[0.7rem] font-bold uppercase tracking-[0.3em] sm:text-[0.75rem]"
+                    style={{ color: GOLD_INK }}
+                  >
+                    News &amp; Media
+                  </p>
+                </div>
+                <h1
+                  id="news-page-heading"
+                  className="mt-3 font-serif text-[1.75rem] font-bold leading-[1.1] tracking-tight sm:text-[2.1rem] md:text-[2.35rem] lg:text-[2.6rem]"
+                  style={{ color: NAVY }}
+                >
+                  News from IPF UAE
+                </h1>
+                <div
+                  aria-hidden="true"
+                  className="mt-4 h-px w-14"
+                  style={{ backgroundColor: `${GOLD}99` }}
+                />
+                <p
+                  className="mt-4 max-w-[460px] text-[0.95rem] leading-relaxed sm:text-[1rem]"
+                  style={{ color: INK }}
+                >
+                  Updates, initiatives and stories from the Indian People's Forum across the UAE.
+                </p>
+              </div>
+            </Container>
+          </div>
+        </div>
+
+        {/* Breadcrumb strip — unchanged from previous implementation */}
         <div className="border-t border-[#D6AD60]/30 bg-[#FFFDF8]">
           <Container>
             <nav
