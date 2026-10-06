@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { ArrowRight } from "lucide-react";
 import { DocumentTitle } from "../components/layout/DocumentTitle";
+import { IllustratedHero } from "../components/layout/IllustratedHero";
 import { Container } from "../components/ui/Container";
 import { useLocale } from "../i18n/LocaleProvider";
 
@@ -205,94 +206,31 @@ export default function AboutPage() {
     <>
       <DocumentTitle title={t("nav.aboutIpf")} />
 
-      {/* ──────────────── 1 · PREMIUM ABOUT HERO ──────────────── */}
-      <section
-        aria-labelledby="about-hero-heading"
-        className="relative isolate overflow-hidden bg-[#FFF8EE]"
-      >
-        <Container className="relative py-8 sm:py-10 lg:py-12">
-          {/* Grid tuned to the founder-approved About hero spec: artwork
-             column now takes slightly MORE width than the text column so
-             the approved illustration lands at ~48% of the usable hero
-             width on desktop (previously ~47%). Vertical padding is
-             trimmed one tier to tighten the overall hero while leaving
-             the premium whitespace around text and frame intact. */}
-          <div className="grid gap-8 lg:grid-cols-[1fr_1.1fr] lg:items-center lg:gap-10">
-            {/* Left — editorial text */}
-            <div className="min-w-0">
-              <nav
-                aria-label={t("nav.aboutIpf")}
-                className="flex items-center gap-2 text-[0.75rem] text-[#55606d]"
-              >
-                <Link
-                  to="/"
-                  className="hover:text-[var(--ipf-green)]"
-                >
-                  {t("nav.home")}
-                </Link>
-                <span aria-hidden="true" className="text-[#8B6A1F]/60">
-                  /
-                </span>
-                <span className="text-[var(--ipf-navy)]">
-                  {t("nav.aboutIpf")}
-                </span>
-              </nav>
+      {/* ──────────────── 1 · PREMIUM ABOUT HERO ────────────────
+         Previously a two-column layout with a rounded image card on
+         the right. That is replaced with the shared IllustratedHero
+         used across the About family (/history, /leadership, /yuva,
+         /support) so the artwork becomes the actual hero background.
 
-              <div className="mt-5 inline-flex items-center gap-3">
-                <GoldRule />
-                <p
-                  className="text-[0.72rem] font-bold uppercase tracking-[0.3em]"
-                  style={{ color: GOLD_INK }}
-                >
-                  {t("page.about.eyebrow")}
-                </p>
-                <GoldRule />
-              </div>
+         The approved artwork is UNCHANGED: /images/about/about-hero-art.*
+         with filter: none, opacity: 1, no overlay.
 
-              <h1
-                id="about-hero-heading"
-                className="mt-4 font-serif text-[2rem] font-bold leading-[1.1] tracking-tight sm:text-[2.4rem] lg:text-[2.9rem]"
-                style={{ color: NAVY }}
-              >
-                {t("page.about.title")}
-              </h1>
-
-              <p
-                className="mt-4 max-w-[36rem] text-[0.95rem] leading-relaxed sm:text-[1rem]"
-                style={{ color: INK }}
-              >
-                {t("page.about.desc")}
-              </p>
-            </div>
-
-            {/* Right — founder-supplied hero artwork in the soft organic clip.
-                The source banner is 2152×731 (~2.94:1); within the existing
-                4:3 frame slot, object-position is biased toward the central
-                architectural cluster so the key composition (Konark Wheel,
-                heritage monuments, Burj accent, tricolour wave) remains
-                visible on mobile where the frame reflows below the text. */}
-            <div className="relative min-w-0">
-              <div
-                className="relative overflow-hidden shadow-[0_14px_40px_rgba(11,31,58,0.18)] ring-1 ring-[#D6AD60]/35"
-                style={{ borderRadius: "2rem 5rem 2rem 5rem" }}
-              >
-                <picture className="block">
-                  <source srcSet={HERO_WEBP} type="image/webp" />
-                  <img
-                    src={HERO_IMG}
-                    alt={t("page.about.alt.hero")}
-                    loading="eager"
-                    decoding="async"
-                    width={2152}
-                    height={731}
-                    className="block aspect-[4/3] w-full object-cover object-[55%_center] md:object-center"
-                  />
-                </picture>
-              </div>
-            </div>
-          </div>
-        </Container>
-      </section>
+         Text column widths are tuned per breakpoint because the About
+         artwork has a NARROW left ivory zone (only ~22% of the source).
+         The H1 wraps intentionally on three lines ("Indian / People's /
+         Forum UAE") so it never crosses into the dense architectural
+         cluster. */}
+      <IllustratedHero
+        eyebrow={t("page.about.eyebrow")}
+        title={t("page.about.title")}
+        description={t("page.about.desc")}
+        crumbs={[{ label: t("nav.aboutIpf") }]}
+        artworkPng={HERO_IMG}
+        artworkWebp={HERO_WEBP}
+        artworkAlt={t("page.about.alt.hero")}
+        artworkPosition="object-[0%_center]"
+        textMaxWidth="max-w-[280px] md:max-w-[280px] lg:max-w-[260px] xl:max-w-[260px]"
+      />
 
       {/* ──────────────── 2 · WHO WE ARE ──────────────── */}
       <Section tone="white" ariaLabelledBy="about-who-heading">
