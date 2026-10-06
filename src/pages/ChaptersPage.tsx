@@ -115,14 +115,13 @@ export default function ChaptersPage() {
         aria-labelledby="chapters-page-heading"
         className="relative isolate overflow-hidden bg-[#FFF8EE]"
       >
-        {/* Height bumped from clamp(300,32vw,380) to clamp(320,32vw,440)
-            so wider desktops have more vertical room; combined with
-            object-position:center top below, the full architectural
-            horizon (Burj Khalifa spire with sky above, UAE flag,
-            mosque, India Gate archway) stays visible at every width.
-            All overflow crops at the bottom (water + palm bases +
-            foreground), which the ivory negative space immediately
-            above restores visually. */}
+        {/* Image uses object-contain + bottom-right anchor so the entire
+            landmark composition stays intact (nothing truncated at the
+            bottom edge). The surrounding bg is the same ivory as the
+            section, so the empty area left of the image at desktop /
+            above the image at mobile blends seamlessly and provides the
+            text-safe area for the HTML overlay. Height remains
+            clamp(320, 32vw, 440) so the hero is a disciplined banner. */}
         <div className="relative w-full" style={{ height: "clamp(320px, 32vw, 440px)" }}>
           <picture>
             <source srcSet="/images/contact/contact-hero.webp" type="image/webp" />
@@ -134,19 +133,10 @@ export default function ChaptersPage() {
               fetchPriority="high"
               width={1774}
               height={887}
-              className="absolute inset-0 block h-full w-full object-cover"
-              style={{ objectPosition: "center top" }}
+              className="absolute inset-0 block h-full w-full object-contain"
+              style={{ objectPosition: "bottom right" }}
             />
           </picture>
-
-          <div
-            aria-hidden="true"
-            className="pointer-events-none absolute inset-0"
-            style={{
-              background:
-                "linear-gradient(90deg, rgba(255,248,238,0.94) 0%, rgba(255,248,238,0.8) 32%, rgba(255,248,238,0.38) 55%, rgba(255,248,238,0) 72%)",
-            }}
-          />
 
           <div className="absolute inset-0 flex items-center">
             <Container>
@@ -171,7 +161,7 @@ export default function ChaptersPage() {
                 </h1>
                 <div aria-hidden="true" className="mt-4 h-px w-14" style={{ backgroundColor: `${GOLD}99` }} />
                 <p className="mt-4 max-w-[480px] text-[0.95rem] leading-relaxed sm:text-[1rem]" style={{ color: INK }}>
-                  Chapters connecting Indians across the UAE through community service, culture, welfare and engagement.
+                  Connecting Indians across the UAE through community service, culture, welfare and engagement.
                 </p>
               </div>
             </Container>
@@ -179,25 +169,25 @@ export default function ChaptersPage() {
         </div>
       </section>
 
-      {/* ──────────────── INTRODUCTION ──────────────── */}
-      <section className="bg-[#FFF8EE] pt-12 sm:pt-14 lg:pt-16">
+      {/* ──────────────── INTRODUCTION (compact) ────────────────
+          Number-free copy per corrective brief — the authoritative
+          CHAPTER_COUNT = 7 vs 8 live routed chapter experiences is a
+          Rockstar reconciliation item, and this landing page must not
+          contradict either number while that reconciliation is pending. */}
+      <section className="bg-[#FFF8EE] pt-10 sm:pt-12 lg:pt-14">
         <Container>
-          <div className="mx-auto max-w-3xl text-center">
-            <div className="inline-flex items-center gap-3">
-              <span aria-hidden="true" className="inline-block h-px w-10" style={{ backgroundColor: `${GOLD}99` }} />
-              <p className="text-[0.7rem] font-bold uppercase tracking-[0.3em]" style={{ color: GOLD_INK }}>
-                Our Presence
-              </p>
-              <span aria-hidden="true" className="inline-block h-px w-10" style={{ backgroundColor: `${GOLD}99` }} />
-            </div>
+          <div className="mx-auto max-w-2xl text-center">
+            <p className="text-[0.7rem] font-bold uppercase tracking-[0.3em]" style={{ color: GOLD_INK }}>
+              Our Presence
+            </p>
             <h2
-              className="mt-4 font-serif text-[1.55rem] font-bold leading-tight tracking-tight sm:text-[1.85rem] lg:text-[2.05rem]"
+              className="mt-3 font-serif text-[1.5rem] font-bold leading-tight tracking-tight sm:text-[1.75rem] lg:text-[1.95rem]"
               style={{ color: NAVY }}
             >
-              One connected network across the Emirates.
+              Chapters across the UAE
             </h2>
-            <p className="mx-auto mt-5 max-w-2xl text-[0.95rem] leading-relaxed" style={{ color: INK }}>
-              Our UAE Chapters bring the community closer at the local level through cultural programmes, welfare initiatives, volunteer activities and meaningful engagement.
+            <p className="mx-auto mt-3 max-w-xl text-[0.92rem] leading-relaxed" style={{ color: INK }}>
+              Explore IPF's local chapter communities and the people, culture and service that bring them together.
             </p>
           </div>
         </Container>
