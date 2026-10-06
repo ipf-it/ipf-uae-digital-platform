@@ -3,7 +3,7 @@ import { Link, useSearchParams } from "react-router-dom";
 import { CalendarDays, Clock, ChevronLeft, ChevronRight } from "lucide-react";
 import { EventCard } from "../components/EventCard";
 import { DocumentTitle } from "../components/layout/DocumentTitle";
-import { PageHero } from "../components/layout/PageHero";
+import { IllustratedHero } from "../components/layout/IllustratedHero";
 import { Button } from "../components/ui/Button";
 import { Container } from "../components/ui/Container";
 import { Section } from "../components/ui/Section";
@@ -52,19 +52,90 @@ export default function EventsPage() {
   return (
     <>
       <DocumentTitle title={t("page.events.title")} />
-      <PageHero
+
+      {/* ──────────────── 1 · HERO — approved Indian Cultural Festival
+         watercolour as the full-width background via IllustratedHero.
+         Matches the hero system now used on /about, /history,
+         /leadership, /yuva and /support. Previous burgundy PageHero
+         card with upcoming/past tab buttons is retired; the tabs now
+         live in the Events section below. */}
+      <IllustratedHero
         eyebrow={t("page.events.calendar")}
         title={t("page.events.title")}
         description={t("page.events.desc")}
         crumbs={[{ label: t("page.events.title") }]}
-        image="/legacy-assets/images/gallery-7.jpg"
-        actions={
-          <>
+        artworkPng="/images/events/events-hero-cultural.png"
+        artworkWebp="/images/events/events-hero-cultural.webp"
+        artworkAlt="Watercolour illustration of an Indian cultural festival in the UAE — dancers, Indian flag, IPF stage, community and the Dubai skyline"
+        /* Ivory negative-space zone sits on the LEFT of the source;
+           dancers / flag / stage / audience from ~25% rightward. Image
+           pinned left so the ivory stays beneath the text column. */
+        artworkPosition="object-[0%_center]"
+        textMaxWidth="max-w-[320px] md:max-w-[320px] lg:max-w-[300px] xl:max-w-[300px]"
+      />
+
+      {/* ──────────────── 2 · FEATURED IPF VIDEO ──────────────── */}
+      <Section tone="ivory" className="py-12 sm:py-16 lg:py-20">
+        <Container>
+          <div className="mx-auto max-w-3xl text-center">
+            <div className="inline-flex items-center gap-3">
+              <span aria-hidden="true" className="inline-block h-px w-10 bg-[#D6AD60]/60" />
+              <p className="text-[0.7rem] font-bold uppercase tracking-[0.26em] text-[#8B6A1F]">
+                IPF in Action
+              </p>
+              <span aria-hidden="true" className="inline-block h-px w-10 bg-[#D6AD60]/60" />
+            </div>
+            <h2 className="mt-4 font-serif text-[1.7rem] font-bold leading-tight tracking-tight text-[var(--ipf-navy)] sm:text-[2rem] lg:text-[2.2rem]">
+              Celebrating community, culture and service.
+            </h2>
+            <p className="mx-auto mt-5 max-w-2xl text-[0.98rem] leading-relaxed text-[#1c2430]">
+              A short film of recent IPF mega-events — cultural
+              programmes, community gatherings and welfare initiatives
+              across the Emirates.
+            </p>
+          </div>
+
+          <figure className="mx-auto mt-10 max-w-[1120px] overflow-hidden rounded-2xl shadow-[0_14px_38px_rgba(11,31,58,0.14)] ring-1 ring-[#D6AD60]/25 sm:mt-12 sm:rounded-[1.75rem]">
+            <video
+              controls
+              playsInline
+              preload="metadata"
+              poster="/hero/ipf-uae-hero-desktop-poster.webp"
+              className="block aspect-video w-full bg-[#0b1f3a]"
+            >
+              <source src="/hero/ipf-uae-hero-desktop.webm" type="video/webm" />
+              Your browser does not support the video tag.
+            </video>
+          </figure>
+        </Container>
+      </Section>
+
+      {/* ──────────────── 3 · EVENTS — tabs + filters + grid ──────── */}
+      <Section tone="white" className="py-10 sm:py-14">
+        <Container>
+          <div className="mx-auto max-w-3xl text-center">
+            <div className="inline-flex items-center gap-3">
+              <span aria-hidden="true" className="inline-block h-px w-10 bg-[#D6AD60]/60" />
+              <p className="text-[0.7rem] font-bold uppercase tracking-[0.26em] text-[#8B6A1F]">
+                Events
+              </p>
+              <span aria-hidden="true" className="inline-block h-px w-10 bg-[#D6AD60]/60" />
+            </div>
+            <h2 className="mt-4 font-serif text-[1.6rem] font-bold leading-tight tracking-tight text-[var(--ipf-navy)] sm:text-[1.85rem] lg:text-[2.05rem]">
+              Events that bring our community together.
+            </h2>
+          </div>
+
+          {/* Tab switcher (upcoming / past) — now inline inside the
+             Events section rather than inside the hero. */}
+          <div className="mt-8 flex flex-wrap justify-center gap-2">
             <Link
               to="/events?tab=upcoming"
               className={cn(
-                "inline-flex items-center gap-2 rounded-lg px-4 py-2.5 text-sm font-semibold",
-                tab === "upcoming" ? "bg-white text-[var(--ipf-navy)]" : "border border-white/40 bg-white/10 text-white",
+                "inline-flex items-center gap-2 rounded-full border px-4 py-2 text-[0.85rem] font-semibold transition",
+                tab === "upcoming"
+                  ? "border-[var(--ipf-navy)] bg-[var(--ipf-navy)] text-white"
+                  : "border-[var(--ipf-line)] bg-white text-[var(--ipf-navy)] hover:border-[var(--ipf-navy)]",
               )}
             >
               <CalendarDays className="size-4" />
@@ -73,17 +144,25 @@ export default function EventsPage() {
             <Link
               to="/events?tab=past"
               className={cn(
-                "inline-flex items-center gap-2 rounded-lg px-4 py-2.5 text-sm font-semibold",
-                tab === "past" ? "bg-white text-[var(--ipf-navy)]" : "border border-white/40 bg-white/10 text-white",
+                "inline-flex items-center gap-2 rounded-full border px-4 py-2 text-[0.85rem] font-semibold transition",
+                tab === "past"
+                  ? "border-[var(--ipf-navy)] bg-[var(--ipf-navy)] text-white"
+                  : "border-[var(--ipf-line)] bg-white text-[var(--ipf-navy)] hover:border-[var(--ipf-navy)]",
               )}
             >
               <Clock className="size-4" />
               {t("page.events.past")}
             </Link>
-          </>
-        }
-      />
-      <Section tone="white" className="py-8 sm:py-10">
+          </div>
+        </Container>
+      </Section>
+      {/* Filters + event grid (continuation of Events section). The
+         grid replaces the previous horizontal snap-scroll row so every
+         published event is visible on this page (the homepage
+         deliberately shows only the first 6 via HomeEvents). Desktop 3
+         cols, tablet 2, mobile 1 — all events from usePublicEvents
+         (same source as the homepage, so nothing is missing). */}
+      <Section tone="white" className="py-6 sm:py-8">
         <Container>
           <div className="flex flex-wrap gap-2">
             {["All", ...eventCategories].map((item) => (
@@ -92,7 +171,7 @@ export default function EventsPage() {
                 type="button"
                 onClick={() => setFilter({ category: item === "All" ? null : item })}
                 className={cn(
-                  "rounded-full border px-3.5 py-1.5 text-sm font-semibold",
+                  "rounded-full border px-3.5 py-1.5 text-sm font-semibold transition",
                   category === item
                     ? "border-[var(--ipf-navy)] bg-[var(--ipf-navy)] text-white"
                     : "border-[var(--ipf-line)] bg-white text-[var(--ipf-navy)] hover:border-[var(--ipf-navy)]",
@@ -119,7 +198,7 @@ export default function EventsPage() {
               type="button"
               onClick={() => setFilter({ free: free ? null : "1" })}
               className={cn(
-                "rounded-full border px-3.5 py-1.5 text-sm font-semibold",
+                "rounded-full border px-3.5 py-1.5 text-sm font-semibold transition",
                 free
                   ? "border-[var(--ipf-green)] bg-[var(--ipf-green)] text-white"
                   : "border-[var(--ipf-line)] bg-white text-[var(--ipf-navy)]",
@@ -128,27 +207,19 @@ export default function EventsPage() {
               {t("page.events.free")}
             </button>
           </div>
-        </Container>
-      </Section>
 
-      {/* Horizontally scrollable row (native scroll-snap, no carousel library needed) — fits
-          about 6 cards on a wide desktop, narrows naturally on tablet/mobile, swipeable by touch. */}
-      <Section tone="ivory" className="py-8 sm:py-10">
-        <Container className="max-w-[1600px]">
-          <div className="scrollbar-hide -mx-1 flex snap-x snap-mandatory gap-5 overflow-x-auto px-1 pb-3">
+          <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
             {events.map((event) => (
-              <div key={event.id} className="w-[260px] shrink-0 snap-start sm:w-[280px]">
-                <EventCard event={event} />
-              </div>
+              <EventCard key={event.id} event={event} />
             ))}
           </div>
           {ready && events.length === 0 ? (
-            <p className="mt-6 text-sm text-[var(--ipf-muted)]">
+            <p className="mt-6 text-center text-sm text-[var(--ipf-muted)]">
               {tab === "past" ? t("page.events.emptyPast") : t("page.events.emptyUpcoming")}
             </p>
           ) : null}
           {hasMore ? (
-            <div className="mt-6 flex justify-center">
+            <div className="mt-10 flex justify-center">
               <Button type="button" variant="outline" onClick={() => void loadMore()} disabled={loadingMore}>
                 {loadingMore ? "Loading…" : "Load more events"}
               </Button>
