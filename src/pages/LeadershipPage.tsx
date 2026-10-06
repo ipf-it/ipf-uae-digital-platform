@@ -23,10 +23,27 @@ export default function LeadershipPage() {
         title={t("page.leadership.title")}
         description={t("page.leadership.desc", { name: site.president })}
         crumbs={[{ label: t("nav.aboutIpf"), to: "/about" }, { label: t("page.leadership.title") }]}
-        artworkPng="/images/leadership/leadership-hero-art.png"
-        artworkWebp="/images/leadership/leadership-hero-art.webp"
-        artworkAlt="Indian Parliament and UAE skyline watercolour panorama"
-        artworkPosition="object-[70%_center]"
+        /* Approved Leadership artwork: Watercolour Statue of Unity
+           Panorama. Sardar Patel + Indian flag + India Gate +
+           Parliament-inspired architecture on the right; large warm
+           ivory negative space on the left. No overlay, no colour
+           wash, no filter — the artwork is a primary visual element. */
+        artworkPng="/images/leadership/leadership-hero-statue-of-unity.png"
+        artworkWebp="/images/leadership/leadership-hero-statue-of-unity.webp"
+        artworkAlt="Watercolour illustration featuring the Statue of Unity and the Indian national flag"
+        /* The Statue of Unity + Indian flag sit at roughly 60-85% x in
+           the source. At ultra-wide viewports (>= 1920) `object-cover`
+           crops vertically because the viewport aspect becomes wider
+           than the 2.43:1 source — we therefore anchor the y-position
+           to 30% (upper third) so the top of the flag is never clipped
+           out of frame. At 1024 and 1440 the horizontal shifts keep
+           both statue and flag inside the viewport while the ivory
+           text zone on the left remains protected. */
+        artworkPosition="object-[72%_center] md:object-[70%_center] lg:object-[65%_center] xl:object-[62%_30%] 2xl:object-[60%_30%]"
+        /* Narrow text column so Leadership + description sit entirely
+           within the ivory negative-space zone and never run under the
+           statue or flag. */
+        textMaxWidth="max-w-[440px]"
       />
       <Section tone="white">
         <Container>
