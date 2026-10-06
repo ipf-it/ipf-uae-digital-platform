@@ -436,7 +436,7 @@ export default function LeadershipPage() {
                   <img
                     src="/images/leadership/letterhead-bottom.png"
                     alt=""
-                    loading="lazy"
+                    loading="eager"
                     decoding="async"
                     className="block h-auto w-full"
                     style={{
