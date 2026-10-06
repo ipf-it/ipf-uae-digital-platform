@@ -8,7 +8,12 @@ import {
   type ReactNode,
 } from "react";
 
-const AUDIO_SRC = "/audio/vande-mataram.mp3";
+/* Cache-buster `?v=` is bumped whenever the physical MP3 is replaced.
+   Browsers aggressively cache audio bytes once an <audio> element has
+   fetched them — without a changed URL, returning visitors keep playing
+   the previously-cached recording even after a new file ships. Bumping
+   this value forces every client to fetch the new asset exactly once. */
+const AUDIO_SRC = "/audio/vande-mataram.mp3?v=2026-10-06-instrumental";
 
 type VandeMataramContextValue = {
   /** True when the <audio> element is currently playing (derived from
