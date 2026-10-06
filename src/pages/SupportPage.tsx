@@ -168,7 +168,7 @@ export default function SupportPage() {
                   </div>
                   <div className="mt-6">
                     <Button asChild>
-                      <Link to="/contact">
+                      <Link to="/contact#ipf-cares">
                         Contact IPF Cares
                         <ArrowRight aria-hidden="true" className="size-4" />
                       </Link>
