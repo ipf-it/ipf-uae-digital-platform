@@ -58,6 +58,14 @@ const HERO_PNG = "/images/history/history-hero-bg.png";
 /* Photographic inline images — genuine IPF repository assets. */
 const BEGINNING_IMG = "/legacy-assets/images/Ahlan_Modi.jpeg";
 
+/* Founder-supplied Milestones section background — the
+   "Watercolour Indian Heritage Milestones Panorama" artwork. Indian
+   temple + heritage architecture framing an ivory central negative
+   space with a tricolour watercolour ribbon. Used ONLY as the Milestones
+   section background. filter: none, no colour wash. */
+const MILESTONES_BG_WEBP = "/images/history/history-milestones-bg.webp";
+const MILESTONES_BG_PNG = "/images/history/history-milestones-bg.png";
+
 /* Eight UAE chapters — authoritative list from /api/org/chapters.
    Note: UAE has seven Emirates; "Al Ain" is a city in Abu Dhabi
    Emirate, counted here as its own chapter per project data. */
@@ -236,13 +244,38 @@ export default function HistoryPage() {
       </Section>
 
       {/* ──────────────────────────────────────────────────────────────
-       * 02 OUR JOURNEY — Milestones. Clean institutional timeline.
-       * Desktop: 4 equal columns, every milestone with the SAME internal
-       * layout (year above, dot on a single horizontal axis, label +
-       * description below). No alternating. All dots align to one axis.
-       * Mobile: vertical rail with the same four milestones stacked.
+       * 02 OUR JOURNEY — Milestones. Clean institutional timeline sitting
+       * on the founder-supplied "Watercolour Indian Heritage Milestones
+       * Panorama" background. Indian architecture frames the left + right
+       * edges; the timeline occupies the ivory central negative space.
+       * A very subtle ivory veil (opacity 0.25-0.4) separates text from
+       * the artwork — no dark overlay, no colour wash, no desaturation.
+       * Desktop: 4 equal columns, dots on one horizontal axis.
        * ────────────────────────────────────────────────────────────── */}
-      <Section tone="white" ariaLabelledBy="hg-s3-heading">
+      <section
+        aria-labelledby="hg-s3-heading"
+        className="relative isolate overflow-hidden py-12 sm:py-16 lg:py-20"
+      >
+        {/* Background artwork — spread across the full section */}
+        <picture aria-hidden="true" className="pointer-events-none absolute inset-0">
+          <source srcSet={MILESTONES_BG_WEBP} type="image/webp" />
+          <img
+            src={MILESTONES_BG_PNG}
+            alt=""
+            loading="lazy"
+            decoding="async"
+            className="block h-full w-full object-cover object-center"
+          />
+        </picture>
+        {/* VERY subtle warm-ivory veil for readability — never dark, never
+            tinted. On mobile a touch stronger (centre-weighted radial)
+            because the panorama compresses more. Both veils stay below
+            opacity 0.4 so the artwork remains clearly visible. */}
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(255,248,238,0.42)_0%,rgba(255,248,238,0.22)_60%,rgba(255,248,238,0.10)_100%)] md:bg-[radial-gradient(ellipse_at_center,rgba(255,248,238,0.32)_0%,rgba(255,248,238,0.18)_60%,rgba(255,248,238,0.08)_100%)]"
+        />
+        <Container className="relative">
         <div className="mx-auto max-w-3xl text-center">
           <div className="flex items-center justify-center gap-3">
             <GoldRule />
@@ -377,7 +410,8 @@ export default function HistoryPage() {
             ))}
           </ol>
         </div>
-      </Section>
+        </Container>
+      </section>
 
       {/* ──────────────────────────────────────────────────────────────
        * PART II — GOVERNANCE chapter marker. ONE unified transition —
