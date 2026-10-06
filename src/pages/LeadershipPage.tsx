@@ -462,12 +462,29 @@ export default function LeadershipPage() {
                     >
                       President's Message
                     </p>
+                    {/* Responsive heading breaks — never leave "UAE"
+                        alone on its own line.
+                          mobile (<sm):  "A letter to the Indian /
+                                           community in the UAE"
+                          tablet (sm-md): "A letter to the Indian community
+                                           / in the UAE"
+                          desktop (lg+):  single line
+                        Font size steps down slightly at lg vs the previous
+                        2.15rem to leave headroom inside the 760px reading
+                        column so the complete phrase fits on one line. */}
                     <h2
                       id="ldr-president-letter-heading"
-                      className="mt-3 font-serif text-[1.7rem] font-bold leading-tight tracking-tight sm:text-[1.95rem] lg:text-[2.15rem]"
+                      className="mt-3 font-serif text-[1.55rem] font-bold leading-[1.15] tracking-tight sm:text-[1.8rem] lg:text-[1.95rem]"
                       style={{ color: NAVY }}
                     >
-                      A letter to the Indian community in the UAE
+                      A letter to the Indian
+                      <br className="sm:hidden" />
+                      <span className="hidden sm:inline"> </span>
+                      community
+                      <span className="sm:hidden"> </span>
+                      <br className="hidden sm:inline lg:hidden" />
+                      <span className="hidden lg:inline"> </span>
+                      <span className="whitespace-nowrap">in the UAE</span>
                     </h2>
                     <div
                       aria-hidden="true"
