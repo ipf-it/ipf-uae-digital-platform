@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from "react";
+import { useState, type FormEvent, type ReactNode } from "react";
 import { Button } from "../ui/Button";
 import { Card } from "../ui/Card";
 import { Checkbox } from "../ui/Checkbox";
@@ -14,6 +14,14 @@ import { useLocale } from "../../i18n/LocaleProvider";
 
 type InquiryFormProps = {
   intent: "contact" | "membership" | "support" | "jobs";
+  /** `card` (default) wraps the form in the shared <Card> with the
+   *  intent-specific title + "fields marked with * are required"
+   *  description. `bare` returns the fields alone so the parent page
+   *  can supply its own panel styling and heading. */
+  variant?: "card" | "bare";
+  /** Override the submit button's label (and optionally append an
+   *  icon). When omitted, falls back to `t("common.submit")`. */
+  submitLabel?: ReactNode;
 };
 
 const titles = {
@@ -25,7 +33,7 @@ const titles = {
 
 const honorifics = ["Mr", "Mrs", "Miss"] as const;
 
-export function InquiryForm({ intent }: InquiryFormProps) {
+export function InquiryForm({ intent, variant = "card", submitLabel }: InquiryFormProps) {
   const { t } = useLocale();
   const [submitted, setSubmitted] = useState(false);
   const [recorded, setRecorded] = useState(false);
@@ -79,14 +87,9 @@ export function InquiryForm({ intent }: InquiryFormProps) {
     );
   }
 
-  return (
-    <form onSubmit={onSubmit}>
-      <Card
-        size="lg"
-        title={t(titles[intent])}
-        description={t("common.required")}
-      >
-        <div className="grid gap-5 sm:grid-cols-2">
+  const fields = (
+    <>
+      <div className="grid gap-5 sm:grid-cols-2">
           {intent === "membership" ? (
             <Field label={t("common.title")} htmlFor="inquiry-title" required>
               <SimpleSelect
@@ -168,13 +171,28 @@ export function InquiryForm({ intent }: InquiryFormProps) {
             </Field>
           )}
         </div>
-        {status ? <p className="mt-4 text-sm text-red-700">{status}</p> : null}
-        <div className="mt-6">
-          <Button type="submit" disabled={busy}>
-            {busy ? t("common.sending") : t("common.submit")}
-          </Button>
-        </div>
-      </Card>
+      {status ? <p className="mt-4 text-sm text-red-700">{status}</p> : null}
+      <div className="mt-6">
+        <Button type="submit" disabled={busy}>
+          {busy ? t("common.sending") : (submitLabel ?? t("common.submit"))}
+        </Button>
+      </div>
+    </>
+  );
+
+  return (
+    <form onSubmit={onSubmit}>
+      {variant === "card" ? (
+        <Card
+          size="lg"
+          title={t(titles[intent])}
+          description={t("common.required")}
+        >
+          {fields}
+        </Card>
+      ) : (
+        fields
+      )}
     </form>
   );
 }
