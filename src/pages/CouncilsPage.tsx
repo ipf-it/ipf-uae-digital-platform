@@ -102,7 +102,7 @@ export default function CouncilsPage() {
                 </h1>
                 <div aria-hidden="true" className="mt-4 h-px w-14" style={{ backgroundColor: `${GOLD}99` }} />
                 <p className="mt-4 max-w-[480px] text-[0.95rem] leading-relaxed sm:text-[1rem]" style={{ color: INK }}>
-                  {STATE_COUNCIL_COUNT} State Councils and {SPECIAL_COUNCIL_COUNT} Special Councils bring together communities across India's diverse cultural and regional heritage.
+                  {STATE_COUNCIL_COUNT} State Councils and {SPECIAL_COUNCIL_COUNT} Special Councils bringing together communities across India's diverse cultural and regional heritage.
                 </p>
               </div>
             </Container>
@@ -172,9 +172,15 @@ export default function CouncilsPage() {
             </p>
           </div>
 
+          {/* 3-card grid designed deliberately for THREE items.
+              lg+: 3 equal columns at a narrower max-w so each card
+              remains proportionate to the state cards above and the
+              row doesn't look like a 4-col grid with a missing fourth.
+              md: 3 across still comfortable; sm: single column
+              (two-up at narrow widths would need a centered orphan). */}
           <ul
             role="list"
-            className="mx-auto mt-10 grid max-w-[1320px] grid-cols-1 gap-6 sm:grid-cols-2 lg:mt-12 lg:grid-cols-3 lg:gap-7 xl:grid-cols-4 xl:gap-7"
+            className="mx-auto mt-10 grid max-w-[1120px] grid-cols-1 gap-6 md:grid-cols-3 lg:mt-12 lg:gap-7"
           >
             {specialCouncils.map((council) => (
               <li key={council.id} className="min-w-0">

@@ -54,8 +54,8 @@ export default function SupportPage() {
       {/* ──────────────── HERO (approved artwork preserved) ──────────────── */}
       <IllustratedHero
         eyebrow="Community Support"
-        title="When you need support, your community is here."
-        description="IPF UAE connects members of the Indian community with the appropriate people, resources and community channels when guidance or support is needed."
+        title="Here when you need us."
+        description="Guidance. Support. Community."
         crumbs={[{ label: t("nav.resources"), to: "/resources" }, { label: t("nav.support") }]}
         artworkPng="/images/support/support-hero-art.png"
         artworkWebp="/images/support/support-hero-art.webp"
