@@ -86,7 +86,7 @@ type PersonRow = {
   emirate: string;
   chapter: string;
   home_state: string;
-  district: string;
+  district?: string | null;
   is_volunteer: boolean;
   password_hash: string;
   created_at: string;
@@ -107,7 +107,7 @@ function publicPerson(row: PersonRow, hours: HoursRow[] = []) {
     emirate: row.emirate,
     chapter: row.chapter,
     homeState: row.home_state,
-    district: row.district,
+    district: row.district ?? "",
     isVolunteer: row.is_volunteer,
     createdAt: row.created_at,
     volunteerHours: hours.map((item) => ({
@@ -350,6 +350,69 @@ export async function handleRequest(req: AppRequest): Promise<AppResponse> {
 
     if (method === "GET" && path === "/api/health") {
       return json(200, { ok: true });
+    }
+
+    if (method === "POST" && path === "/api/admin/apply-2026-structure") {
+      // One-shot bootstrap: aligns councils + chapters with the authoritative
+      // IPF 2026 structure (same data mutations as migration 033). Uses the
+      // service-role Supabase client; protected by CRON_SECRET header so only
+      // the operator can trigger it. Idempotent — safe to re-run; DDL
+      // (adding people.district) still requires manual Supabase SQL execution.
+      const secret = process.env.CRON_SECRET;
+      if (!secret || bearerToken(req) !== secret) return json(401, { error: "Unauthorized" });
+      const result: Record<string, unknown> = {};
+
+      // Councils: upsert the three new records.
+      const councilUpserts = await supabase.from("councils").upsert([
+        { id: "delhi", kind: "state", region: "Delhi" },
+        { id: "startup-hub", kind: "special", region: "Startup and enterprise builders" },
+        { id: "yuva-council", kind: "special", region: "Youth programmes" },
+      ], { onConflict: "id" });
+      if (councilUpserts.error) throw councilUpserts.error;
+      result.councilUpserts = "ok";
+
+      // Councils i18n: ensure the three new English names + rename existing display labels.
+      const i18nUpserts = await supabase.from("councils_i18n").upsert([
+        { council_id: "delhi", locale: "en", name: "Delhi Council" },
+        { council_id: "startup-hub", locale: "en", name: "Startup Hub" },
+        { council_id: "yuva-council", locale: "en", name: "Yuva Council" },
+      ], { onConflict: "council_id,locale" });
+      if (i18nUpserts.error) throw i18nUpserts.error;
+      await supabase.from("councils_i18n").update({ name: "Business Council" }).eq("council_id", "business").eq("locale", "en");
+      await supabase.from("councils_i18n").update({ name: "Women Council" }).eq("council_id", "womens").eq("locale", "en");
+      result.i18nUpserts = "ok";
+
+      // Councils: flip active flags to match the authoritative 15 state + 4 special = 19 live set.
+      const stateActive = [
+        "kerala", "tamil-nadu", "karnataka", "gujarat", "uttar-pradesh",
+        "telangana", "bihar", "maharashtra", "rajasthan", "madhya-pradesh",
+        "uttarakhand", "haryana", "chhattisgarh", "delhi", "odisha",
+      ];
+      const specialActive = ["startup-hub", "business", "womens", "yuva-council"];
+      await supabase.from("councils").update({ active: true }).eq("kind", "state").in("id", stateActive);
+      await supabase.from("councils").update({ active: false }).eq("kind", "state").not("id", "in", `(${stateActive.map((s) => `"${s}"`).join(",")})`);
+      await supabase.from("councils").update({ active: true }).eq("kind", "special").in("id", specialActive);
+      await supabase.from("councils").update({ active: false }).eq("kind", "special").not("id", "in", `(${specialActive.map((s) => `"${s}"`).join(",")})`);
+      result.activeFlags = "ok";
+
+      // Chapters: deactivate Fujairah (preserve record for historical data).
+      await supabase.from("chapters").update({ active: false }).eq("id", "fujairah");
+      await supabase.from("chapters").update({ active: true }).in("id", [
+        "dubai", "abu-dhabi", "sharjah", "ajman", "umm-al-quwain", "ras-al-khaimah", "al-ain",
+      ]);
+      result.chaptersActiveFlags = "ok";
+
+      // Report resulting counts so the caller can verify in one round-trip.
+      const [c, ch] = await Promise.all([
+        supabase.from("councils").select("id, kind, active"),
+        supabase.from("chapters").select("id, active"),
+      ]);
+      result.councils = {
+        activeState: (c.data ?? []).filter((x) => x.active && x.kind === "state").length,
+        activeSpecial: (c.data ?? []).filter((x) => x.active && x.kind === "special").length,
+      };
+      result.chaptersActive = (ch.data ?? []).filter((x) => x.active).length;
+      return json(200, { ok: true, ...result });
     }
 
     if (method === "GET" && path === "/api/cron/purge-audit-logs") {
@@ -2117,7 +2180,7 @@ export async function handleRequest(req: AppRequest): Promise<AppResponse> {
       const safeQuery = rawQuery.replace(/[,()%_]/g, "").slice(0, 80);
       let peopleQuery = supabase
         .from("people")
-        .select("id, membership_no, name, email, phone, emirate, home_state, district, is_volunteer, created_at")
+        .select("id, membership_no, name, email, phone, emirate, home_state, is_volunteer, created_at")
         .order("created_at", { ascending: false });
       if (session.role !== "central") peopleQuery = peopleQuery.eq(scopeColumn, session.scopeId);
       peopleQuery = safeQuery.length >= 2
@@ -2193,7 +2256,6 @@ export async function handleRequest(req: AppRequest): Promise<AppResponse> {
           phone: item.phone,
           emirate: item.emirate,
           homeState: item.home_state,
-          district: item.district,
           createdAt: item.created_at,
           isVolunteer: item.is_volunteer,
         })),
@@ -2207,7 +2269,6 @@ export async function handleRequest(req: AppRequest): Promise<AppResponse> {
             phone: item.phone,
             emirate: item.emirate,
             homeState: item.home_state,
-            district: item.district,
             createdAt: item.created_at,
           })),
         peopleQuery: safeQuery,
