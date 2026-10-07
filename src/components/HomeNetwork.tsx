@@ -166,7 +166,11 @@ function MedallionBlock({
            do NOT add another ring, bg, border or crop. */
         className="h-10 w-10 object-contain transition-transform group-hover:scale-[1.05] sm:h-11 sm:w-11 lg:h-[52px] lg:w-[52px]"
       />
-      <span className="whitespace-pre-line text-center text-[0.68rem] font-semibold leading-tight text-[#1c2430] sm:text-[0.72rem]">
+      {/* min-h reserves two lines of text so wrapped labels like
+         "Umm Al Quwain" / "Ras Al Khaimah" don't change the medallion
+         height — every chapter item ends up with the exact same
+         vertical footprint and the grid row geometry stays clean. */}
+      <span className="flex min-h-[1.75rem] items-start justify-center whitespace-pre-line text-center text-[0.68rem] font-semibold leading-tight text-[#1c2430] sm:min-h-[1.9rem] sm:text-[0.72rem]">
         {label}
       </span>
     </>
@@ -436,15 +440,29 @@ export function HomeNetwork() {
                 </p>
 
                 {orderedChapters.length > 0 ? (
+                  /* 4 + centred 3 on desktop.
+                     The grid has 8 columns; every item spans 2 cols so a
+                     row holds 4 items. The 5th item (first on row 2)
+                     starts at col 2 instead of col 1 — because row 2
+                     only has 3 items (6 cols of content), a one-col
+                     empty pad on each side centres them under row 1
+                     mathematically with no magic numbers. */
                   <ul
                     role="list"
-                    className="mt-4 grid grid-cols-4 gap-x-2 gap-y-2"
+                    className="mt-4 grid grid-cols-8 gap-x-2 gap-y-3"
                   >
-                    {orderedChapters.map((chapter) => {
+                    {orderedChapters.map((chapter, index) => {
                       const icon = CHAPTER_ICON[chapter.id];
                       if (!icon) return null;
                       return (
-                        <li key={chapter.id} className="min-w-0">
+                        <li
+                          key={chapter.id}
+                          className={
+                            index === 4
+                              ? "col-span-2 col-start-2 min-w-0"
+                              : "col-span-2 min-w-0"
+                          }
+                        >
                           <ClickableMedallion
                             src={icon}
                             label={chapter.name}
@@ -458,7 +476,7 @@ export function HomeNetwork() {
 
                 {/* mt-auto pushes the CTA to the bottom of the stretched
                    flex-col panel so both CTAs share the same baseline. */}
-                <p className="mt-auto pt-3">
+                <p className="mt-auto pt-4">
                   <PillLink to="/chapters">Explore Chapters</PillLink>
                 </p>
               </div>
@@ -592,15 +610,27 @@ export function HomeNetwork() {
                 meaningful partnerships.
               </p>
               {orderedChapters.length > 0 ? (
+                /* Mobile/tablet: 4 columns of 2 cols each. Row 1-3 fill
+                   normally; the 7th (orphan) item spans the full 4-col
+                   width and justifies to the row centre, which puts
+                   its medallion exactly in the middle of the panel. */
                 <ul
                   role="list"
                   className="mt-5 grid grid-cols-4 gap-x-2 gap-y-3"
                 >
-                  {orderedChapters.map((chapter) => {
+                  {orderedChapters.map((chapter, index) => {
                     const icon = CHAPTER_ICON[chapter.id];
                     if (!icon) return null;
+                    const isOrphan = index === orderedChapters.length - 1 && orderedChapters.length % 2 === 1;
                     return (
-                      <li key={chapter.id} className="min-w-0">
+                      <li
+                        key={chapter.id}
+                        className={
+                          isOrphan
+                            ? "col-span-4 flex min-w-0 justify-center"
+                            : "col-span-2 min-w-0"
+                        }
+                      >
                         <ClickableMedallion
                           src={icon}
                           label={chapter.name}
