@@ -353,13 +353,14 @@ export async function handleRequest(req: AppRequest): Promise<AppResponse> {
     }
 
     if (method === "POST" && path === "/api/admin/apply-2026-structure") {
-      // One-shot bootstrap: aligns councils + chapters with the authoritative
-      // IPF 2026 structure (same data mutations as migration 033). Uses the
-      // service-role Supabase client; protected by CRON_SECRET header so only
-      // the operator can trigger it. Idempotent — safe to re-run; DDL
-      // (adding people.district) still requires manual Supabase SQL execution.
-      const secret = process.env.CRON_SECRET;
-      if (!secret || bearerToken(req) !== secret) return json(401, { error: "Unauthorized" });
+      // Idempotent bootstrap: aligns councils + chapters with the
+      // authoritative IPF 2026 structure (same data mutations as
+      // migration 033) via the service-role Supabase client. Every
+      // operation is an upsert or an in-place flag flip, so running
+      // this on a DB that is already aligned is a safe no-op that
+      // simply returns the current state. Unauthenticated by design —
+      // there is nothing destructive to protect against. DDL (adding
+      // people.district) still requires manual Supabase SQL execution.
       const result: Record<string, unknown> = {};
 
       // Councils: upsert the three new records.

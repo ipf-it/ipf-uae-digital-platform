@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { Link, useLocation, useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { CouncilCard } from "../components/CouncilCard";
 import { DocumentTitle } from "../components/layout/DocumentTitle";
 import { Container } from "../components/ui/Container";
@@ -175,32 +175,44 @@ export default function CouncilsPage() {
             </p>
           </div>
 
-          {/* 4-card grid: Startup Hub · Business · Women · Yuva.
-              lg: 4 equal columns; md: 2 × 2; sm/mobile: single column. */}
-          <ul
-            role="list"
-            className="mx-auto mt-10 grid max-w-[1280px] grid-cols-1 gap-6 sm:grid-cols-2 lg:mt-12 lg:grid-cols-4 lg:gap-7"
-          >
-            {specialCouncils.map((council) => (
-              <li key={council.id} className="min-w-0">
-                <CouncilCard
-                  slug={council.id}
-                  name={council.name}
-                  kind="special"
-                  region={council.region ?? ""}
-                  descriptor={council.description}
-                />
-              </li>
-            ))}
-          </ul>
-
-          <p className="mx-auto mt-10 max-w-2xl text-center text-[0.9rem] leading-relaxed" style={{ color: INK }}>
-            {t("page.councils.yuvaNote")}{" "}
-            <Link className="font-semibold underline-offset-4 hover:underline" style={{ color: NAVY }} to="/yuva">
-              {t("nav.yuva")}
-            </Link>
-            .
-          </p>
+          {/* Adaptive balanced grid. The number of columns at lg+ tracks
+              the current ACTIVE Special Councils count returned by the
+              public API, and the row's max-w shrinks proportionally so
+              the group always looks centred and intentional rather than
+              anchored to the left of a wide section. CMS can activate
+              or deactivate a Special Council without a code change —
+              the row recomposes automatically. */}
+          {(() => {
+            const count = specialCouncils.length;
+            const maxWidth =
+              count >= 4 ? "max-w-[1280px]" :
+              count === 3 ? "max-w-[1080px]" :
+              count === 2 ? "max-w-[820px]" :
+              "max-w-[420px]";
+            const lgCols =
+              count >= 4 ? "lg:grid-cols-4" :
+              count === 3 ? "lg:grid-cols-3" :
+              count === 2 ? "lg:grid-cols-2" :
+              "lg:grid-cols-1";
+            return (
+              <ul
+                role="list"
+                className={`mx-auto mt-10 grid ${maxWidth} grid-cols-1 gap-6 sm:grid-cols-2 lg:mt-12 lg:gap-7 ${lgCols}`}
+              >
+                {specialCouncils.map((council) => (
+                  <li key={council.id} className="min-w-0">
+                    <CouncilCard
+                      slug={council.id}
+                      name={council.name}
+                      kind="special"
+                      region={council.region ?? ""}
+                      descriptor={council.description}
+                    />
+                  </li>
+                ))}
+              </ul>
+            );
+          })()}
         </Container>
       </Section>
       {/* IPF Cares promo block retired from Councils per architecture:
