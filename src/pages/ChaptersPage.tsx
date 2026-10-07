@@ -44,8 +44,8 @@ import { useLocale } from "../i18n/LocaleProvider";
  *   MAP — ChapterMap below the cards, redesigned to the premium
  *     ivory/parchment system (see src/components/ChapterMap.tsx).
  *
- *   COUNCILS BRIDGE — editorial transition explaining the 12 State +
- *     3 Special = 15 Councils structure, with CTAs to /councils
+ *   COUNCILS BRIDGE — editorial transition explaining the 15 State +
+ *     3 Special = 18 Councils structure, with CTAs to /councils
  *     anchors.
  *
  * Data discipline

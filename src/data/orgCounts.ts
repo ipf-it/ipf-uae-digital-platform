@@ -2,7 +2,9 @@
  * Authoritative IPF UAE 2026 organisational counts — CURRENT LIVE PHASE.
  *
  *   CHAPTERS         = 7
- *   COUNCILS         = 15   (12 State + 3 Special — public live set)
+ *   STATE COUNCILS   = 15
+ *   SPECIAL COUNCILS = 3   (Business, Cultural, Women's — live phase)
+ *   TOTAL COUNCILS   = 18
  *
  * The public /councils directory renders whatever the public API returns;
  * the API itself enforces the live set (server/handleRequest.ts, route
@@ -23,13 +25,13 @@
  * ─────────────────────────────────────────────────────────────────── */
 
 export const CHAPTER_COUNT = 7;
-export const STATE_COUNCIL_COUNT = 12;
+export const STATE_COUNCIL_COUNT = 15;
 export const SPECIAL_COUNCIL_COUNT = 3;
-export const TOTAL_COUNCIL_COUNT = STATE_COUNCIL_COUNT + SPECIAL_COUNCIL_COUNT; // 15
+export const TOTAL_COUNCIL_COUNT = STATE_COUNCIL_COUNT + SPECIAL_COUNCIL_COUNT; // 18
 
 /* Word forms used in editorial copy — kept here so a single file owns
    both the numeric and the written representation. English only; other
    locales live in src/i18n/messages.ts under the keys that reference
    these counts. */
 export const CHAPTER_COUNT_WORD = "seven";
-export const TOTAL_COUNCIL_COUNT_WORD = "fifteen";
+export const TOTAL_COUNCIL_COUNT_WORD = "eighteen";

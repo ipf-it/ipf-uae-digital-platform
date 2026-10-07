@@ -5,6 +5,10 @@ import { DocumentTitle } from "../components/layout/DocumentTitle";
 import { Container } from "../components/ui/Container";
 import { Section } from "../components/ui/Section";
 import { councilPath } from "../data/orgNav";
+import {
+  STATE_COUNCIL_COUNT,
+  SPECIAL_COUNCIL_COUNT,
+} from "../data/orgCounts";
 import { useOrgCouncils } from "../hooks/useOrgDirectory";
 import { useLocale } from "../i18n/LocaleProvider";
 
@@ -98,7 +102,7 @@ export default function CouncilsPage() {
                 </h1>
                 <div aria-hidden="true" className="mt-4 h-px w-14" style={{ backgroundColor: `${GOLD}99` }} />
                 <p className="mt-4 max-w-[480px] text-[0.95rem] leading-relaxed sm:text-[1rem]" style={{ color: INK }}>
-                  State and Special Councils bringing together communities across India's diverse cultural and regional heritage.
+                  {STATE_COUNCIL_COUNT} State Councils and {SPECIAL_COUNCIL_COUNT} Special Councils bringing together communities across India's diverse cultural and regional heritage.
                 </p>
               </div>
             </Container>

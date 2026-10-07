@@ -1903,7 +1903,7 @@ export async function handleRequest(req: AppRequest): Promise<AppResponse> {
 
     if (method === "GET" && path === "/api/org/councils") {
       const locale = normalizeLocale(new URL(req.url, "http://localhost").searchParams.get("locale"));
-      // Authoritative public live set — 15 Councils (12 State + 3 Special).
+      // Authoritative public live set — 15 State + 3 Special = 18 Councils.
       // Records not in this set remain in the database (preserving related
       // events / news / people / appointments) but are not returned by this
       // public endpoint. Central Admin can edit this list to publish or
@@ -1922,6 +1922,9 @@ export async function handleRequest(req: AppRequest): Promise<AppResponse> {
         "uttar-pradesh",
         "bihar",
         "west-bengal",
+        "assam",
+        "odisha",
+        "madhya-pradesh",
         "business",
         "cultural",
         "womens",
