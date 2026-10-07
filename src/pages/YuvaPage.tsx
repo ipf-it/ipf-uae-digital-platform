@@ -193,63 +193,66 @@ export default function YuvaPage() {
         </Container>
       </section>
 
-      {/* ──────────────── 3 · YOUR YUVA MEMBERSHIP (compact) ──────────────── */}
-      <section className="relative bg-[#FFF8EE] py-12 sm:py-14 lg:py-16">
+      {/* ──────────────── 3 · YOUR YUVA MEMBERSHIP ────────────────
+          Compact premium 4-card feature row — one row of refined
+          ivory/cream cards with warm gold-ring icon badges, navy serif
+          title and muted supporting line. Lightweight hover lift. Not
+          a dashboard, not a dark panel — a polished editorial feature
+          row sitting on the page's ivory ground. */}
+      <section className="relative bg-[#FFF8EE] py-14 sm:py-16 lg:py-20">
         <Container>
-          <div className="mx-auto max-w-[1100px]">
-            <div className="grid gap-6 lg:grid-cols-[0.9fr_1.4fr] lg:items-start lg:gap-14">
-              <div className="min-w-0">
-                <div className="flex items-center gap-3">
-                  <span aria-hidden="true" className="inline-block h-px w-10" style={{ backgroundColor: `${GOLD}99` }} />
-                  <p className="text-[0.68rem] font-bold uppercase tracking-[0.3em]" style={{ color: GOLD_INK }}>
-                    Yuva Membership
-                  </p>
-                </div>
-                <h2
-                  className="mt-3 font-serif text-[1.4rem] font-bold leading-tight tracking-tight sm:text-[1.6rem] lg:text-[1.8rem]"
-                  style={{ color: NAVY }}
-                >
-                  Your Yuva Membership
-                </h2>
-                <p className="mt-4 max-w-md text-[0.92rem] leading-relaxed" style={{ color: MUTED }}>
-                  Yuva members enrol through the IPF UAE membership application. On registration you receive the identity and tools to serve at chapter events and community initiatives.
-                </p>
-              </div>
-
-              <ul
-                role="list"
-                className="grid min-w-0 grid-cols-1 gap-x-6 gap-y-5 sm:grid-cols-2"
-              >
-                {[
-                  { icon: BadgeCheck, label: "Permanent Yuva ID", body: t("page.yuva.li1") },
-                  { icon: QrCode,     label: "Digital card + QR", body: t("page.yuva.li2") },
-                  { icon: History,    label: "Hours in your portal", body: t("page.yuva.li3") },
-                  { icon: Users,      label: "Chapter desk access", body: t("page.yuva.li4") },
-                ].map((item) => {
-                  const Icon = item.icon;
-                  return (
-                    <li key={item.label} className="flex items-start gap-3">
-                      <span
-                        aria-hidden="true"
-                        className="mt-0.5 inline-flex size-8 shrink-0 items-center justify-center rounded-full border bg-white"
-                        style={{ borderColor: `${GOLD}80`, color: GOLD_INK }}
-                      >
-                        <Icon className="size-3.5" />
-                      </span>
-                      <div className="min-w-0">
-                        <p className="font-serif text-[0.98rem] font-semibold leading-tight tracking-tight" style={{ color: NAVY }}>
-                          {item.label}
-                        </p>
-                        <p className="mt-1 text-[0.85rem] leading-relaxed" style={{ color: MUTED }}>
-                          {item.body}
-                        </p>
-                      </div>
-                    </li>
-                  );
-                })}
-              </ul>
+          <div className="mx-auto max-w-3xl text-center">
+            <div className="inline-flex items-center gap-3">
+              <span aria-hidden="true" className="inline-block h-px w-10" style={{ backgroundColor: `${GOLD}99` }} />
+              <p className="text-[0.68rem] font-bold uppercase tracking-[0.3em]" style={{ color: GOLD_INK }}>
+                Yuva Membership
+              </p>
+              <span aria-hidden="true" className="inline-block h-px w-10" style={{ backgroundColor: `${GOLD}99` }} />
             </div>
+            <h2
+              className="mt-4 font-serif text-[1.5rem] font-bold leading-tight tracking-tight sm:text-[1.75rem] lg:text-[1.95rem]"
+              style={{ color: NAVY }}
+            >
+              Your Yuva Membership
+            </h2>
+            <p className="mx-auto mt-4 max-w-[720px] text-[0.95rem] leading-relaxed" style={{ color: INK }}>
+              Yuva members enrol through the IPF UAE membership application. On registration you receive the identity and tools to serve at chapter events and community initiatives.
+            </p>
           </div>
+
+          <ul
+            role="list"
+            className="mx-auto mt-10 grid max-w-[1180px] grid-cols-1 gap-5 sm:grid-cols-2 lg:mt-12 lg:grid-cols-4 lg:gap-6"
+          >
+            {[
+              { icon: BadgeCheck, label: "Permanent Yuva ID",    body: t("page.yuva.li1"), accent: SAFFRON },
+              { icon: QrCode,     label: "Digital card + QR",    body: t("page.yuva.li2"), accent: GOLD_INK },
+              { icon: History,    label: "Hours in your portal", body: t("page.yuva.li3"), accent: GREEN },
+              { icon: Users,      label: "Chapter desk access",  body: t("page.yuva.li4"), accent: GOLD_INK },
+            ].map((item) => {
+              const Icon = item.icon;
+              return (
+                <li
+                  key={item.label}
+                  className="group flex h-full flex-col rounded-[20px] border border-[#D6AD60]/35 bg-[#FFFBF2] px-6 py-7 shadow-[0_6px_18px_rgba(11,31,58,0.06)] transition-all duration-200 hover:-translate-y-0.5 hover:border-[#D6AD60]/70 hover:shadow-[0_12px_28px_rgba(11,31,58,0.1)] sm:px-7 sm:py-8"
+                >
+                  <span
+                    aria-hidden="true"
+                    className="inline-flex size-11 shrink-0 items-center justify-center rounded-full border bg-white transition-transform duration-200 group-hover:-translate-y-0.5"
+                    style={{ borderColor: `${item.accent}60`, color: item.accent }}
+                  >
+                    <Icon className="size-5" />
+                  </span>
+                  <p className="mt-5 font-serif text-[1.08rem] font-bold leading-tight tracking-tight" style={{ color: NAVY }}>
+                    {item.label}
+                  </p>
+                  <p className="mt-2 text-[0.88rem] leading-relaxed" style={{ color: MUTED }}>
+                    {item.body}
+                  </p>
+                </li>
+              );
+            })}
+          </ul>
         </Container>
       </section>
 

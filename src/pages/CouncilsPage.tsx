@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
+import { CouncilCard } from "../components/CouncilCard";
 import { DocumentTitle } from "../components/layout/DocumentTitle";
-import { Card, CardGrid } from "../components/ui/Card";
 import { Container } from "../components/ui/Container";
 import { Section } from "../components/ui/Section";
 import { councilPath } from "../data/orgNav";
@@ -109,47 +109,92 @@ export default function CouncilsPage() {
           </div>
         </div>
       </section>
-      <Section tone="white" id="state-councils" className="scroll-mt-28">
-        <Container className="space-y-4">
-          <h2 className="text-2xl font-bold text-[var(--ipf-navy)]">{t("nav.stateCouncils")}</h2>
-          <p className="max-w-3xl text-sm leading-7 text-[var(--ipf-muted)]">{t("page.councils.stateBody")}</p>
-          <CardGrid columns={3}>
+      {/* ──────────────── STATE COUNCILS DIRECTORY ──────────────── */}
+      <Section tone="white" id="state-councils" className="scroll-mt-28 py-14 sm:py-16 lg:py-20">
+        <Container>
+          <div className="mx-auto max-w-3xl text-center">
+            <div className="inline-flex items-center gap-3">
+              <span aria-hidden="true" className="inline-block h-px w-10" style={{ backgroundColor: `${GOLD}99` }} />
+              <p className="text-[0.7rem] font-bold uppercase tracking-[0.3em]" style={{ color: GOLD_INK }}>
+                State Councils
+              </p>
+              <span aria-hidden="true" className="inline-block h-px w-10" style={{ backgroundColor: `${GOLD}99` }} />
+            </div>
+            <h2
+              className="mt-4 font-serif text-[1.5rem] font-bold leading-tight tracking-tight sm:text-[1.8rem] lg:text-[2rem]"
+              style={{ color: NAVY }}
+            >
+              {STATE_COUNCIL_COUNT} communities representing India's states and regions
+            </h2>
+            <p className="mx-auto mt-4 max-w-2xl text-[0.92rem] leading-relaxed" style={{ color: INK }}>
+              {t("page.councils.stateBody")}
+            </p>
+          </div>
+
+          <ul
+            role="list"
+            className="mx-auto mt-10 grid max-w-[1320px] grid-cols-1 gap-6 sm:grid-cols-2 lg:mt-12 lg:grid-cols-3 lg:gap-7 xl:grid-cols-4 xl:gap-7"
+          >
             {stateCouncils.map((council) => (
-              <Card
-                id={council.id}
-                key={council.id}
-                className="scroll-mt-28"
-                size="sm"
-                tone="ivory"
-                title={council.name}
-                to={councilPath(council.id)}
-              />
+              <li key={council.id} className="min-w-0">
+                <CouncilCard
+                  slug={council.id}
+                  name={council.name}
+                  kind="state"
+                  region={council.region ?? ""}
+                  descriptor={council.description}
+                />
+              </li>
             ))}
-          </CardGrid>
+          </ul>
         </Container>
       </Section>
-      <Section id="special-councils" className="scroll-mt-28">
-        <Container className="space-y-4">
-          <h2 className="text-2xl font-bold text-[var(--ipf-navy)]">{t("nav.specialCouncils")}</h2>
-          <p className="max-w-3xl text-sm leading-7 text-[var(--ipf-muted)]">{t("page.councils.specialBody")}</p>
-          <CardGrid columns={2}>
+
+      {/* ──────────────── SPECIAL COUNCILS DIRECTORY ──────────────── */}
+      <Section tone="ivory" id="special-councils" className="scroll-mt-28 py-14 sm:py-16 lg:py-20">
+        <Container>
+          <div className="mx-auto max-w-3xl text-center">
+            <div className="inline-flex items-center gap-3">
+              <span aria-hidden="true" className="inline-block h-px w-10" style={{ backgroundColor: `${GOLD}99` }} />
+              <p className="text-[0.7rem] font-bold uppercase tracking-[0.3em]" style={{ color: GOLD_INK }}>
+                Special Councils
+              </p>
+              <span aria-hidden="true" className="inline-block h-px w-10" style={{ backgroundColor: `${GOLD}99` }} />
+            </div>
+            <h2
+              className="mt-4 font-serif text-[1.5rem] font-bold leading-tight tracking-tight sm:text-[1.8rem] lg:text-[2rem]"
+              style={{ color: NAVY }}
+            >
+              {SPECIAL_COUNCIL_COUNT} focused communities across specialised areas
+            </h2>
+            <p className="mx-auto mt-4 max-w-2xl text-[0.92rem] leading-relaxed" style={{ color: INK }}>
+              {t("page.councils.specialBody")}
+            </p>
+          </div>
+
+          <ul
+            role="list"
+            className="mx-auto mt-10 grid max-w-[1320px] grid-cols-1 gap-6 sm:grid-cols-2 lg:mt-12 lg:grid-cols-3 lg:gap-7 xl:grid-cols-4 xl:gap-7"
+          >
             {specialCouncils.map((council) => (
-              <Card
-                id={council.id}
-                key={council.id}
-                className="scroll-mt-28"
-                tone="ivory"
-                title={council.name}
-                description={council.description}
-                to={councilPath(council.id)}
-              />
+              <li key={council.id} className="min-w-0">
+                <CouncilCard
+                  slug={council.id}
+                  name={council.name}
+                  kind="special"
+                  region={council.region ?? ""}
+                  descriptor={council.description}
+                />
+              </li>
             ))}
-          </CardGrid>
-          <p className="text-sm leading-7 text-[var(--ipf-muted)]">
+          </ul>
+
+          <p className="mx-auto mt-10 max-w-2xl text-center text-[0.9rem] leading-relaxed" style={{ color: INK }}>
             {t("page.councils.yuvaNote")}{" "}
-            <Link className="font-semibold text-[var(--ipf-green)]" to="/yuva">
+            <Link className="font-semibold underline-offset-4 hover:underline" style={{ color: NAVY }} to="/yuva">
               {t("nav.yuva")}
             </Link>
+            .
           </p>
         </Container>
       </Section>
