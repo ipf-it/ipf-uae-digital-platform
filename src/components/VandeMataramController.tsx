@@ -58,8 +58,11 @@ const VandeMataramContext = createContext<VandeMataramContextValue | null>(null)
  *   - Real play/pause/ended event listeners keep UI state in sync with
  *     whatever the browser is actually doing (lock-screen media session,
  *     tab backgrounded, external controls).
- *   - End-of-track leaves the UI in the Play state and does NOT loop.
- *     The next user click rewinds and plays again.
+ *   - End-of-track loops seamlessly via the native `loop` attribute on
+ *     the <audio> element — once the user has started playback, the
+ *     track restarts from 0 and continues indefinitely until the user
+ *     pauses manually. No timers, no manual rewind, no second instance,
+ *     no `ended` event firing on the loop boundary.
  *
  * preload="none" — the file is NOT downloaded until the user actually
  * clicks play, so there is no latent "buffered and ready" audio sitting
@@ -182,7 +185,15 @@ export function VandeMataramProvider({ children }: { children: ReactNode }) {
            the autoplay useEffect to eliminate any "ready to play"
            precondition that could lead to accidental playback. */
         preload="none"
-        /* NO `autoPlay` attribute. NO `loop` attribute. */
+        /* loop — once the user has pressed play, the track restarts
+           seamlessly from the beginning when it reaches the end. This
+           is the browser-native loop, not a timer or an ended-handler
+           rewind, so there is no gap, no second instance, and no
+           `ended` event firing on the loop boundary. The user remains
+           in control via the floating button. There is still NO
+           `autoPlay` attribute — nothing becomes audible until the
+           user explicitly clicks play. */
+        loop
         aria-hidden="true"
       />
       {children}
