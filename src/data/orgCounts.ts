@@ -2,36 +2,34 @@
  * Authoritative IPF UAE 2026 organisational counts — CURRENT LIVE PHASE.
  *
  *   CHAPTERS         = 7
- *   STATE COUNCILS   = 15
- *   SPECIAL COUNCILS = 3   (Business, Cultural, Women's — live phase)
- *   TOTAL COUNCILS   = 18
+ *   COUNCILS         = 15   (12 State + 3 Special — public live set)
  *
- * These numbers represent the CURRENTLY LIVE/PUBLIC organisation units.
- * The database retains additional historical Council records (see
- * migration 032_councils_live_set_15_3.sql) with active=false so legacy
- * events / news / galleries / people / appointments remain intact; those
- * records are not surfaced on public pages and do not contribute to the
- * current counts here. Central/Super Admin can toggle any council's
- * `active` flag in CMS to publish/unpublish it without a code change —
- * when that happens, bump the relevant constant here and the public
- * directories automatically agree.
+ * The public /councils directory renders whatever the public API returns;
+ * the API itself enforces the live set (server/handleRequest.ts, route
+ * GET /api/org/councils) by filtering both on the DB `active` flag AND
+ * on the authoritative PUBLIC_COUNCIL_IDS allowlist. The database retains
+ * the remaining historical Council records so related events / news /
+ * galleries / people / appointments remain intact; they are not surfaced
+ * on public pages and do not contribute to the counts here. Central /
+ * Super Admin can toggle any council's `active` flag in CMS to publish
+ * or unpublish it — when the live set changes, update the allowlist in
+ * server/handleRequest.ts and the constants here in lockstep.
  *
  * IPF Yuva has its own /yuva experience and is NOT counted as a Special
- * Council until it is published as one via CMS (which would bring
- * SPECIAL_COUNCIL_COUNT to 4 and TOTAL to 19).
+ * Council unless/until it is published as one via CMS.
  *
  * All UI components that display these counts MUST import from this
  * module so the numbers stay consistent across the site.
  * ─────────────────────────────────────────────────────────────────── */
 
 export const CHAPTER_COUNT = 7;
-export const STATE_COUNCIL_COUNT = 15;
+export const STATE_COUNCIL_COUNT = 12;
 export const SPECIAL_COUNCIL_COUNT = 3;
-export const TOTAL_COUNCIL_COUNT = STATE_COUNCIL_COUNT + SPECIAL_COUNCIL_COUNT; // 18
+export const TOTAL_COUNCIL_COUNT = STATE_COUNCIL_COUNT + SPECIAL_COUNCIL_COUNT; // 15
 
 /* Word forms used in editorial copy — kept here so a single file owns
    both the numeric and the written representation. English only; other
    locales live in src/i18n/messages.ts under the keys that reference
    these counts. */
 export const CHAPTER_COUNT_WORD = "seven";
-export const TOTAL_COUNCIL_COUNT_WORD = "eighteen";
+export const TOTAL_COUNCIL_COUNT_WORD = "fifteen";

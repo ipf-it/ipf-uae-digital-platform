@@ -1903,8 +1903,31 @@ export async function handleRequest(req: AppRequest): Promise<AppResponse> {
 
     if (method === "GET" && path === "/api/org/councils") {
       const locale = normalizeLocale(new URL(req.url, "http://localhost").searchParams.get("locale"));
+      // Authoritative public live set — 15 Councils (12 State + 3 Special).
+      // Records not in this set remain in the database (preserving related
+      // events / news / people / appointments) but are not returned by this
+      // public endpoint. Central Admin can edit this list to publish or
+      // unpublish a Council; the DB `active` flag is also honoured so this
+      // is defence-in-depth, not a replacement for the admin toggle.
+      const PUBLIC_COUNCIL_IDS = [
+        "kerala",
+        "karnataka",
+        "andhra-pradesh",
+        "telangana",
+        "tamil-nadu",
+        "maharashtra",
+        "gujarat",
+        "punjab",
+        "rajasthan",
+        "uttar-pradesh",
+        "bihar",
+        "west-bengal",
+        "business",
+        "cultural",
+        "womens",
+      ];
       const [{ data: councils }, { data: i18n }] = await Promise.all([
-        supabase.from("councils").select("*").eq("active", true).order("id"),
+        supabase.from("councils").select("*").eq("active", true).in("id", PUBLIC_COUNCIL_IDS).order("id"),
         supabase.from("councils_i18n").select("*"),
       ]);
       const byCouncil = new Map<string, Record<string, unknown>[]>();

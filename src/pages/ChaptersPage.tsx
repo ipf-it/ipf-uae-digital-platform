@@ -44,8 +44,8 @@ import { useLocale } from "../i18n/LocaleProvider";
  *   MAP — ChapterMap below the cards, redesigned to the premium
  *     ivory/parchment system (see src/components/ChapterMap.tsx).
  *
- *   COUNCILS BRIDGE — editorial transition explaining the 15 State +
- *     4 Special = 19 Councils structure, with CTAs to /councils
+ *   COUNCILS BRIDGE — editorial transition explaining the 12 State +
+ *     3 Special = 15 Councils structure, with CTAs to /councils
  *     anchors.
  *
  * Data discipline
@@ -333,7 +333,7 @@ export default function ChaptersPage() {
                   </li>
                 </ul>
                 <p className="mt-6 text-[0.78rem] leading-relaxed" style={{ color: MUTED }}>
-                  Yuva is a Special Council — included inside the {SPECIAL_COUNCIL_COUNT} above, not a separate category.
+                  Yuva has its own /yuva experience and is not counted inside the Special Councils above.
                 </p>
               </div>
             </div>
