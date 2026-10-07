@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { ArrowRight, BadgeCheck, QrCode, History, Users } from "lucide-react";
+import { ArrowRight, BadgeCheck, History, QrCode, Users } from "lucide-react";
 import { DocumentTitle } from "../components/layout/DocumentTitle";
 import { IllustratedHero } from "../components/layout/IllustratedHero";
 import { Button } from "../components/ui/Button";
@@ -58,16 +58,35 @@ export default function YuvaPage() {
     <>
       <DocumentTitle title={t("page.yuva.title")} />
 
-      {/* ──────────────── HERO (approved artwork preserved) ──────────────── */}
+      {/* ──────────────── HERO (approved artwork preserved) ────────────────
+          Clean, youthful, confident hero per founder direction: short
+          2-line headline, 4-word rhythm supporting line, and a single
+          burgundy primary CTA. The longer "platform for young Indians…"
+          sentence has moved into the introduction section below so the
+          hero stays visually balanced with the artwork. */}
       <IllustratedHero
         eyebrow="IPF Yuva"
-        title="Young Indians. Shared Roots. A Future We Build Together."
-        description="A platform for young Indians across the UAE to connect, contribute, celebrate their heritage and take an active role in building a stronger community."
+        title={
+          <>
+            Young Indians.
+            <br />
+            One Community.
+          </>
+        }
+        description="Connect. Contribute. Celebrate. Lead."
         crumbs={[{ label: t("page.yuva.title") }]}
         artworkPng="/images/yuva/yuva-hero-art.png"
         artworkWebp="/images/yuva/yuva-hero-art.webp"
         artworkAlt="Youthful tricolour journey at sunrise through Indian heritage landscape"
         artworkPosition="object-[72%_center]"
+        cta={
+          <Button asChild size="lg">
+            <Link to="/register?kind=yuva">
+              Join IPF Yuva
+              <ArrowRight aria-hidden="true" className="size-4" />
+            </Link>
+          </Button>
+        }
       />
 
       {/* ──────────────── INTRODUCTION ──────────────── */}
@@ -88,7 +107,7 @@ export default function YuvaPage() {
               A place to belong. A chance to make a difference.
             </h2>
             <p className="mx-auto mt-5 max-w-2xl text-[0.98rem] leading-relaxed" style={{ color: INK }}>
-              IPF Yuva brings young Indians in the UAE together around community, culture, service and shared experiences. It creates opportunities to meet people, contribute ideas, participate in meaningful initiatives and stay connected to the values and traditions that bring the Indian community together.
+              IPF Yuva is a platform for young Indians across the UAE to connect, contribute, celebrate their heritage and take an active role in building a stronger community — bringing people together around community, culture, service and shared experiences.
             </p>
           </div>
         </Container>

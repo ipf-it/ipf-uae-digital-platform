@@ -1,4 +1,5 @@
 import { ChevronRight } from "lucide-react";
+import type { ReactNode } from "react";
 import { Link } from "react-router-dom";
 import { useLocale } from "../../i18n/LocaleProvider";
 import { Container } from "../ui/Container";
@@ -43,7 +44,10 @@ type Crumb = {
 
 type IllustratedHeroProps = {
   eyebrow: string;
-  title: string;
+  /** Accepts a plain string (default across the About family) or
+   *  ReactNode (e.g. the Yuva hero's two-line "Young Indians. / One
+   *  Community." using an inline <br />). Non-breaking widening. */
+  title: ReactNode;
   description: string;
   crumbs?: Crumb[];
   /** Approved illustrated artwork — PNG required, WebP optional for perf. */
@@ -69,6 +73,10 @@ type IllustratedHeroProps = {
    *  room to crop the dense monument cluster away from the text column
    *  at every desktop width. */
   heightClass?: string;
+  /** Optional CTA block rendered inside the hero's left text column
+   *  directly beneath the description. Non-breaking: omit for the same
+   *  text-only hero every other About-family page uses today. */
+  cta?: ReactNode;
 };
 
 const GOLD = "#D6AD60";
@@ -98,6 +106,7 @@ export function IllustratedHero({
   artworkPosition = "object-[72%_center]",
   textMaxWidth = "max-w-[600px]",
   heightClass = "min-h-[380px] py-10 md:min-h-[460px] md:py-14 lg:min-h-[500px] lg:py-16",
+  cta,
 }: IllustratedHeroProps) {
   const { t } = useLocale();
 
@@ -181,6 +190,7 @@ export function IllustratedHero({
             >
               {description}
             </p>
+            {cta ? <div className="mt-7 flex flex-wrap gap-3">{cta}</div> : null}
           </div>
         </div>
       </Container>
