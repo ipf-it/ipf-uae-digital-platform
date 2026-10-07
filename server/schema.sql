@@ -17,12 +17,14 @@ create table if not exists people (
   emirate text not null default '',
   chapter text not null default '',
   home_state text not null default '',
+  district text not null default '',
   is_volunteer boolean not null default false,
   password_hash text not null,
   created_at timestamptz not null default now()
 );
 
 create index if not exists people_home_state_idx on people (home_state);
+create index if not exists people_district_idx on people (district);
 create index if not exists people_emirate_idx on people (emirate);
 
 create table if not exists volunteer_hours (

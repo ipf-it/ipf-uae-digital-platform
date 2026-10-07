@@ -131,9 +131,12 @@ export default function CouncilsPage() {
             </p>
           </div>
 
+          {/* 15 state cards — 3 rows of 5 at xl keeps the row cadence
+              consistent with the Special Councils grid below. lg: 3-col
+              = 5 clean rows; sm: 2-col; mobile: 1-col. */}
           <ul
             role="list"
-            className="mx-auto mt-10 grid max-w-[1320px] grid-cols-1 gap-6 sm:grid-cols-2 lg:mt-12 lg:grid-cols-3 lg:gap-7 xl:grid-cols-4 xl:gap-7"
+            className="mx-auto mt-10 grid max-w-[1400px] grid-cols-1 gap-6 sm:grid-cols-2 lg:mt-12 lg:grid-cols-3 lg:gap-7 xl:grid-cols-5 xl:gap-7"
           >
             {stateCouncils.map((council) => (
               <li key={council.id} className="min-w-0">
@@ -172,15 +175,11 @@ export default function CouncilsPage() {
             </p>
           </div>
 
-          {/* 3-card grid designed deliberately for THREE items.
-              lg+: 3 equal columns at a narrower max-w so each card
-              remains proportionate to the state cards above and the
-              row doesn't look like a 4-col grid with a missing fourth.
-              md: 3 across still comfortable; sm: single column
-              (two-up at narrow widths would need a centered orphan). */}
+          {/* 4-card grid: Startup Hub · Business · Women · Yuva.
+              lg: 4 equal columns; md: 2 × 2; sm/mobile: single column. */}
           <ul
             role="list"
-            className="mx-auto mt-10 grid max-w-[1120px] grid-cols-1 gap-6 md:grid-cols-3 lg:mt-12 lg:gap-7"
+            className="mx-auto mt-10 grid max-w-[1280px] grid-cols-1 gap-6 sm:grid-cols-2 lg:mt-12 lg:grid-cols-4 lg:gap-7"
           >
             {specialCouncils.map((council) => (
               <li key={council.id} className="min-w-0">

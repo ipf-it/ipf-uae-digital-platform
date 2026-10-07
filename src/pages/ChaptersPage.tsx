@@ -45,7 +45,7 @@ import { useLocale } from "../i18n/LocaleProvider";
  *     ivory/parchment system (see src/components/ChapterMap.tsx).
  *
  *   COUNCILS BRIDGE — editorial transition explaining the 15 State +
- *     3 Special = 18 Councils structure, with CTAs to /councils
+ *     4 Special = 19 Councils structure, with CTAs to /councils
  *     anchors.
  *
  * Data discipline
@@ -71,16 +71,17 @@ type ChapterDef = {
   descriptor: string;
 };
 
-/* Eight currently-routed chapter experiences in editorial order:
+/* Seven active chapter experiences in editorial order:
      Row 1 (desktop xl 4-col): Dubai · Abu Dhabi · Sharjah · Ajman
-     Row 2 (desktop xl 4-col): Umm Al Quwain · Ras Al Khaimah · Fujairah · Al Ain
+     Row 2 (desktop xl 4-col): Umm Al Quwain · Ras Al Khaimah · Al Ain
    Each card reuses the chapter's own hero artwork at /theme/place-art/{slug}.webp
    plus its chapter theme via chapterTheme() — identical visual identity
    to the destination /chapters/{slug} page.
-   NOTE: The authoritative 2026 count is 7 chapters, but 8 chapter routes
-   (including Al Ain) are currently live in production. Flagged for
-   Rockstar reconciliation; this visual task preserves all 8 routed
-   experiences until that reconciliation lands. */
+   Authoritative IPF 2026 structure: 7 active Chapters. Fujairah is
+   preserved in the database with active=false (migration 033) so legacy
+   data remains intact; it is withheld from current public Chapter
+   navigation / directory / counts and can be reactivated by flipping
+   the DB flag and restoring the row below. */
 const CHAPTER_ORDER: ChapterDef[] = [
   { slug: "dubai",          name: "Dubai",          descriptor: "Metropolitan community · Skyline & creek heritage" },
   { slug: "abu-dhabi",      name: "Abu Dhabi",      descriptor: "Capital of tolerance · Grand Mosque & Liwa" },
@@ -88,7 +89,6 @@ const CHAPTER_ORDER: ChapterDef[] = [
   { slug: "ajman",          name: "Ajman",          descriptor: "Community by the coast · Fort & dhow" },
   { slug: "umm-al-quwain",  name: "Umm Al Quwain",  descriptor: "Pearls & mangroves · Lagoon & islands" },
   { slug: "ras-al-khaimah", name: "Ras Al Khaimah", descriptor: "From mountain to sea · Jebel Jais" },
-  { slug: "fujairah",       name: "Fujairah",       descriptor: "The eastern coast · Hajar mountains & sea" },
   { slug: "al-ain",         name: "Al Ain",         descriptor: "The garden city · Oasis & Jebel Hafeet" },
 ];
 
@@ -187,10 +187,9 @@ export default function ChaptersPage() {
       </section>
 
       {/* ──────────────── INTRODUCTION (compact) ────────────────
-          Number-free copy per corrective brief — the authoritative
-          CHAPTER_COUNT = 7 vs 8 live routed chapter experiences is a
-          Rockstar reconciliation item, and this landing page must not
-          contradict either number while that reconciliation is pending. */}
+          Reconciled to the authoritative IPF 2026 structure of 7
+          active Chapters (Fujairah preserved in CMS with active=false
+          per migration 033). */}
       <section className="bg-[#FFF8EE] pt-10 sm:pt-12 lg:pt-14">
         <Container>
           <div className="mx-auto max-w-2xl text-center">
@@ -333,7 +332,7 @@ export default function ChaptersPage() {
                   </li>
                 </ul>
                 <p className="mt-6 text-[0.78rem] leading-relaxed" style={{ color: MUTED }}>
-                  Yuva has its own /yuva experience and is not counted inside the Special Councils above.
+                  Yuva Council is one of the {SPECIAL_COUNCIL_COUNT} Special Councils above; the dedicated /yuva page is its programme home.
                 </p>
               </div>
             </div>

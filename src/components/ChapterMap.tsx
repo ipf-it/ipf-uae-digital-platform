@@ -34,22 +34,20 @@ const INK = "#1c2430";
 const MUTED = "#55606d";
 const SAFFRON = "#E8871E";
 
-/* Eight currently-routed chapter experiences — matches ChaptersPage.
-   NOTE: authoritative 2026 count is 7, but 8 routes are live in prod
-   (incl. Al Ain). Preserved pending Rockstar reconciliation. */
-const EIGHT_CHAPTER_IDS = new Set([
+/* Authoritative IPF 2026 — 7 active Chapters. Fujairah is preserved
+   in CMS/DB with active=false and omitted from this public map. */
+const ACTIVE_CHAPTER_IDS = new Set([
   "dubai",
   "abu-dhabi",
   "sharjah",
   "ajman",
   "umm-al-quwain",
   "ras-al-khaimah",
-  "fujairah",
   "al-ain",
 ]);
 
 const chapterById = Object.fromEntries(
-  chapters.filter((c) => EIGHT_CHAPTER_IDS.has(c.id)).map((c) => [c.id, c]),
+  chapters.filter((c) => ACTIVE_CHAPTER_IDS.has(c.id)).map((c) => [c.id, c]),
 );
 
 const PINS: { id: string; x: number; y: number; label: string }[] = [
@@ -60,7 +58,6 @@ const PINS: { id: string; x: number; y: number; label: string }[] = [
   { id: "ajman", x: 622, y: 122, label: "Ajman" },
   { id: "umm-al-quwain", x: 652, y: 102, label: "UAQ" },
   { id: "ras-al-khaimah", x: 705, y: 88, label: "RAK" },
-  { id: "fujairah", x: 738, y: 172, label: "Fujairah" },
 ];
 
 const CHAPTER_BUTTON_ORDER = [
@@ -70,7 +67,6 @@ const CHAPTER_BUTTON_ORDER = [
   "ajman",
   "umm-al-quwain",
   "ras-al-khaimah",
-  "fujairah",
   "al-ain",
 ];
 

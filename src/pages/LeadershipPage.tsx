@@ -814,7 +814,7 @@ export default function LeadershipPage() {
                 Explore the chapters and councils that bring IPF UAE to life.
               </h2>
               <p className="mt-5 max-w-xl text-[0.95rem] leading-relaxed" style={{ color: INK }}>
-                Beyond Central Leadership, IPF UAE operates through seven chapters across the Emirates and eighteen councils — fifteen State Councils and three Special Councils — that organise community initiatives.
+                Beyond Central Leadership, IPF UAE operates through seven chapters across the Emirates and nineteen councils — fifteen State Councils and four Special Councils — that organise community initiatives.
               </p>
             </div>
             <div className="flex min-w-0 flex-col gap-3 sm:flex-row sm:gap-4 lg:justify-end">

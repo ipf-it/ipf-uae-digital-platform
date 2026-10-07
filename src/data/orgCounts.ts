@@ -3,8 +3,12 @@
  *
  *   CHAPTERS         = 7
  *   STATE COUNCILS   = 15
- *   SPECIAL COUNCILS = 3   (Business, Cultural, Women's — live phase)
- *   TOTAL COUNCILS   = 18
+ *   SPECIAL COUNCILS = 4   (Startup Hub, Business, Women, Yuva)
+ *   TOTAL COUNCILS   = 19
+ *
+ * Yuva is a Special Council in the 2026 structure; it is NOT counted
+ * separately on top of these 19. The /yuva route is the Yuva Council's
+ * detail page.
  *
  * The public /councils directory renders whatever the public API returns;
  * the API itself enforces the live set (server/handleRequest.ts, route
@@ -17,8 +21,10 @@
  * or unpublish it — when the live set changes, update the allowlist in
  * server/handleRequest.ts and the constants here in lockstep.
  *
- * IPF Yuva has its own /yuva experience and is NOT counted as a Special
- * Council unless/until it is published as one via CMS.
+ * Separately, IPF UAE has 4 Special Cells / Wings (CSR Food & Labour,
+ * Legal Cell, Drishti Magazine, Cultural Wing). Wings are NOT Councils
+ * and are not included in TOTAL_COUNCIL_COUNT; they surface via the
+ * positions / appointments tables on the Leadership page.
  *
  * All UI components that display these counts MUST import from this
  * module so the numbers stay consistent across the site.
@@ -26,12 +32,13 @@
 
 export const CHAPTER_COUNT = 7;
 export const STATE_COUNCIL_COUNT = 15;
-export const SPECIAL_COUNCIL_COUNT = 3;
-export const TOTAL_COUNCIL_COUNT = STATE_COUNCIL_COUNT + SPECIAL_COUNCIL_COUNT; // 18
+export const SPECIAL_COUNCIL_COUNT = 4;
+export const TOTAL_COUNCIL_COUNT = STATE_COUNCIL_COUNT + SPECIAL_COUNCIL_COUNT; // 19
+export const WING_COUNT = 4;
 
 /* Word forms used in editorial copy — kept here so a single file owns
    both the numeric and the written representation. English only; other
    locales live in src/i18n/messages.ts under the keys that reference
    these counts. */
 export const CHAPTER_COUNT_WORD = "seven";
-export const TOTAL_COUNCIL_COUNT_WORD = "eighteen";
+export const TOTAL_COUNCIL_COUNT_WORD = "nineteen";

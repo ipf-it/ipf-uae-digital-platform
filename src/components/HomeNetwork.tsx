@@ -220,7 +220,8 @@ export function HomeNetwork() {
   const { chapters } = useOrgChapters();
   const { councils } = useOrgCouncils();
 
-  /* Chapter order locked to the approved reference. */
+  /* Chapter order locked to the approved reference — Fujairah omitted
+     per IPF 2026 structure (preserved in CMS with active=false). */
   const chapterOrder = [
     "dubai",
     "abu-dhabi",
@@ -229,7 +230,6 @@ export function HomeNetwork() {
     "ajman",
     "umm-al-quwain",
     "ras-al-khaimah",
-    "fujairah",
   ];
   const orderedChapters = chapterOrder
     .map((id) => chapters.find((c) => c.id === id))

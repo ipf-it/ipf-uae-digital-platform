@@ -498,7 +498,7 @@ export default function HistoryPage() {
           </div>
 
           {/* ── Governance hierarchy visual — enlarged centrepiece ──
-             IPF UAE → Managing Committee → 7 Chapters + 18 Councils
+             IPF UAE → Managing Committee → 7 Chapters + 19 Councils
              (2026 authoritative counts from src/data/orgCounts.ts).
              Clean editorial nodes, thin gold connectors, no flowchart
              boxes. Target width ~900px on desktop. */}

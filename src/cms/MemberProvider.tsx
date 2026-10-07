@@ -11,6 +11,7 @@ export type Member = {
   emirate: string;
   chapter: string;
   homeState: string;
+  district: string;
   isVolunteer: boolean;
   createdAt: string;
   volunteerHours: { id: string; date: string; hours: number; activity: string }[];
@@ -42,7 +43,7 @@ export type RegisterPayload = {
   phone: string;
   emirate: string;
   homeState: string;
-  isVolunteer: boolean;
+  district: string;
   password: string;
 };
 
@@ -139,7 +140,7 @@ export function MemberProvider({ children }: PropsWithChildren) {
               phone: payload.phone,
               emirate: payload.emirate,
               home_state: payload.homeState,
-              is_volunteer: payload.isVolunteer,
+              district: payload.district,
             },
           },
         });

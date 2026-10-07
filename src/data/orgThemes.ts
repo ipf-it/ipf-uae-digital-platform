@@ -48,6 +48,7 @@ const stateMotifs: Record<string, [string, string, string, string]> = {
   nagaland: ["Naga textiles & hill heritage", "#623a31", "#cf7b3d", "#f7ede6"],
   sikkim: ["Monasteries & Himalayan bloom", "#394f70", "#d3a43b", "#edf1f8"],
   tripura: ["Bamboo craft & palace heritage", "#4e6039", "#c98f3c", "#f0f5e7"],
+  delhi: ["Mughal gardens & India Gate", "#4a2c56", "#d0a24c", "#f3ecf5"],
 };
 
 export function chapterTheme(id: string) { return emirateThemes[id] ?? emirateThemes.dubai; }

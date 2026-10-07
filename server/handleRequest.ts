@@ -86,6 +86,7 @@ type PersonRow = {
   emirate: string;
   chapter: string;
   home_state: string;
+  district: string;
   is_volunteer: boolean;
   password_hash: string;
   created_at: string;
@@ -106,6 +107,7 @@ function publicPerson(row: PersonRow, hours: HoursRow[] = []) {
     emirate: row.emirate,
     chapter: row.chapter,
     homeState: row.home_state,
+    district: row.district,
     isVolunteer: row.is_volunteer,
     createdAt: row.created_at,
     volunteerHours: hours.map((item) => ({
@@ -885,7 +887,7 @@ export async function handleRequest(req: AppRequest): Promise<AppResponse> {
         }
       }
       return json(200, {
-        member: { id: person.id, membershipNo: person.membership_no, name: person.name, emirate: person.emirate, homeState: person.home_state, isVolunteer: person.is_volunteer },
+        member: { id: person.id, membershipNo: person.membership_no, name: person.name, emirate: person.emirate, homeState: person.home_state, district: person.district, isVolunteer: person.is_volunteer },
         registration,
         volunteer,
       });
@@ -1903,31 +1905,33 @@ export async function handleRequest(req: AppRequest): Promise<AppResponse> {
 
     if (method === "GET" && path === "/api/org/councils") {
       const locale = normalizeLocale(new URL(req.url, "http://localhost").searchParams.get("locale"));
-      // Authoritative public live set — 15 State + 3 Special = 18 Councils.
-      // Records not in this set remain in the database (preserving related
-      // events / news / people / appointments) but are not returned by this
-      // public endpoint. Central Admin can edit this list to publish or
-      // unpublish a Council; the DB `active` flag is also honoured so this
-      // is defence-in-depth, not a replacement for the admin toggle.
+      // Authoritative public live set — 15 State + 4 Special = 19 Councils
+      // (IPF 2026 structure). Records not in this set remain in the
+      // database (preserving related events / news / people /
+      // appointments) but are not returned by this public endpoint.
+      // Central Admin can edit this list to publish or unpublish a
+      // Council; the DB `active` flag is also honoured so this is
+      // defence-in-depth, not a replacement for the admin toggle.
       const PUBLIC_COUNCIL_IDS = [
         "kerala",
-        "karnataka",
-        "andhra-pradesh",
-        "telangana",
         "tamil-nadu",
-        "maharashtra",
+        "karnataka",
         "gujarat",
-        "punjab",
-        "rajasthan",
         "uttar-pradesh",
+        "telangana",
         "bihar",
-        "west-bengal",
-        "assam",
-        "odisha",
+        "maharashtra",
+        "rajasthan",
         "madhya-pradesh",
+        "uttarakhand",
+        "haryana",
+        "chhattisgarh",
+        "delhi",
+        "odisha",
+        "startup-hub",
         "business",
-        "cultural",
         "womens",
+        "yuva-council",
       ];
       const [{ data: councils }, { data: i18n }] = await Promise.all([
         supabase.from("councils").select("*").eq("active", true).in("id", PUBLIC_COUNCIL_IDS).order("id"),
@@ -2113,7 +2117,7 @@ export async function handleRequest(req: AppRequest): Promise<AppResponse> {
       const safeQuery = rawQuery.replace(/[,()%_]/g, "").slice(0, 80);
       let peopleQuery = supabase
         .from("people")
-        .select("id, membership_no, name, email, phone, emirate, home_state, is_volunteer, created_at")
+        .select("id, membership_no, name, email, phone, emirate, home_state, district, is_volunteer, created_at")
         .order("created_at", { ascending: false });
       if (session.role !== "central") peopleQuery = peopleQuery.eq(scopeColumn, session.scopeId);
       peopleQuery = safeQuery.length >= 2
@@ -2189,6 +2193,7 @@ export async function handleRequest(req: AppRequest): Promise<AppResponse> {
           phone: item.phone,
           emirate: item.emirate,
           homeState: item.home_state,
+          district: item.district,
           createdAt: item.created_at,
           isVolunteer: item.is_volunteer,
         })),
@@ -2202,6 +2207,7 @@ export async function handleRequest(req: AppRequest): Promise<AppResponse> {
             phone: item.phone,
             emirate: item.emirate,
             homeState: item.home_state,
+            district: item.district,
             createdAt: item.created_at,
           })),
         peopleQuery: safeQuery,

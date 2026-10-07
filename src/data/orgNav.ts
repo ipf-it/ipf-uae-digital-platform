@@ -5,5 +5,10 @@ export function chapterPath(id: string) {
 }
 
 export function councilPath(id: string) {
+  // Yuva Council is one of the 4 Special Councils in the IPF 2026
+  // structure, but its programme home lives at /yuva — a richer
+  // dedicated experience that predates its council classification.
+  // Deep links to the Councils detail route are redirected there.
+  if (id === "yuva-council") return "/yuva";
   return `/councils/${id}`;
 }

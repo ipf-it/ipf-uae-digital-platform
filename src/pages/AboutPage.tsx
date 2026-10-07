@@ -541,7 +541,11 @@ export default function AboutPage() {
           </p>
         </div>
 
-        <div className="mt-8 grid gap-5 sm:mt-10 lg:grid-cols-3 lg:gap-6">
+        {/* Yuva card retired from this trio: Yuva Council is now one
+            of the 4 Special Councils and is already reachable via the
+            Councils card, so a separate Yuva card here duplicated the
+            same destination. */}
+        <div className="mt-8 grid gap-5 sm:mt-10 lg:grid-cols-2 lg:gap-6">
           {[
             {
               label: t("nav.chapters"),
@@ -552,11 +556,6 @@ export default function AboutPage() {
               label: t("nav.councils"),
               desc: t("page.about.sec6.councilsDesc"),
               to: "/councils",
-            },
-            {
-              label: t("nav.yuva"),
-              desc: t("page.yuva.desc"),
-              to: "/yuva",
             },
           ].map((card) => (
             <Link

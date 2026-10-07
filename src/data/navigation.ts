@@ -48,9 +48,10 @@ export const mobileTabs: NavLinkItem[] = [
 // Right-side utility links in the announcement bar. Donate used to live here;
 // it has been intentionally retired from the top strip (it still exists on the
 // Get Involved section, in the footer navigation, and on dedicated pages).
-export const utilityLinks: NavLinkItem[] = [
-  { label: "Sign In", to: "/sign-in" },
-];
+// Public member Sign In is withheld from the utility strip until the member
+// portal is production-ready (per IPF team feedback 2026-10). The /sign-in
+// route itself is intact for admin login and for existing member deep links.
+export const utilityLinks: NavLinkItem[] = [];
 
 export const footerGroups = [
   {
@@ -82,7 +83,6 @@ export const footerGroups = [
       { label: "Membership", to: "/membership" },
       { label: "IPF Yuva", to: "/yuva" },
       { label: "Donate", to: "/donate" },
-      { label: "Member portal", to: "/portal" },
       { label: "Sponsors", to: "/sponsors" },
       { label: "Contact", to: "/contact" },
     ],

@@ -1,15 +1,13 @@
 import { useState, type FormEvent } from "react";
-import { Link, Navigate, useNavigate, useSearchParams } from "react-router-dom";
+import { Link, Navigate, useNavigate } from "react-router-dom";
 import { useMember } from "../cms/MemberProvider";
 import { DocumentTitle } from "../components/layout/DocumentTitle";
 import { PageHero } from "../components/layout/PageHero";
 import { Button } from "../components/ui/Button";
 import { Card } from "../components/ui/Card";
-import { Checkbox } from "../components/ui/Checkbox";
 import { Container } from "../components/ui/Container";
 import { Field } from "../components/ui/Field";
 import { Input } from "../components/ui/Input";
-import { Label } from "../components/ui/Label";
 import { Section } from "../components/ui/Section";
 import { SimpleSelect } from "../components/ui/Select";
 import { useToast } from "../components/ui/Toast";
@@ -27,8 +25,6 @@ export default function RegisterPage() {
   const { member, ready, register } = useMember();
   const navigate = useNavigate();
   const toast = useToast();
-  const [params] = useSearchParams();
-  const wantsVolunteer = params.get("kind") === "yuva";
 
   const [step, setStep] = useState<Step>("details");
   const [busy, setBusy] = useState(false);
@@ -38,7 +34,7 @@ export default function RegisterPage() {
   const [phone, setPhone] = useState("");
   const [emirate, setEmirate] = useState("");
   const [homeState, setHomeState] = useState("");
-  const [isVolunteer, setIsVolunteer] = useState(wantsVolunteer);
+  const [district, setDistrict] = useState("");
   const [password, setPassword] = useState("");
 
   if (ready && member) return <Navigate to="/portal" replace />;
@@ -55,7 +51,7 @@ export default function RegisterPage() {
         method: "POST",
         body: JSON.stringify({ phone }),
       });
-      const result = await register({ name, email, phone: normalizedPhone, emirate, homeState, isVolunteer, password });
+      const result = await register({ name, email, phone: normalizedPhone, emirate, homeState, district: district.trim(), password });
       if (result.needsEmailConfirmation) {
         setStep("check-email");
       } else {
@@ -112,15 +108,12 @@ export default function RegisterPage() {
                     <SimpleSelect id="reg-home-state" name="homeState" required value={homeState} onValueChange={setHomeState} placeholder="Select your home state" options={homeStateOptions} />
                   </Field>
                 </div>
+                <Field className="mt-4" label="Home district" htmlFor="reg-district" required>
+                  <Input id="reg-district" required autoComplete="address-level2" placeholder="e.g. Ernakulam" value={district} onChange={(e) => setDistrict(e.target.value)} />
+                </Field>
                 <Field className="mt-4" label={t("common.passwordHint")} htmlFor="reg-password" required>
                   <Input id="reg-password" required minLength={8} type="password" autoComplete="new-password" value={password} onChange={(e) => setPassword(e.target.value)} />
                 </Field>
-                <div className="mt-4 flex items-start gap-3">
-                  <Checkbox id="reg-volunteer" checked={isVolunteer} onCheckedChange={(checked) => setIsVolunteer(checked === true)} />
-                  <Label htmlFor="reg-volunteer" className="text-sm leading-6 text-[var(--ipf-navy)]">
-                    I'd like to volunteer as IPF Yuva — I can join events as a volunteer, not just as a member.
-                  </Label>
-                </div>
                 <div className="mt-5">
                   <Button type="submit" disabled={busy}>
                     {busy ? "Creating account…" : "Create my account"}
