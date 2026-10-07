@@ -54,8 +54,8 @@ export default function SupportPage() {
       {/* ──────────────── HERO (approved artwork preserved) ──────────────── */}
       <IllustratedHero
         eyebrow="Community Support"
-        title="Here when you need us."
-        description="Guidance. Support. Community."
+        title="Together, when it matters."
+        description="Connecting our community with care, guidance and support."
         crumbs={[{ label: t("nav.resources"), to: "/resources" }, { label: t("nav.support") }]}
         artworkPng="/images/support/support-hero-art.png"
         artworkWebp="/images/support/support-hero-art.webp"
