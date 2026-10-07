@@ -54,13 +54,29 @@ export default function SupportPage() {
       {/* ──────────────── HERO (approved artwork preserved) ──────────────── */}
       <IllustratedHero
         eyebrow="Community Support"
-        title="Together, when it matters."
-        description="Connecting our community with care, guidance and support."
+        /* Desktop composes as two intentional editorial lines so the
+           headline stays inside the hero's left negative-space column
+           and never stretches across the hands. Below `lg` the break
+           collapses to a space so the headline wraps naturally. */
+        title={
+          <>
+            Together,
+            <span className="hidden lg:inline"><br /></span>
+            <span className="lg:hidden"> </span>
+            when it matters.
+          </>
+        }
+        description="Care, guidance and support — when our community needs it."
         crumbs={[{ label: t("nav.resources"), to: "/resources" }, { label: t("nav.support") }]}
         artworkPng="/images/support/support-hero-art.png"
         artworkWebp="/images/support/support-hero-art.webp"
         artworkAlt="Hands forming a circle of unity, foliage and tricolour ribbon"
         artworkPosition="object-[72%_center]"
+        /* Narrow text column keeps the entire block inside the left
+           ~36% of the hero on desktop so the hands remain the focal
+           point. 440px holds both the two-line headline and the
+           supporting line without collapsing them awkwardly. */
+        textMaxWidth="max-w-[440px]"
       />
 
       {/* ──────────────── INTRODUCTION ──────────────── */}
