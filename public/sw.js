@@ -5,7 +5,7 @@
  * dropdown that stayed open after child navigation) are forced to
  * re-fetch the current version from the network. Previous bump
  * (2026-10-05) was for the Vande Mataram autoplay fix. */
-const SW_VERSION = "ipf-sw-2026-10-07-vande-loop";
+const SW_VERSION = "ipf-sw-2026-10-07-chapter-pages";
 
 self.addEventListener("install", (event) => {
   event.waitUntil(self.skipWaiting());
