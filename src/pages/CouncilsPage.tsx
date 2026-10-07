@@ -124,7 +124,7 @@ export default function CouncilsPage() {
               className="mt-4 font-serif text-[1.5rem] font-bold leading-tight tracking-tight sm:text-[1.8rem] lg:text-[2rem]"
               style={{ color: NAVY }}
             >
-              {STATE_COUNCIL_COUNT} communities representing India's states and regions
+              Communities representing India's states and regions
             </h2>
             <p className="mx-auto mt-4 max-w-2xl text-[0.92rem] leading-relaxed" style={{ color: INK }}>
               {t("page.councils.stateBody")}
@@ -165,7 +165,7 @@ export default function CouncilsPage() {
               className="mt-4 font-serif text-[1.5rem] font-bold leading-tight tracking-tight sm:text-[1.8rem] lg:text-[2rem]"
               style={{ color: NAVY }}
             >
-              {SPECIAL_COUNCIL_COUNT} focused communities across specialised areas
+              Focused communities across specialised areas
             </h2>
             <p className="mx-auto mt-4 max-w-2xl text-[0.92rem] leading-relaxed" style={{ color: INK }}>
               {t("page.councils.specialBody")}
