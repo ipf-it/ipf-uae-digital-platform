@@ -4,28 +4,23 @@ import { chapterPath, councilPath } from "../data/orgNav";
 import { Container } from "./ui/Container";
 
 /* ───────────────────────────────────────────────────────────────────────
- * HomeNetwork — "Our Network: Chapters & Councils"
+ * HomeNetwork — "Our Network: Chapters / State Councils / Special Councils"
  *
- * Visual spec: founder-approved reference
- *   ~/Downloads/Our Network_ Chapters and Councils.png
- *   (2048 × 768, aspect ≈ 2.67 : 1).
+ * Composition at ≥md
+ *   Three self-contained cards side by side in a plain 3-column grid,
+ *   in normal document flow (no fixed height, no absolute positioning).
+ *   Each card has a contained photo (or, for State Councils, a plain
+ *   burgundy header with the lotus ornament — no per-state photo asset
+ *   exists) on top, then heading/intro/content/CTA below. This replaced
+ *   an earlier two-panel fixed-height edge-bleed composition: once a
+ *   third block's worth of real content (15 state councils + 4 special
+ *   councils) was added, the fixed-height band overflowed and the CTA
+ *   buttons rendered on top of the Events section below it. A plain
+ *   grid in normal flow can't overlap anything below it, by
+ *   construction, regardless of how much real data any block holds.
  *
- * Composition at ≥lg
- *   One integrated full-bleed editorial band — NOT two floating UI cards.
- *   - Chapters photograph bleeds from the viewport's LEFT edge inward
- *     with a sweeping organic SVG curve on its right boundary.
- *   - Councils photograph bleeds from the viewport's RIGHT edge inward
- *     with a mirrored sweeping curve on its left boundary.
- *   - Content panels sit in the ivory negative space between the two
- *     photos, over translucent ivory with NO drop shadow, NO ring,
- *     NO rounded card chrome.
- *   - A delicate central vertical gold hairline with a small static
- *     lotus ornament at the midpoint acts as the ornamental axis.
- *
- * Composition at <lg
- *   Section stacks (intro → Chapters block → ornament rule → Councils
- *   block). Photos sit at the top of each block with a vertical variant
- *   of the organic curve on their bottom edge.
+ * Composition at <md
+ *   Same three blocks, stacked, with an ornament rule between each.
  *
  * Data
  *   Chapters routes from useOrgChapters() → GET /api/org/chapters.
@@ -128,18 +123,6 @@ function PillLink({ to, children }: { to: string; children: React.ReactNode }) {
     </Link>
   );
 }
-
-/* ------------------------------------------------------------------ */
-/* SVG clipPaths — ONE sweeping organic curve per side.                 */
-/*                                                                      */
-/* Rendered inline as hidden <svg><defs>; referenced via CSS            */
-/* `clip-path: url(#id)`. `clipPathUnits="objectBoundingBox"` means     */
-/* path coordinates are 0..1 fractions of the clipped element's box,   */
-/* so the curves stretch responsively to any photo container size.     */
-/* ------------------------------------------------------------------ */
-
-const CHAPTER_CURVE_ID = "ipf-net-chapters-curve";
-const COUNCIL_CURVE_ID = "ipf-net-councils-curve";
 
 /* ------------------------------------------------------------------ */
 /* Icon medallion                                                      */
@@ -246,29 +229,6 @@ export function HomeNetwork() {
       aria-labelledby="ipf-network-eyebrow"
       className="relative isolate overflow-hidden bg-[#FFF8EE] pb-6 lg:pb-8"
     >
-      {/* Inline SVG definitions — one sweeping organic curve per side.
-         Clip paths use objectBoundingBox units so the curves scale with
-         any photo container width/height. Never visible themselves. */}
-      <svg
-        width="0"
-        height="0"
-        aria-hidden="true"
-        className="pointer-events-none absolute"
-      >
-        <defs>
-          {/* Chapters photo: single sweeping gentle curve on the right
-             edge, closely matching the reference's long leaf-like
-             boundary. */}
-          <clipPath id={CHAPTER_CURVE_ID} clipPathUnits="objectBoundingBox">
-            <path d="M 0,0 L 0.9,0 C 0.65,0.4 0.8,0.6 0.6,1 L 0,1 Z" />
-          </clipPath>
-          {/* Councils photo: mirrored. */}
-          <clipPath id={COUNCIL_CURVE_ID} clipPathUnits="objectBoundingBox">
-            <path d="M 1,0 L 0.1,0 C 0.35,0.4 0.2,0.6 0.4,1 L 1,1 Z" />
-          </clipPath>
-        </defs>
-      </svg>
-
       {/* Introductory header — constrained width inside the Container. */}
       <Container>
         <div className="pt-8 text-center sm:pt-9 lg:pt-10">
@@ -300,184 +260,92 @@ export function HomeNetwork() {
       </Container>
 
       {/* ═══════════════════════════════════════════════════════════════
-         Desktop & tablet composition (≥md) — FULL-BLEED band
-         ═══════════════════════════════════════════════════════════════ */}
-      <div className="relative mt-2 hidden w-full md:block lg:mt-3">
-        {/* Composition band — compact wide cinematic ratio matching the
-           founder-approved reference (2048 x 768 / aspect 2.67:1).
-           Height formula: ~30 vw at desktop, clamped so icons stay
-           readable at narrower breakpoints. */}
-        <div className="relative h-[min(460px,calc(100vw*0.30))] min-h-[380px]">
-          {/* LEFT PHOTO — bleeds from viewport-left, clipped by chapter curve */}
-          <picture aria-hidden="true">
-            <source
-              srcSet="/images/home/network/chapters-skyline.webp"
-              type="image/webp"
-            />
-            <img
-              src="/images/home/network/chapters-skyline.png"
-              alt=""
-              loading="lazy"
-              decoding="async"
-              className="pointer-events-none absolute inset-y-0 left-0 h-full w-[48%] object-cover lg:w-[46%]"
-              style={{ clipPath: `url(#${CHAPTER_CURVE_ID})` }}
-            />
-          </picture>
+         Desktop & tablet composition (≥md) — THREE real blocks side by
+         side: Chapters / State Councils / Special Councils.
 
-          {/* RIGHT PHOTO — bleeds from viewport-right */}
-          <picture aria-hidden="true">
-            <source
-              srcSet="/images/home/network/councils-community.webp"
-              type="image/webp"
-            />
-            <img
-              src="/images/home/network/councils-community.png"
-              alt=""
-              loading="lazy"
-              decoding="async"
-              className="pointer-events-none absolute inset-y-0 right-0 h-full w-[48%] object-cover lg:w-[46%]"
-              style={{ clipPath: `url(#${COUNCIL_CURVE_ID})` }}
-            />
-          </picture>
-
-          {/* Centre overlay — two content panels in the ivory negative space.
-             Each panel has a soft translucent ivory bg with large organic
-             rounded corners so it integrates with the photos behind rather
-             than sitting as a hard-edged rectangle.
-
-             CTA alignment: `items-stretch` makes both outer flex columns
-             fill the grid cell to EQUAL heights regardless of inner
-             content differences (Councils labels like "Women's Council"
-             wrap to two lines whereas most Chapter labels do not —
-             without stretch the taller panel centres higher via
-             items-center, which drops its CTA ~7 px below the opposite
-             CTA). Each inner panel is `flex flex-col` so children flow
-             vertically; the CTA uses `mt-auto` to anchor to the bottom
-             of its panel. Result: both CTAs sit on the same horizontal
-             baseline on desktop with no arbitrary per-button margin. */}
-          <div className="absolute inset-0 grid grid-cols-2">
-            {/* ────── CHAPTERS content ────── */}
-            <div className="flex items-stretch justify-end pr-2 lg:pr-4">
-              <div
-                className="flex w-full max-w-[20rem] flex-col rounded-[2.5rem] bg-[#FFFDF8]/88 px-5 py-5 backdrop-blur-[2px] lg:max-w-[22rem] lg:px-6 lg:py-6"
-                style={{
-                  borderTopLeftRadius: "4rem",
-                  borderBottomLeftRadius: "4rem",
-                  borderTopRightRadius: "1.75rem",
-                  borderBottomRightRadius: "1.75rem",
-                }}
-              >
+         Previously this was a fixed-height absolute-positioned band with
+         exactly two edge-bleeding photos — adding a third block's worth
+         of content (15 state councils + 4 special councils, instead of
+         6 placeholder medallions) inside that fixed height overflowed
+         it, which is why the CTA buttons rendered on top of the Events
+         section below. Switched to a plain 3-column grid in normal
+         document flow: each block is a self-contained card with a
+         contained (not edge-bleeding) photo, so the section's height is
+         whatever its content needs and it can never overlap anything
+         below it again. No new photo assets — State Councils has no
+         per-state icon art, so that block simply has no photo, same
+         card chrome otherwise. */}
+      <div className="hidden md:block">
+        <Container className="mt-6 lg:mt-8">
+          <div className="grid grid-cols-3 gap-4 lg:gap-6">
+            {/* ────── CHAPTERS block ────── */}
+            <div className="flex flex-col overflow-hidden rounded-[1.75rem] bg-[#FFFDF8]">
+              <picture aria-hidden="true">
+                <source srcSet="/images/home/network/chapters-skyline.webp" type="image/webp" />
+                <img
+                  src="/images/home/network/chapters-skyline.png"
+                  alt=""
+                  loading="lazy"
+                  decoding="async"
+                  className="h-32 w-full object-cover lg:h-36"
+                />
+              </picture>
+              <div className="flex flex-1 flex-col px-4 py-4 lg:px-5 lg:py-5">
                 <GoldRule />
-                <h3 className="mt-1.5 font-serif text-[1.5rem] font-bold leading-[0.95] tracking-tight sm:text-[1.75rem] lg:text-[2rem]">
-                  <span className="block" style={{ color: GOLD_INK }}>
-                    OUR
-                  </span>
-                  <span className="block" style={{ color: NAVY }}>
-                    CHAPTERS
-                  </span>
+                <h3 className="mt-1.5 font-serif text-[1.25rem] font-bold leading-[0.95] tracking-tight lg:text-[1.4rem]">
+                  <span className="block" style={{ color: GOLD_INK }}>OUR</span>
+                  <span className="block" style={{ color: NAVY }}>CHAPTERS</span>
                 </h3>
                 <GoldRule className="mt-1.5" />
-                <p
-                  className="mt-2.5 text-[0.78rem] leading-snug sm:text-[0.82rem]"
-                  style={{ color: INK }}
-                >
+                <p className="mt-2 text-[0.75rem] leading-snug" style={{ color: INK }}>
                   Our chapters bring IPF closer to people across the Emirates,
                   fostering local engagement, community initiatives and
                   meaningful partnerships.
                 </p>
 
                 {orderedChapters.length > 0 ? (
-                  /* 4 + centred 3 on desktop.
-                     The grid has 8 columns; every item spans 2 cols so a
-                     row holds 4 items. The 5th item (first on row 2)
-                     starts at col 2 instead of col 1 — because row 2
-                     only has 3 items (6 cols of content), a one-col
-                     empty pad on each side centres them under row 1
-                     mathematically with no magic numbers. */
-                  <ul
-                    role="list"
-                    className="mt-4 grid grid-cols-8 gap-x-2 gap-y-3"
-                  >
-                    {orderedChapters.map((chapter, index) => {
+                  <ul role="list" className="mt-3 grid grid-cols-4 gap-x-1.5 gap-y-2.5">
+                    {orderedChapters.map((chapter) => {
                       const icon = CHAPTER_ICON[chapter.id];
                       if (!icon) return null;
                       return (
-                        <li
-                          key={chapter.id}
-                          className={
-                            index === 4
-                              ? "col-span-2 col-start-2 min-w-0"
-                              : "col-span-2 min-w-0"
-                          }
-                        >
-                          <ClickableMedallion
-                            src={icon}
-                            label={chapter.name}
-                            to={chapterPath(chapter.id)}
-                          />
+                        <li key={chapter.id} className="min-w-0">
+                          <ClickableMedallion src={icon} label={chapter.name} to={chapterPath(chapter.id)} />
                         </li>
                       );
                     })}
                   </ul>
                 ) : null}
 
-                {/* mt-auto pushes the CTA to the bottom of the stretched
-                   flex-col panel so both CTAs share the same baseline. */}
                 <p className="mt-auto pt-4">
                   <PillLink to="/chapters">Explore Chapters</PillLink>
                 </p>
               </div>
             </div>
 
-            {/* ────── COUNCILS content ────── */}
-            <div className="flex items-stretch justify-start pl-2 lg:pl-4">
-              <div
-                className="flex w-full max-w-[20rem] flex-col rounded-[2.5rem] bg-[#FFFDF8]/88 px-5 py-5 backdrop-blur-[2px] lg:max-w-[22rem] lg:px-6 lg:py-6"
-                style={{
-                  borderTopRightRadius: "4rem",
-                  borderBottomRightRadius: "4rem",
-                  borderTopLeftRadius: "1.75rem",
-                  borderBottomLeftRadius: "1.75rem",
-                }}
-              >
+            {/* ────── STATE COUNCILS block ────── */}
+            <div className="flex flex-col overflow-hidden rounded-[1.75rem] bg-[#FFFDF8]">
+              <div className="flex h-32 w-full items-center justify-center bg-[#5A0F1E] lg:h-36">
+                <CentreOrnament size={36} />
+              </div>
+              <div className="flex flex-1 flex-col px-4 py-4 lg:px-5 lg:py-5">
                 <GoldRule />
-                <h3 className="mt-1.5 font-serif text-[1.5rem] font-bold leading-[0.95] tracking-tight sm:text-[1.75rem] lg:text-[2rem]">
-                  <span className="block" style={{ color: GOLD_INK }}>
-                    OUR
-                  </span>
-                  <span className="block" style={{ color: BURGUNDY }}>
-                    COUNCILS
-                  </span>
+                <h3 className="mt-1.5 font-serif text-[1.25rem] font-bold leading-[0.95] tracking-tight lg:text-[1.4rem]">
+                  <span className="block" style={{ color: GOLD_INK }}>STATE</span>
+                  <span className="block" style={{ color: BURGUNDY }}>COUNCILS</span>
                 </h3>
                 <GoldRule className="mt-1.5" />
-                <p
-                  className="mt-2.5 text-[0.78rem] leading-snug sm:text-[0.82rem]"
-                  style={{ color: INK }}
-                >
-                  Our councils provide strategic guidance and leadership across
-                  key areas, uniting expertise and experience to support IPF
-                  UAE&rsquo;s mission and long-term vision.
+                <p className="mt-2 text-[0.75rem] leading-snug" style={{ color: INK }}>
+                  Fifteen state councils connecting our community back to home
+                  states across India.
                 </p>
 
-                {/* State Councils — compact scrollable text list (15 items,
-                   no per-state icon assets exist, and the panel sits in a
-                   fixed-height photo-bleed band so a plain list would
-                   overflow the composition without a scroll cap). */}
-                <p
-                  className="mt-3 text-[0.62rem] font-bold uppercase tracking-[0.18em]"
-                  style={{ color: GOLD_INK }}
-                >
-                  State Councils
-                </p>
-                <ul
-                  role="list"
-                  className="mt-1.5 grid max-h-[108px] grid-cols-2 gap-x-2 gap-y-0.5 overflow-y-auto pr-1"
-                >
+                <ul role="list" className="mt-3 grid grid-cols-2 gap-x-2 gap-y-1">
                   {stateCouncils.map((council) => (
                     <li key={council.id} className="min-w-0">
                       <Link
                         to={councilPath(council.id)}
-                        className="block truncate rounded px-1 py-0.5 text-[0.68rem] leading-tight text-[#1c2430] transition hover:bg-[#D6AD60]/10 hover:text-[#5A0F1E] focus-visible:bg-[#D6AD60]/15 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#D6AD60]"
+                        className="block truncate rounded px-1 py-0.5 text-[0.72rem] leading-tight text-[#1c2430] transition hover:bg-[#D6AD60]/10 hover:text-[#5A0F1E] focus-visible:bg-[#D6AD60]/15 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#D6AD60]"
                       >
                         {council.name}
                       </Link>
@@ -485,55 +353,50 @@ export function HomeNetwork() {
                   ))}
                 </ul>
 
-                {/* Special Councils — real council records only. */}
-                <p
-                  className="mt-3 text-[0.62rem] font-bold uppercase tracking-[0.18em]"
-                  style={{ color: GOLD_INK }}
-                >
-                  Special Councils
+                <p className="mt-auto pt-4">
+                  <PillLink to="/councils">Explore Councils</PillLink>
                 </p>
-                <ul
-                  role="list"
-                  className="mt-1.5 grid grid-cols-4 gap-x-2 gap-y-2"
-                >
+              </div>
+            </div>
+
+            {/* ────── SPECIAL COUNCILS block ────── */}
+            <div className="flex flex-col overflow-hidden rounded-[1.75rem] bg-[#FFFDF8]">
+              <picture aria-hidden="true">
+                <source srcSet="/images/home/network/councils-community.webp" type="image/webp" />
+                <img
+                  src="/images/home/network/councils-community.png"
+                  alt=""
+                  loading="lazy"
+                  decoding="async"
+                  className="h-32 w-full object-cover lg:h-36"
+                />
+              </picture>
+              <div className="flex flex-1 flex-col px-4 py-4 lg:px-5 lg:py-5">
+                <GoldRule />
+                <h3 className="mt-1.5 font-serif text-[1.25rem] font-bold leading-[0.95] tracking-tight lg:text-[1.4rem]">
+                  <span className="block" style={{ color: GOLD_INK }}>SPECIAL</span>
+                  <span className="block" style={{ color: BURGUNDY }}>COUNCILS</span>
+                </h3>
+                <GoldRule className="mt-1.5" />
+                <p className="mt-2 text-[0.75rem] leading-snug" style={{ color: INK }}>
+                  Focused councils uniting expertise across key community areas.
+                </p>
+
+                <ul role="list" className="mt-3 grid grid-cols-4 gap-x-1.5 gap-y-2.5">
                   {specialCouncilSlots.map((slot) => (
                     <li key={slot.key} className="min-w-0">
-                      <ClickableMedallion
-                        src={slot.icon}
-                        label={slot.label}
-                        to={slot.to}
-                      />
+                      <ClickableMedallion src={slot.icon} label={slot.label} to={slot.to} />
                     </li>
                   ))}
                 </ul>
 
-                {/* mt-auto on the opposite side mirrors the Chapters CTA
-                   so both buttons share the same baseline. */}
-                <p className="mt-auto pt-3">
+                <p className="mt-auto pt-4">
                   <PillLink to="/councils">Explore Councils</PillLink>
                 </p>
               </div>
             </div>
           </div>
-
-          {/* Central delicate gold hairline + static lotus ornament.
-             Positioned over the two-column grid so it sits exactly on
-             the composition axis. */}
-          <div
-            aria-hidden="true"
-            className="pointer-events-none absolute inset-y-10 left-1/2 w-px -translate-x-1/2"
-            style={{
-              background:
-                "linear-gradient(to bottom, transparent, rgba(214,173,96,0.45) 20%, rgba(214,173,96,0.45) 80%, transparent)",
-            }}
-          />
-          <div
-            aria-hidden="true"
-            className="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#FFF8EE] p-1 ring-1 ring-[#D6AD60]/40"
-          >
-            <CentreOrnament size={30} />
-          </div>
-        </div>
+        </Container>
       </div>
 
       {/* ═══════════════════════════════════════════════════════════════
@@ -627,7 +490,60 @@ export function HomeNetwork() {
             <GoldRule />
           </div>
 
-          {/* Councils block */}
+          {/* State Councils block */}
+          <div className="relative">
+            <div className="flex h-24 w-full items-center justify-center rounded-tr-3xl rounded-bl-[5rem] bg-[#5A0F1E]">
+              <CentreOrnament size={30} />
+            </div>
+            <div className="relative mt-4">
+              <GoldRule />
+              <h3 className="mt-2 font-serif text-[2rem] font-bold leading-[0.95] tracking-tight">
+                <span className="block" style={{ color: GOLD_INK }}>
+                  STATE
+                </span>
+                <span className="block" style={{ color: BURGUNDY }}>
+                  COUNCILS
+                </span>
+              </h3>
+              <GoldRule className="mt-2" />
+              <p
+                className="mt-3 text-[0.9rem] leading-relaxed"
+                style={{ color: INK }}
+              >
+                Fifteen state councils connecting our community back to home
+                states across India.
+              </p>
+
+              <ul role="list" className="mt-4 grid grid-cols-2 gap-x-2 gap-y-1">
+                {stateCouncils.map((council) => (
+                  <li key={council.id} className="min-w-0">
+                    <Link
+                      to={councilPath(council.id)}
+                      className="block truncate rounded px-1 py-1 text-[0.82rem] leading-tight text-[#1c2430] transition hover:bg-[#D6AD60]/10 hover:text-[#5A0F1E] focus-visible:bg-[#D6AD60]/15 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#D6AD60]"
+                    >
+                      {council.name}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+
+              <p className="mt-5">
+                <PillLink to="/councils">Explore Councils</PillLink>
+              </p>
+            </div>
+          </div>
+
+          {/* Mobile ornament divider */}
+          <div
+            aria-hidden="true"
+            className="my-8 flex items-center justify-center gap-3"
+          >
+            <GoldRule />
+            <CentreOrnament size={26} />
+            <GoldRule />
+          </div>
+
+          {/* Special Councils block */}
           <div className="relative">
             <picture aria-hidden="true">
               <source
@@ -650,7 +566,7 @@ export function HomeNetwork() {
               <GoldRule />
               <h3 className="mt-2 font-serif text-[2rem] font-bold leading-[0.95] tracking-tight">
                 <span className="block" style={{ color: GOLD_INK }}>
-                  OUR
+                  SPECIAL
                 </span>
                 <span className="block" style={{ color: BURGUNDY }}>
                   COUNCILS
@@ -661,39 +577,12 @@ export function HomeNetwork() {
                 className="mt-3 text-[0.9rem] leading-relaxed"
                 style={{ color: INK }}
               >
-                Our councils provide strategic guidance and leadership across
-                key areas, uniting expertise and experience to support IPF
-                UAE&rsquo;s mission and long-term vision.
+                Focused councils uniting expertise across key community areas.
               </p>
 
-              <p
-                className="mt-4 text-[0.68rem] font-bold uppercase tracking-[0.18em]"
-                style={{ color: GOLD_INK }}
-              >
-                State Councils
-              </p>
-              <ul role="list" className="mt-2 grid grid-cols-2 gap-x-2 gap-y-1">
-                {stateCouncils.map((council) => (
-                  <li key={council.id} className="min-w-0">
-                    <Link
-                      to={councilPath(council.id)}
-                      className="block truncate rounded px-1 py-1 text-[0.82rem] leading-tight text-[#1c2430] transition hover:bg-[#D6AD60]/10 hover:text-[#5A0F1E] focus-visible:bg-[#D6AD60]/15 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#D6AD60]"
-                    >
-                      {council.name}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-
-              <p
-                className="mt-5 text-[0.68rem] font-bold uppercase tracking-[0.18em]"
-                style={{ color: GOLD_INK }}
-              >
-                Special Councils
-              </p>
               <ul
                 role="list"
-                className="mt-2 grid grid-cols-4 gap-x-2 gap-y-3"
+                className="mt-4 grid grid-cols-4 gap-x-2 gap-y-3"
               >
                 {specialCouncilSlots.map((slot) => (
                   <li key={slot.key} className="min-w-0">
