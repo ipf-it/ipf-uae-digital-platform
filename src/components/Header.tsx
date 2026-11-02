@@ -34,7 +34,6 @@ const navKeys: Record<string, string> = {
   Gallery: "nav.gallery",
   News: "nav.news",
   Contact: "nav.contact",
-  Donate: "nav.donate",
   "IPF Yuva": "nav.yuva",
 };
 
@@ -72,10 +71,9 @@ export function Header({ logoSrc }: HeaderProps) {
      menu closes immediately on selection without needing an extra
      outside click. */
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
-  // Donate is intentionally retired from the top announcement bar. The CMS
-  // nav payload (/api/nav) may still include it for other consumers, so we
-  // filter it out here as the single UI opt-out — the database, admin editor
-  // and other Donate links across the site are untouched.
+  // Donate has been removed app-wide (no licence to collect donations). The
+  // CMS nav payload (/api/nav) may still include a stale /donate row from
+  // before the removal, so this filters it out defensively.
   const links = utilityLinks
     .filter((item) => item.to !== "/donate")
     .map((item) => {
@@ -122,9 +120,10 @@ export function Header({ logoSrc }: HeaderProps) {
     <header ref={headerRef} className="sticky top-0 z-40">
       {/* Top announcement bar on burgundy. Desktop-only (md:block). Final
          layout: [LATEST] [ scrolling ticker with thin heritage-gold vertical
-         separators between headlines ] [ Sign in ] [ EN ]. Donate and the
-         IPF email that previously lived here have been retired from this
-         strip — both remain available elsewhere on the site.
+         separators between headlines ] [ Sign in ] [ EN ]. The IPF email
+         that previously lived here has been retired from this strip and
+         remains available elsewhere on the site; Donate has been removed
+         app-wide (no licence to collect donations), not just from here.
 
          Typography: 14 px / weight 500 / ivory #FFF8EE at 95 % opacity
          for clear reading against the burgundy fill. Links use 90 %
@@ -409,12 +408,9 @@ export function Header({ logoSrc }: HeaderProps) {
                 ))}
               <Link
                 className="mt-1 block border-t border-[var(--ipf-line)] py-3 text-sm font-semibold text-[var(--ipf-navy)]"
-                to="/donate"
+                to="/contact"
                 onClick={() => setOpen(false)}
               >
-                {t("nav.donate")}
-              </Link>
-              <Link className="block py-3 text-sm font-semibold text-[var(--ipf-navy)]" to="/contact" onClick={() => setOpen(false)}>
                 {t("nav.contact")}
               </Link>
               <Link className="block py-3 text-sm font-semibold text-[var(--ipf-navy)]" to="/resources" onClick={() => setOpen(false)}>

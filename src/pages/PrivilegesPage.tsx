@@ -30,9 +30,6 @@ export default function PrivilegesPage() {
           <Button asChild variant="outline">
             <Link to="/portal">{t("page.portal.logHours")}</Link>
           </Button>
-          <Button asChild variant="outline">
-            <Link to="/donate">{t("nav.donate")}</Link>
-          </Button>
         </Container>
       </Section>
     </>

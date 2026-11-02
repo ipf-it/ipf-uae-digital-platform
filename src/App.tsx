@@ -37,7 +37,6 @@ const ContactPage = lazy(() => import("./pages/ContactPage"));
 const TestimonialsPage = lazy(() => import("./pages/TestimonialsPage"));
 const RegisterPage = lazy(() => import("./pages/RegisterPage"));
 const SignInPage = lazy(() => import("./pages/SignInPage"));
-const DonatePage = lazy(() => import("./pages/DonatePage"));
 const PortalPage = lazy(() => import("./pages/PortalPage"));
 const YuvaPage = lazy(() => import("./pages/YuvaPage"));
 const JobsPage = lazy(() => import("./pages/JobsPage"));
@@ -103,7 +102,6 @@ function App() {
           <Route path="testimonials" element={<TestimonialsPage />} />
           <Route path="register" element={<RegisterPage />} />
           <Route path="sign-in" element={<SignInPage />} />
-          <Route path="donate" element={<DonatePage />} />
           <Route path="portal" element={<PortalPage />} />
           <Route path="portal/card" element={<PortalCardPage />} />
           <Route path="yuva" element={<YuvaPage />} />

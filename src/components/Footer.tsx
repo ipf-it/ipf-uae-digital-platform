@@ -32,7 +32,6 @@ const footerColumns: readonly FooterColumn[] = [
     links: [
       { label: "Become a Member", to: "/membership" },
       { label: "Volunteer", to: "/membership" },
-      { label: "Donate", to: "/donate" },
     ],
   },
 ];

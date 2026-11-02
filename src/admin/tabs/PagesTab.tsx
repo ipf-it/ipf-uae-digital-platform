@@ -47,7 +47,6 @@ const PAGE_OPTIONS = [
   { value: "support", label: "Support" },
   { value: "contact", label: "Contact" },
   { value: "jobs", label: "Jobs" },
-  { value: "donate", label: "Donate" },
   { value: "resources", label: "Resources" },
   { value: "home-extras", label: "Home page (extra sections)" },
 ];

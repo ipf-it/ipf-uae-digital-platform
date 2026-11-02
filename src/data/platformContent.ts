@@ -41,31 +41,6 @@ export const homeEventsCarousel = [
     body: "The IPF Abu Dhabi chapter met Shri V. Muraleedharan, Minister of State for External Affairs, to raise concerns of the NRI community and the Indian diaspora. IPF continues to work in close coordination with the Embassy of India and the Consulate General.",
   },
   {
-    // Source: newsItems.nris-urged-to-invest. Image: news3.jpg.
-    id: "nris-invest-opportunities",
-    title: "NRIs Urged to Invest & Explore Opportunities in Key Sectors",
-    date: "2021",
-    location: "United Arab Emirates",
-    emirate: "uae",
-    category: "Community",
-    image: "/legacy-assets/images/news3.jpg",
-    alt: "Indian ministers address NRIs on investment opportunities in the UAE",
-    body: "Indian ministers for Road Transport and Highways and MSMEs offered investment opportunities in key economic sectors to NRIs in the UAE. The IPF Business Council remains a forum for professional networking while the organisation's core mandate stays socio-cultural and welfare-oriented.",
-  },
-  {
-    // Source: newsItems.upskilling-blue-collared-workers. Image: community-support.png.
-    id: "upskilling-blue-collar-workers",
-    title: "Upskilling of Blue-Collared Workers in the UAE",
-    date: "January 2021",
-    startsAt: "2021-01-12T10:00:00+04:00",
-    location: "Dubai",
-    emirate: "dubai",
-    category: "Welfare",
-    image: "/legacy-assets/images/community-support.png",
-    alt: "IPF community welfare and worker upskilling initiative in the UAE",
-    body: "As part of post-pandemic economic revival, the Consul General of India in Dubai, Dr Aman Puri, convened key stakeholders on 12 January 2021. IPF has consistently supported welfare, counselling and guidance for blue-collared workers, including health awareness and coordination with Indian missions.",
-  },
-  {
     // Source: newsItems.sucheta-felicitated-business-conclave
     //         + eventCatalog archiveEvents 'business-conclave-2021'. Image: Sucheta.jpg.
     id: "suchetha-felicitated-piyush-goyal",

@@ -121,9 +121,6 @@ export default function PortalPage() {
                 <Button asChild variant="outline" size="sm">
                   <Link to="/portal/card">{t("nav.membershipCard")}</Link>
                 </Button>
-                <Button asChild variant="outline" size="sm">
-                  <Link to="/donate">{t("page.portal.supportWelfare")}</Link>
-                </Button>
                 {!member.isVolunteer ? (
                   <Button type="button" variant="outline" size="sm" disabled={becomingVolunteer} onClick={() => void onBecomeVolunteer()}>
                     {becomingVolunteer ? "Updating…" : "Become an IPF Yuva volunteer"}

@@ -22,7 +22,7 @@ function LayoutShell() {
     ? "uae"
     : pathname.startsWith("/councils") || pathname.startsWith("/discover-india")
       ? "heritage"
-      : /^\/(events|support|ipf-cares|yuva|jobs|donate)/.test(pathname)
+      : /^\/(events|support|ipf-cares|yuva|jobs)/.test(pathname)
         ? "service"
         : /^\/(membership|register|sign-in|portal|privileges|testimonials)/.test(pathname)
           ? "community"

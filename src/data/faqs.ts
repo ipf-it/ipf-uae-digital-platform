@@ -4,5 +4,4 @@ export const faqs = [
   { id: "grievance", href: "/support" },
   { id: "chapters", href: "/chapters" },
   { id: "volunteer", href: "/privileges" },
-  { id: "donate", href: "/donate" },
 ] as const;

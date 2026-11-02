@@ -29,11 +29,14 @@ import { Container } from "./ui/Container";
  *
  * Data
  *   Chapters routes from useOrgChapters() → GET /api/org/chapters.
- *   Councils routes from useOrgCouncils() → GET /api/org/councils.
- *   Youth council slot connects to the existing /yuva page (Yuva is the
- *   youth wing of IPF). Professionals and Media council slots are
- *   rendered visually but have NO legitimate destination today — they
- *   are explicitly marked and non-interactive. See the final report.
+ *   Councils routes from useOrgCouncils() → GET /api/org/councils, split
+ *   into State Councils (the 15 live state councils, compact text list)
+ *   and Special Councils (Business, Women's, Cultural, Yuva — the 4 real
+ *   special councils; Yuva links to the existing /yuva page since Yuva
+ *   IS the youth wing of IPF). "Professionals" and "Media" were never
+ *   real council records — they were placeholder medallions with no
+ *   destination at all — and have been removed; Business Council already
+ *   covers the professionals/business networking remit.
  *
  * Motion
  *   NONE. No autoplay, no scroll reveal, no parallax, no decorative
@@ -65,16 +68,13 @@ const CHAPTER_ICON: Record<string, string> = {
   fujairah: "/images/home/network/chapter-fujairah.png",
 };
 
-/* Council slot definitions. `to === null` → the medallion is rendered
- * but non-interactive (no <Link> wrapper, no hover feedback) because no
- * legitimate destination exists today. These are intentionally present
- * in the visual composition per the founder-approved reference. */
+/* Special council slot definitions — only real council records, each
+ * with a genuine destination. */
 type CouncilSlot = {
   key: string;
   label: string;
   icon: string;
-  to: string | null;
-  resolvedById?: string;
+  to: string;
 };
 
 /* ------------------------------------------------------------------ */
@@ -196,26 +196,6 @@ function ClickableMedallion({
   );
 }
 
-function PlaceholderMedallion({
-  src,
-  label,
-  reason,
-}: {
-  src: string;
-  label: string;
-  reason: string;
-}) {
-  return (
-    <div
-      className="group flex min-w-0 cursor-default flex-col items-center gap-1 rounded-xl p-1 opacity-55"
-      title={reason}
-      aria-label={`${label} — ${reason}`}
-    >
-      <MedallionBlock icon={src} label={label} />
-    </div>
-  );
-}
-
 /* ------------------------------------------------------------------ */
 /* Component                                                            */
 /* ------------------------------------------------------------------ */
@@ -239,60 +219,27 @@ export function HomeNetwork() {
     .map((id) => chapters.find((c) => c.id === id))
     .filter((c): c is NonNullable<typeof c> => Boolean(c));
 
-  /* Council slots per approved reference (3 × 2 grid). Order follows the
-     reference artwork left→right, top→bottom:
-       Women's   · Youth    · Professionals
-       Business  · Cultural · Media
-     Each slot resolves to a real route where one exists, otherwise it
-     renders as a static placeholder with the correct approved icon. */
+  /* Special Councils — only the 4 real ones. Business Council also
+     covers professional/networking remit (no separate "Professionals"
+     council exists), and Yuva is the youth wing, linked to /yuva. */
   const womens   = councils.find((c) => c.id === "womens");
   const business = councils.find((c) => c.id === "business");
   const cultural = councils.find((c) => c.id === "cultural");
 
-  const councilSlots: CouncilSlot[] = [
-    {
-      key: "womens",
-      label: "Women's\nCouncil",
-      icon: "/images/home/network/council-womens.png",
-      to: womens ? councilPath(womens.id) : null,
-      resolvedById: womens?.id,
-    },
-    {
-      key: "youth",
-      /* Yuva IS the youth wing of IPF — connect the Youth slot to the
-         existing /yuva page per the founder's "YUVA belongs under the
-         Council structure" direction. */
-      label: "Youth\nCouncil",
-      icon: "/images/home/network/council-youth.png",
-      to: "/yuva",
-    },
-    {
-      key: "professionals",
-      label: "Professionals\nCouncil",
-      icon: "/images/home/network/council-professionals.png",
-      to: null,
-    },
-    {
-      key: "business",
-      label: "Business\nCouncil",
-      icon: "/images/home/network/council-business.png",
-      to: business ? councilPath(business.id) : null,
-      resolvedById: business?.id,
-    },
-    {
-      key: "cultural",
-      label: "Cultural\nCouncil",
-      icon: "/images/home/network/council-cultural.png",
-      to: cultural ? councilPath(cultural.id) : null,
-      resolvedById: cultural?.id,
-    },
-    {
-      key: "media",
-      label: "Media\nCouncil",
-      icon: "/images/home/network/council-media.png",
-      to: null,
-    },
-  ];
+  const specialCouncilSlots: CouncilSlot[] = [
+    womens && { key: "womens", label: "Women's\nCouncil", icon: "/images/home/network/council-womens.png", to: councilPath(womens.id) },
+    { key: "youth", label: "Yuva\nCouncil", icon: "/images/home/network/council-youth.png", to: "/yuva" },
+    business && { key: "business", label: "Business\nCouncil", icon: "/images/home/network/council-business.png", to: councilPath(business.id) },
+    cultural && { key: "cultural", label: "Cultural\nCouncil", icon: "/images/home/network/council-cultural.png", to: councilPath(cultural.id) },
+  ].filter((slot): slot is CouncilSlot => Boolean(slot));
+
+  /* State Councils — the 15 live state councils, shown as a compact text
+     list rather than medallions (no per-state icon assets exist, and 15
+     items at medallion size wouldn't fit this panel). */
+  const stateCouncils = councils
+    .filter((c) => c.kind === "state")
+    .slice()
+    .sort((a, b) => a.name.localeCompare(b.name));
 
   return (
     <section
@@ -512,29 +459,52 @@ export function HomeNetwork() {
                   UAE&rsquo;s mission and long-term vision.
                 </p>
 
+                {/* State Councils — compact scrollable text list (15 items,
+                   no per-state icon assets exist, and the panel sits in a
+                   fixed-height photo-bleed band so a plain list would
+                   overflow the composition without a scroll cap). */}
+                <p
+                  className="mt-3 text-[0.62rem] font-bold uppercase tracking-[0.18em]"
+                  style={{ color: GOLD_INK }}
+                >
+                  State Councils
+                </p>
                 <ul
                   role="list"
-                  className="mt-4 grid grid-cols-3 gap-x-2 gap-y-2"
+                  className="mt-1.5 grid max-h-[108px] grid-cols-2 gap-x-2 gap-y-0.5 overflow-y-auto pr-1"
                 >
-                  {councilSlots.map((slot) =>
-                    slot.to ? (
-                      <li key={slot.key} className="min-w-0">
-                        <ClickableMedallion
-                          src={slot.icon}
-                          label={slot.label}
-                          to={slot.to}
-                        />
-                      </li>
-                    ) : (
-                      <li key={slot.key} className="min-w-0">
-                        <PlaceholderMedallion
-                          src={slot.icon}
-                          label={slot.label}
-                          reason="Destination pending"
-                        />
-                      </li>
-                    ),
-                  )}
+                  {stateCouncils.map((council) => (
+                    <li key={council.id} className="min-w-0">
+                      <Link
+                        to={councilPath(council.id)}
+                        className="block truncate rounded px-1 py-0.5 text-[0.68rem] leading-tight text-[#1c2430] transition hover:bg-[#D6AD60]/10 hover:text-[#5A0F1E] focus-visible:bg-[#D6AD60]/15 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#D6AD60]"
+                      >
+                        {council.name}
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+
+                {/* Special Councils — real council records only. */}
+                <p
+                  className="mt-3 text-[0.62rem] font-bold uppercase tracking-[0.18em]"
+                  style={{ color: GOLD_INK }}
+                >
+                  Special Councils
+                </p>
+                <ul
+                  role="list"
+                  className="mt-1.5 grid grid-cols-4 gap-x-2 gap-y-2"
+                >
+                  {specialCouncilSlots.map((slot) => (
+                    <li key={slot.key} className="min-w-0">
+                      <ClickableMedallion
+                        src={slot.icon}
+                        label={slot.label}
+                        to={slot.to}
+                      />
+                    </li>
+                  ))}
                 </ul>
 
                 {/* mt-auto on the opposite side mirrors the Chapters CTA
@@ -695,30 +665,47 @@ export function HomeNetwork() {
                 key areas, uniting expertise and experience to support IPF
                 UAE&rsquo;s mission and long-term vision.
               </p>
+
+              <p
+                className="mt-4 text-[0.68rem] font-bold uppercase tracking-[0.18em]"
+                style={{ color: GOLD_INK }}
+              >
+                State Councils
+              </p>
+              <ul role="list" className="mt-2 grid grid-cols-2 gap-x-2 gap-y-1">
+                {stateCouncils.map((council) => (
+                  <li key={council.id} className="min-w-0">
+                    <Link
+                      to={councilPath(council.id)}
+                      className="block truncate rounded px-1 py-1 text-[0.82rem] leading-tight text-[#1c2430] transition hover:bg-[#D6AD60]/10 hover:text-[#5A0F1E] focus-visible:bg-[#D6AD60]/15 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#D6AD60]"
+                    >
+                      {council.name}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+
+              <p
+                className="mt-5 text-[0.68rem] font-bold uppercase tracking-[0.18em]"
+                style={{ color: GOLD_INK }}
+              >
+                Special Councils
+              </p>
               <ul
                 role="list"
-                className="mt-5 grid grid-cols-3 gap-x-2 gap-y-3"
+                className="mt-2 grid grid-cols-4 gap-x-2 gap-y-3"
               >
-                {councilSlots.map((slot) =>
-                  slot.to ? (
-                    <li key={slot.key} className="min-w-0">
-                      <ClickableMedallion
-                        src={slot.icon}
-                        label={slot.label}
-                        to={slot.to}
-                      />
-                    </li>
-                  ) : (
-                    <li key={slot.key} className="min-w-0">
-                      <PlaceholderMedallion
-                        src={slot.icon}
-                        label={slot.label}
-                        reason="Destination pending"
-                      />
-                    </li>
-                  ),
-                )}
+                {specialCouncilSlots.map((slot) => (
+                  <li key={slot.key} className="min-w-0">
+                    <ClickableMedallion
+                      src={slot.icon}
+                      label={slot.label}
+                      to={slot.to}
+                    />
+                  </li>
+                ))}
               </ul>
+
               <p className="mt-5">
                 <PillLink to="/councils">Explore Councils</PillLink>
               </p>

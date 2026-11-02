@@ -80,9 +80,6 @@ export function HomeGetInvolved() {
               <Button asChild variant="secondary">
                 <Link to="/contact">{t("home.contactIpf")}</Link>
               </Button>
-              <Button asChild variant="secondary">
-                <Link to="/donate">{t("nav.donate")}</Link>
-              </Button>
             </div>
           </div>
 
