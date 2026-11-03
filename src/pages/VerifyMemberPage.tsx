@@ -28,7 +28,10 @@ export default function VerifyMemberPage() {
     setResult(undefined);
     api<VerifyResult>(`/api/members/verify?code=${encodeURIComponent(code)}`)
       .then((data) => {
-        if (!cancelled) setResult(data);
+        // A dev server with no API backend (plain `vite`, as opposed to `vercel dev`) answers any
+        // unknown /api/* path with index.html, HTTP 200 — api() then hands back `{}` since that's
+        // not JSON, which must never be mistaken for a genuine verified record.
+        if (!cancelled) setResult(data?.membershipNo ? data : null);
       })
       .catch(() => {
         if (!cancelled) setResult(null);
