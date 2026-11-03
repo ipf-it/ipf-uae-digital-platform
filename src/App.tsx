@@ -40,6 +40,7 @@ const SignInPage = lazy(() => import("./pages/SignInPage"));
 const PortalPage = lazy(() => import("./pages/PortalPage"));
 const YuvaPage = lazy(() => import("./pages/YuvaPage"));
 const JobsPage = lazy(() => import("./pages/JobsPage"));
+const VerifyMemberPage = lazy(() => import("./pages/VerifyMemberPage"));
 const DashboardTab = lazy(() => import("./admin/tabs/DashboardTab"));
 const OperationsTab = lazy(() => import("./admin/tabs/OperationsTab"));
 const OrganisationTab = lazy(() => import("./admin/tabs/OrganisationTab"));
@@ -106,6 +107,7 @@ function App() {
           <Route path="portal/card" element={<PortalCardPage />} />
           <Route path="yuva" element={<YuvaPage />} />
           <Route path="jobs" element={<JobsPage />} />
+          <Route path="verify/:code" element={<VerifyMemberPage />} />
           <Route path="*" element={<NotFoundPage />} />
         </Route>
       </Routes>

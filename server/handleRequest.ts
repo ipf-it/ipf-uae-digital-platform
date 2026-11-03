@@ -8,6 +8,8 @@ import { header, json, readJson, type AppRequest, type AppResponse } from "./htt
 import { mapEventRow, catalogSeedEvents, isUpcomingEvent, startOfToday, eventCategories, type PublicEvent } from "../src/data/eventCatalog.js";
 import { rateLimit, clientIp } from "./rateLimit.js";
 import { sendOtpSms } from "./sms.js";
+import { sendEmail } from "./email.js";
+import { renderMembershipCardPng } from "./card.js";
 import { autoTranslateMissingLocales } from "./translate.js";
 
 const PUBLIC_CACHE_HEADERS = { "Cache-Control": "public, s-maxage=60, stale-while-revalidate=300" };
@@ -17,6 +19,13 @@ const OTP_TTL_MS = 10 * 60 * 1000;
 const VERIFIED_PHONE_TTL_MS = 30 * 60 * 1000;
 const MAX_UPLOAD_BYTES = 15 * 1024 * 1024;
 const MAX_UPLOAD_WIDTH = 1920;
+// Used to build the public verification URL embedded in a member's QR code and emailed card —
+// falls back to the production domain so local/preview env vars don't have to be set for this to work.
+const SITE_URL = (process.env.SITE_URL ?? "https://ipfuae.com").replace(/\/$/, "");
+
+function escapeHtml(value: string): string {
+  return value.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&apos;");
+}
 
 // Every upload (event posters, committee photos, tenant galleries, media library) lands here
 // before hitting storage, so a 5MB phone-camera photo doesn't become the file every site visitor
@@ -907,6 +916,68 @@ export async function handleRequest(req: AppRequest): Promise<AppResponse> {
       );
       if (error) throw error;
       await supabase.from("audit_logs").insert({ actor_id: admin.id, action: "tenant_content.submit", entity_type: "tenant_content", entity_id: entityId });
+      return json(200, { ok: true });
+    }
+
+    // Public, unauthenticated — this is what a member's QR code (and the /verify/:code page) hits
+    // when scanned by any phone camera, so it must never require sign-in and must never return
+    // anything beyond what's safe to show a stranger (no phone, no email, no district).
+    if (method === "GET" && path === "/api/members/verify") {
+      const verifyIpLimit = await rateLimit("members-verify", clientIp(req.headers), 20, 300);
+      if (!verifyIpLimit.allowed) return json(429, { error: "Too many verification checks. Try again shortly." });
+      const url = new URL(req.url, "http://localhost");
+      const code = (url.searchParams.get("code") ?? "").trim();
+      if (!/^IPF[A-Z]?-/i.test(code)) return json(404, { error: "No member found for that ID" });
+      // A second limiter keyed on the code itself blunts scripted enumeration of sequential IDs
+      // even from a rotating set of IPs.
+      const verifyCodeLimit = await rateLimit("members-verify-code", code.toLowerCase(), 10, 300);
+      if (!verifyCodeLimit.allowed) return json(429, { error: "Too many checks for this ID. Try again shortly." });
+      const { data: person } = await supabase
+        .from("people")
+        .select("name, membership_no, emirate, chapter, is_volunteer, created_at")
+        .eq("membership_no", code)
+        .maybeSingle();
+      if (!person) return json(404, { error: "No member found for that ID" });
+      return json(200, {
+        name: person.name,
+        membershipNo: person.membership_no,
+        location: person.chapter || person.emirate || "UAE",
+        isVolunteer: person.is_volunteer,
+        registeredOn: person.created_at,
+      });
+    }
+
+    // Member-authenticated self-service — emails the signed-in member their own card at their own
+    // address on file. No arbitrary recipient/target member id accepted, so this can't be used to
+    // spam or harvest another member's email.
+    if (method === "POST" && path === "/api/members/card/email") {
+      const person = await personFromRequest(req);
+      if (!person) return json(401, { error: "Sign in required" });
+      const emailCardLimit = await rateLimit("members-card-email", person.id, 3, 3600);
+      if (!emailCardLimit.allowed) return json(429, { error: "You've already requested your card recently — try again later." });
+      const verifyUrl = `${SITE_URL}/verify/${encodeURIComponent(person.membership_no)}`;
+      const cardPng = await renderMembershipCardPng(
+        {
+          name: person.name,
+          membershipNo: person.membership_no,
+          chapter: person.chapter,
+          emirate: person.emirate,
+          createdAt: person.created_at,
+          isVolunteer: person.is_volunteer,
+        },
+        verifyUrl,
+      );
+      const html = `<div style="font-family:Arial,Helvetica,sans-serif;max-width:480px;margin:0 auto;color:#1c2430;">
+        <p>Dear ${escapeHtml(person.name)},</p>
+        <p>Your Indian People's Forum UAE digital membership card is attached. Anyone can verify it by scanning the QR code, or at <a href="${verifyUrl}">${verifyUrl}</a>.</p>
+        <p>— Indian People's Forum UAE</p>
+      </div>`;
+      await sendEmail({
+        to: person.email,
+        subject: "Your IPF UAE Membership Card",
+        html,
+        attachments: [{ filename: `${person.membership_no}-ipf-uae-card.png`, content: cardPng }],
+      });
       return json(200, { ok: true });
     }
 

@@ -23,9 +23,15 @@ export default function CheckInView() {
     if (!code.trim()) return;
     setBusy(true);
     try {
+      // The QR on a member's card now encodes a full /verify/<code> URL (not the bare code) so a
+      // phone camera opens the public verification page directly. A desk admin scanning it with a
+      // dedicated scanner (or pasting the decoded text) still just wants the ID, so pull it out of
+      // the URL here rather than requiring everyone to type the bare membership/mobile number.
+      const match = code.trim().match(/IPF[A-Z]?-[\w-]+$/i);
+      const resolvedCode = match ? match[0] : code.trim();
       const data = await api<CheckInResult>("/api/admin/check-in", {
         method: "POST",
-        body: JSON.stringify({ code: code.trim(), eventId: eventId.trim() || undefined, markAttended }),
+        body: JSON.stringify({ code: resolvedCode, eventId: eventId.trim() || undefined, markAttended }),
       });
       setResult(data);
       if (markAttended) toast.success("Marked as attended.");

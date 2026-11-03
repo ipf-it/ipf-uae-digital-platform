@@ -4,10 +4,11 @@ import type { Member } from "../cms/MemberProvider";
 
 export function DigitalIdCard({ member }: { member: Member }) {
   const yuva = member.isVolunteer;
-  // Deliberately just the membership number — an event-desk admin looks the rest up via the
-  // check-in flow (server-side, authenticated), so the code itself doesn't need to carry a copy
-  // of the member's name/chapter.
-  const payload = member.membershipNo;
+  // Encodes a link to the public /verify page (not the bare membership number) so scanning the
+  // card with any phone camera opens a verification result directly — no separate app needed.
+  // The page itself only ever returns name/status/chapter (see /api/members/verify), never
+  // phone/email, so this is safe to be scanned by anyone, not just event-desk admins.
+  const payload = `${window.location.origin}/verify/${encodeURIComponent(member.membershipNo)}`;
 
   return (
     <div
